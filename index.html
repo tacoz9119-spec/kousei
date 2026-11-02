@@ -34,7 +34,7 @@
   --accent:#1D2224; --accent-strong:#1D2224; --accent-weak:#E6E9E9; --on-accent:#FCFCFB; --mark:#2D5B8C;
   --act1:#C9D8EA; --act1-fg:#1E4166; --act2:#2D5B8C; --act2-fg:#FFFFFF; --act3:#8FADCF; --act3-fg:#14304F;
   --point-bg:#F8EFEB; --point-line:#E0BCAF; --point-fg:#8E3420; --point-mark:#B23F27;
-  --input-bg:#FCFCFB; --danger:#B3261E; --danger-weak:#FBE9E7; --overlay:rgba(29,34,36,.5); --shadow:rgba(29,34,36,.16);
+  --input-bg:#FCFCFB; --short:#9A5B00; --danger:#B3261E; --danger-weak:#FBE9E7; --overlay:rgba(29,34,36,.5); --shadow:rgba(29,34,36,.16);
   --f-body:'Noto Sans JP','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',system-ui,sans-serif;
   --f-title:'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif;
 }
@@ -44,7 +44,7 @@
   --accent:#E7E4DD; --accent-strong:#E7E4DD; --accent-weak:#2A3133; --on-accent:#131718; --mark:#8DB4E2;
   --act1:#2A3B52; --act1-fg:#D3E2F4; --act2:#8DB4E2; --act2-fg:#0E1724; --act3:#4B6A90; --act3-fg:#EAF1FA;
   --point-bg:#33241E; --point-line:#6E4A3C; --point-fg:#F0B49C; --point-mark:#E5835F;
-  --input-bg:#181D1E; --danger:#F2B8B5; --danger-weak:#3A1F1E; --overlay:rgba(0,0,0,.6); --shadow:rgba(0,0,0,.5);
+  --input-bg:#181D1E; --short:#EDC06A; --danger:#F2B8B5; --danger-weak:#3A1F1E; --overlay:rgba(0,0,0,.6); --shadow:rgba(0,0,0,.5);
   color-scheme:dark; } }
 :root[data-theme="dark"]{
   --bg:#131718; --surface:#1E2325; --surface2:#181D1E; --sunken:#262C2E; --bar:#131718;
@@ -52,7 +52,7 @@
   --accent:#E7E4DD; --accent-strong:#E7E4DD; --accent-weak:#2A3133; --on-accent:#131718; --mark:#8DB4E2;
   --act1:#2A3B52; --act1-fg:#D3E2F4; --act2:#8DB4E2; --act2-fg:#0E1724; --act3:#4B6A90; --act3-fg:#EAF1FA;
   --point-bg:#33241E; --point-line:#6E4A3C; --point-fg:#F0B49C; --point-mark:#E5835F;
-  --input-bg:#181D1E; --danger:#F2B8B5; --danger-weak:#3A1F1E; --overlay:rgba(0,0,0,.6); --shadow:rgba(0,0,0,.5);
+  --input-bg:#181D1E; --short:#EDC06A; --danger:#F2B8B5; --danger-weak:#3A1F1E; --overlay:rgba(0,0,0,.6); --shadow:rgba(0,0,0,.5);
   color-scheme:dark; }
 
 html{background:var(--bg)}
@@ -335,7 +335,7 @@ body{font-size:14px}
 .box-top p{font-size:13px}
 .grp-h h2{font-size:15px}
 .grp-h span{font-size:12px}
-.cards{grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.cards{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
 .card{padding:8px 10px 12px;gap:8px}
 .card-h .no{font-size:13px}
 .card-h .sel{height:30px;font-size:12px;flex:0 0 auto;width:auto;min-width:0;max-width:none;padding:0 4px 0 8px}
@@ -552,7 +552,12 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .hprev{font-size:13px;color:var(--fg2);line-height:1.6;overflow-wrap:anywhere}
 .hdead h3{margin:0 0 4px;font-size:14px}
 .hdead .sub-l{margin:0 0 8px}
+/* カードの最小幅230px：見出しの行（つまみ・シーン番号・段・コピー）が1行に収まるように詰める */
+.card-h{gap:2px}
+.card-h .sel{padding:0 1px 0 5px;flex:0 1 auto;min-width:0}
+.card-h .icon-btn{width:28px}
 .grp-h .over-pill{margin-left:auto;background:var(--danger);color:var(--on-accent);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700;white-space:nowrap}
+.grp-h .over-pill.short{background:var(--short)}
 .cards .card{border-radius:14px}
 .cards .in,.cards .ta,.cards .sel{background:var(--sunken);border-color:transparent}
 .cards .in:focus,.cards .ta:focus,.cards .sel:focus{background:var(--input-bg);border-color:var(--accent)}
@@ -629,7 +634,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.78';
+var VERSION = '0.80';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -1759,7 +1764,9 @@ function boxesBlock(w, ctx){
     var sum = cards.reduce(function(a, x){ return a + (toInt(x.sc.min, 0, 999) || 0); }, 0);
     var segLen = seg.point ? 0 : mins(L, seg.to) - mins(L, seg.from);
     var tot = sum ? '<span>シーン計 ' + sum + '分</span>' : '';
-    var over = !seg.point && sum > segLen ? '<b class="over-pill">目安より' + (sum - segLen) + '分長い</b>' : '';
+    /* 目安との差：長いときは赤、短いときは黄土色（目安を1つも入れていない段には出さない） */
+    var over = seg.point || !sum ? '' : sum > segLen ? '<b class="over-pill">目安より' + (sum - segLen) + '分長い</b>'
+      : sum < segLen ? '<b class="over-pill short">目安より' + (segLen - sum) + '分短い</b>' : '';
     return '<section class="grp" data-seg="' + seg.k + '" aria-label="' + seg.label + '"><div class="grp-h ' + segBand(seg) + '">' + (seg.point ? ICON.dia : '') + '<h2>' + seg.label + '</h2>' + (range ? '<span>' + range + '</span>' : '') + tot + over +
       (cards.length ? '<button type="button" class="icon-btn grp-copy" data-act="copy-grp" data-v="' + seg.k + '" aria-label="' + seg.label + 'のシーンをテキストでコピー" title="' + seg.label + 'のシーンをテキストでコピー">' + ICON.dup + '</button>' : '') + '</div><div class="cards">' +
       cards.map(function(x){ return cardHTML(x.sc, x.n, schema, w); }).join('') +
