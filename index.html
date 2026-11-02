@@ -430,7 +430,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .basic-b .in,.basic-b .ta{background:var(--sunken);border-color:transparent}
 .basic-b .in:focus,.basic-b .ta:focus{background:var(--input-bg);border-color:var(--accent)}
 .basic-b .fl{font-size:12.5px;font-weight:500;color:var(--muted)}
-.basic-b #b-title{font-size:20px;font-weight:700;height:50px}
+.basic-b #b-title{font-size:20px;font-weight:400;letter-spacing:.02em;font-feature-settings:"palt";height:50px}
 .basic-b .readout{height:38px}
 .bgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .bcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 20px 20px;min-width:0}
@@ -504,7 +504,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.64';
+var VERSION = '0.65';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -554,7 +554,7 @@ var ICON = {
 
 var BASIC_ORDER = ['ジャンル','ログライン','テーマ','時代','場所（舞台）','主人公の目的','主人公の障害','メモ','類似作品・参考にした作品'];
 var LAYOUT = {
-  basic:{'ジャンル':{w:'M',rows:1}, 'ログライン':{w:'half',rows:3,nl:true}, 'テーマ':{w:'half',rows:3}, '時代':{w:'half',rows:1,nl:true}, '場所（舞台）':{w:'half',rows:1},
+  basic:{'ジャンル':{w:'M',rows:1}, 'ログライン':{w:'half',rows:3,nl:true}, 'テーマ':{w:'half',rows:3}, '時代':{w:'half',rows:1,nl:true}, '場所（舞台）':{w:'half',rows:5},
     '主人公の目的':{w:'half',rows:3,nl:true}, '主人公の障害':{w:'half',rows:3}, 'メモ':{w:'half',rows:5,nl:true}, '類似作品・参考にした作品':{w:'half',rows:5}},
   person:{'年齢':{w:'S',rows:1}, '職業':{w:'fill',rows:1}, '目的':{w:'fill',rows:1,nl:true}, '経歴':{w:'full',rows:2,nl:true}, 'ほかの人物との関係':{w:'full',rows:1,nl:true}},
   arc:{}, card:{'登場人物':{rows:1,people:true}}
@@ -600,6 +600,7 @@ function defaultTemplate(){
   };
   migLayout(t);
   migHeads(t.basic);
+  migBasic11(t);
   return t;
 }
 function migPerson(list){
@@ -620,7 +621,7 @@ function migMemo(list){
 function migEra(list, values){
   if(!list) return;
   var i = list.findIndex(function(f){ return f.label === '時代・舞台'; });
-  if(i < 0 || list.some(function(f){ return f.label === '場所（舞台）'; })) return;
+  if(i < 0 || list.some(function(f){ return f.label === '場所（舞台）' || f.label === '地（場所）'; })) return;
   var era = list[i]; era.label = '時代'; era.multi = false;
   var place = fld('場所（舞台）', 0);
   list.splice(i, 1);
@@ -632,12 +633,21 @@ function migEra(list, values){
     if(v.indexOf('\n') < 0 && parts.length === 2 && parts[0].trim() && parts[1].trim()){ values[era.id] = parts[0].trim(); values[place.id] = parts[1].trim(); }
   }
 }
+/* 基本設定の項目名を、見出しの中で通じる短い名前にする。「地（場所）」は初期の行数を5行にする */
+var BASIC_RENAME = {'時代':'天（時代）', '場所（舞台）':'地（場所）', '主人公の目的':'目的', '主人公の障害':'障害'};
+function migBasic11(sch){
+  ((sch && sch.basic) || []).forEach(function(f){
+    if(isHead(f)) return;
+    if(BASIC_RENAME[f.label]) f.label = BASIC_RENAME[f.label];
+    if(f.label === '地（場所）' && f.rows === 1) f.rows = 5;
+  });
+}
 function migMemoRows(sch){
   ((sch && sch.basic) || []).forEach(function(f){ if((f.label === 'メモ' || f.label === '類似作品・参考にした作品') && f.rows === 6) f.rows = 5; });
 }
 function migrateTemplates(){
   var t = S.templates, ch = false;
-  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10'].forEach(function(k){ t[k] = true; }); return true; }
+  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10','mig11'].forEach(function(k){ t[k] = true; }); return true; }
   if(t.movie && !t.mig5){ t.single = t.movie; delete t.movie; delete t.other; ch = true; }
   if(!t.mig5){ t.mig5 = true; ch = true; }
   if(!t.single){ t.single = defaultTemplate(); ch = true; }
@@ -651,6 +661,7 @@ function migrateTemplates(){
   if(!t.mig8){ KIND_ORDER.forEach(function(k){ migLayout(t[k]); }); t.mig8 = true; ch = true; }
   if(!t.mig9){ KIND_ORDER.forEach(function(k){ migMemoRows(t[k]); }); t.mig9 = true; ch = true; }
   if(!t.mig10){ KIND_ORDER.forEach(function(k){ migHeads(t[k].basic); }); t.mig10 = true; ch = true; }
+  if(!t.mig11){ KIND_ORDER.forEach(function(k){ migBasic11(t[k]); }); t.mig11 = true; ch = true; }
   return ch;
 }
 function migrateWork(w){
@@ -665,6 +676,7 @@ function migrateWork(w){
   if(!w.mig8){ migLayout(w.schema); w.mig8 = true; ch = true; }
   if(!w.mig9){ migMemoRows(w.schema); w.mig9 = true; ch = true; }
   if(!w.mig10){ migHeads(w.schema.basic); w.mig10 = true; ch = true; }
+  if(!w.mig11){ migBasic11(w.schema); w.mig11 = true; ch = true; }
   return ch;
 }
 function defaultTemplates(){ var t = {}; KIND_ORDER.forEach(function(k){ t[k] = defaultTemplate(); }); return t; }
@@ -1629,7 +1641,7 @@ function createWork(){
   var w = {v:1, id:'w-' + uid(), title:m.title.trim() || '無題の作品', kind:m.kind, createdAt:Date.now(), updatedAt:Date.now(),
     schema:tpl, basic:{}, people:[]};
   /* ひな形は最新の形なので、古い形を直す処理は不要（済みの印を付けておく） */
-  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10'].forEach(function(k){ w[k] = true; });
+  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11'].forEach(function(k){ w[k] = true; });
   if(m.kind === 'serial'){
     var n = toInt(m.eps, 1, 100), base = toInt(m.base, 1, 600);
     if(!n || !base){ m.err = '話数と基本の1話の長さを数字で入力してください。'; renderModal(false); return; }
@@ -1975,7 +1987,8 @@ function searchEntries(w){
     Object.keys(PLOT_NAMES).forEach(function(k){ if(obj.plot && k in obj.plot) add(prefix + PLOT_NAMES[k], obj.plot[k], withFocus(go, '#pl-' + k)); });
   }
   add('基本設定・タイトル', w.title, {tab:'basic', focus:'#b-title'});
-  (w.schema.basic || []).forEach(function(f){ if(isHead(f)) return; add('基本設定・' + f.label, getPath(w, ['basic', f.id]), {tab:'basic', focus:'#b-' + f.id}); });
+  var bh = '';
+  (w.schema.basic || []).forEach(function(f){ if(isHead(f)){ bh = f.label + '・'; return; } add('基本設定・' + bh + f.label, getPath(w, ['basic', f.id]), {tab:'basic', focus:'#b-' + f.id}); });
   sortPeople(w.people || []).forEach(function(p){
     var nm = p.name || '名前未設定';
     add('人物・' + nm + '・名前', p.name, {tab:'people', person:p.id, focus:'#p-name'});
