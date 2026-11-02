@@ -430,7 +430,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .basic-b .in,.basic-b .ta{background:var(--sunken);border-color:transparent}
 .basic-b .in:focus,.basic-b .ta:focus{background:var(--input-bg);border-color:var(--accent)}
 .basic-b .fl{font-size:12.5px;font-weight:500;color:var(--muted)}
-.basic-b #b-title{font-size:20px;font-weight:400;letter-spacing:.02em;font-feature-settings:"palt";height:50px}
+.basic-b #b-title{height:50px}
 .basic-b .readout{height:38px}
 .bgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .bcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 20px 20px;min-width:0}
@@ -498,6 +498,32 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .bcard-top .link-btn:hover{opacity:1}
 .bcard > .bcard-top:only-child{margin-bottom:0}
 .bcard:has(> .bcard-top:only-child){padding-bottom:0}
+/* 基本設定のタイトル・ジャンル・尺、人物の名前・役割も、見出しを青い帯にした角丸の枠にする */
+.basic-b .bhead .frow,.phead{align-items:stretch}
+.bhead .field,.phead .field{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;gap:0;padding-bottom:14px}
+.bhead .field > .fl,.phead .field > .fl{display:block;background:var(--act1);color:var(--act1-fg);padding:10px 20px;font-size:14px;font-weight:700}
+.bhead .field > :not(.fl),.phead .field > :not(.fl){margin:14px 20px 0;width:calc(100% - 40px);box-sizing:border-box}
+.basic-b .bhead{margin-bottom:16px}
+.basic-b .bhead .frow,.phead{gap:16px}
+.bhead .field,.phead .field{padding-bottom:18px}
+.bhead .f-len{min-width:140px;flex:0 0 auto}
+.bhead .fw-title{flex-basis:200px}
+.bhead .fw-M{flex-basis:200px}
+.basic-b #b-title{height:40px}
+.people-a #p-name{height:40px;font-size:19px}
+.bhead .ta.auto{height:40px;padding-top:9px}
+.basic-b .bhead .readout,.bhead .num .in{height:40px}
+.people-a .f-role .seg{height:40px}
+.people-a .f-role .seg button{min-height:32px}
+.tabs-row{display:flex;align-items:center;gap:12px}
+.tabs-row .tabs{flex:1;min-width:0}
+.tab-info{flex:none;font-size:13px;color:var(--fg2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.side-all{display:flex;align-items:center;gap:2px}
+.side-all .side-item{flex:1;min-width:0}
+.side-copy-all{width:32px;height:32px}
+.grp-h .grp-copy{margin:-6px -8px -6px auto;width:32px;height:32px;color:inherit}
+.grp-h .grp-copy:hover{background:rgba(127,127,127,.18);color:inherit}
+.grp-h .over-pill + .grp-copy{margin-left:4px}
 .grp-h .over-pill{margin-left:auto;background:var(--danger);color:var(--on-accent);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700;white-space:nowrap}
 .cards .card{border-radius:14px}
 .cards .in,.cards .ta,.cards .sel{background:var(--sunken);border-color:transparent}
@@ -575,7 +601,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.69';
+var VERSION = '0.72';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -626,8 +652,8 @@ var ICON = {
 
 var BASIC_ORDER = ['ジャンル','ログライン','テーマ','時代','場所（舞台）','主人公の目的','主人公の障害','メモ','類似作品・参考にした作品'];
 var LAYOUT = {
-  basic:{'ジャンル':{w:'M',rows:1}, 'ログライン':{w:'half',rows:3,nl:true}, 'テーマ':{w:'half',rows:3}, '時代':{w:'half',rows:1,nl:true}, '場所（舞台）':{w:'half',rows:5},
-    '主人公の目的':{w:'half',rows:3,nl:true}, '主人公の障害':{w:'half',rows:3}, 'メモ':{w:'half',rows:5,nl:true}, '類似作品・参考にした作品':{w:'half',rows:5}},
+  basic:{'ジャンル':{w:'M',rows:1}, 'ログライン':{w:'half',rows:3,nl:true}, 'テーマ':{w:'half',rows:3}, '時代':{w:'half',rows:1,nl:true}, '場所（舞台）':{w:'half',rows:3},
+    '主人公の目的':{w:'half',rows:2,nl:true}, '主人公の障害':{w:'half',rows:2}, 'メモ':{w:'half',rows:3,nl:true}, '類似作品・参考にした作品':{w:'half',rows:3}},
   person:{'年齢':{w:'S',rows:1}, '職業':{w:'fill',rows:1}, '目的':{w:'fill',rows:1,nl:true}, '経歴':{w:'full',rows:2,nl:true}, 'ほかの人物との関係':{w:'full',rows:1,nl:true}},
   arc:{}, card:{'登場人物':{rows:1,people:true}}
 };
@@ -706,6 +732,11 @@ function migEra(list, values){
     if(v.indexOf('\n') < 0 && parts.length === 2 && parts[0].trim() && parts[1].trim()){ values[era.id] = parts[0].trim(); values[place.id] = parts[1].trim(); }
   }
 }
+/* 基本設定の初期の行数を減らす（初期値のままの項目だけ） */
+var ROWS13 = {'地（場所）':[5,3], '目的':[3,2], '障害':[3,2], '作品の背景・イメージなど':[5,3], '類似作品・参考にした作品':[5,3]};
+function migRows13(sch){
+  ((sch && sch.basic) || []).forEach(function(f){ var d = !isHead(f) && ROWS13[f.label]; if(d && f.rows === d[0]) f.rows = d[1]; });
+}
 /* 人物：経歴を目的の前に置く */
 function migPerson12(sch){
   var l = sch && sch.person; if(!l) return;
@@ -726,7 +757,7 @@ function migMemoRows(sch){
 }
 function migrateTemplates(){
   var t = S.templates, ch = false;
-  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10','mig11','mig12'].forEach(function(k){ t[k] = true; }); return true; }
+  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13'].forEach(function(k){ t[k] = true; }); return true; }
   if(t.movie && !t.mig5){ t.single = t.movie; delete t.movie; delete t.other; ch = true; }
   if(!t.mig5){ t.mig5 = true; ch = true; }
   if(!t.single){ t.single = defaultTemplate(); ch = true; }
@@ -742,6 +773,7 @@ function migrateTemplates(){
   if(!t.mig10){ KIND_ORDER.forEach(function(k){ migHeads(t[k].basic); }); t.mig10 = true; ch = true; }
   if(!t.mig11){ KIND_ORDER.forEach(function(k){ migBasic11(t[k]); }); t.mig11 = true; ch = true; }
   if(!t.mig12){ KIND_ORDER.forEach(function(k){ migPerson12(t[k]); }); t.mig12 = true; ch = true; }
+  if(!t.mig13){ KIND_ORDER.forEach(function(k){ migRows13(t[k]); }); t.mig13 = true; ch = true; }
   return ch;
 }
 function migrateWork(w){
@@ -758,6 +790,7 @@ function migrateWork(w){
   if(!w.mig10){ migHeads(w.schema.basic); w.mig10 = true; ch = true; }
   if(!w.mig11){ migBasic11(w.schema); w.mig11 = true; ch = true; }
   if(!w.mig12){ migPerson12(w.schema); w.mig12 = true; ch = true; }
+  if(!w.mig13){ migRows13(w.schema); w.mig13 = true; ch = true; }
   return ch;
 }
 function defaultTemplates(){ var t = {}; KIND_ORDER.forEach(function(k){ t[k] = defaultTemplate(); }); return t; }
@@ -1224,9 +1257,22 @@ function workHeader(w){
     '<button type="button" class="icon-btn" id="btn-redo" data-act="redo" aria-label="やり直す" title="やり直す"' + (H.redo.length ? '' : ' disabled') + '>' + ICON.redo + '</button>' +
     '<span class="status' + (st.err ? ' err' : '') + '" id="status" role="status">' + esc(st.text) + '</span>' +
     '<button type="button" class="btn" data-act="pdf">PDF出力</button>' +
-    '</div><nav class="tabs" aria-label="作品のタブ">' +
+    '</div><div class="tabs-row"><nav class="tabs" aria-label="作品のタブ">' +
     tabs.map(function(t){ return '<button type="button" class="tab" data-act="tab" data-v="' + t[0] + '"' + (S.tab === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</button>'; }).join('') +
-    '</nav></div></header>';
+    '</nav>' + boxInfo(w) + '</div></div></header>';
+}
+
+/* 箱書きを表示している間だけ、タブの行の右にシーンの件数と合計を出す */
+function boxInfo(w){
+  var ctx;
+  if(S.tab === 'boxes' && w.kind !== 'serial') ctx = sceneCtx();
+  else if(S.tab === 'episodes' && S.epSub === 'boxes'){
+    var eps = epsOf(w); if(!eps.some(function(e){ return e.id === S.epId; })) S.epId = eps.length ? eps[0].id : null;
+    if(!S.epId) return '';
+    ctx = sceneCtx();
+  } else return '';
+  var all = ctx.list.reduce(function(a, x){ return a + (toInt(x.min, 0, 999) || 0); }, 0);
+  return '<span class="tab-info">シーン ' + ctx.list.length + '件' + (all ? '・合計 ' + all + '分（尺 ' + ctx.length + '分）' : '') + '</span>';
 }
 
 /* ---------- list ---------- */
@@ -1461,7 +1507,8 @@ function boxesBlock(w, ctx){
   list.forEach(function(s){ counts[s.seg] = (counts[s.seg]||0) + 1; });
   if(S.boxFilter !== 'all' && !SEG_BY[S.boxFilter]) S.boxFilter = 'all';
   var side = '<aside class="side narrow compact" aria-label="段で絞り込む">' +
-    '<button type="button" class="side-item" data-act="box-filter" data-v="all"' + (S.boxFilter === 'all' ? ' aria-current="true"' : '') + '><span class="mk"></span>すべて<span class="cnt">' + list.length + '</span></button>' +
+    '<div class="side-all"><button type="button" class="side-item" data-act="box-filter" data-v="all"' + (S.boxFilter === 'all' ? ' aria-current="true"' : '') + '><span class="mk"></span>すべて<span class="cnt">' + list.length + '</span></button>' +
+    (list.length ? '<button type="button" class="icon-btn side-copy-all" data-act="copy-boxes" aria-label="すべてのシーンをテキストでコピー" title="すべてのシーンをテキストでコピー">' + ICON.dup + '</button>' : '') + '</div>' +
     SEGS.map(function(s){ return '<button type="button" class="side-item" data-act="box-filter" data-v="' + s.k + '"' + (S.boxFilter === s.k ? ' aria-current="true"' : '') + '>' + segMark(s) + (s.side || s.label) + '<span class="cnt">' + counts[s.k] + '</span></button>'; }).join('') +
     sidePlot(w, ctx) + '</aside>';
   var groups = S.boxFilter === 'all' ? SEGS.filter(function(s){ return counts[s.k] > 0; }) : [SEG_BY[S.boxFilter]];
@@ -1472,17 +1519,16 @@ function boxesBlock(w, ctx){
     var segLen = seg.point ? 0 : mins(L, seg.to) - mins(L, seg.from);
     var tot = sum ? '<span>シーン計 ' + sum + '分</span>' : '';
     var over = !seg.point && sum > segLen ? '<b class="over-pill">目安より' + (sum - segLen) + '分長い</b>' : '';
-    return '<section class="grp" data-seg="' + seg.k + '" aria-label="' + seg.label + '"><div class="grp-h ' + segBand(seg) + '">' + (seg.point ? ICON.dia : '') + '<h2>' + seg.label + '</h2>' + (range ? '<span>' + range + '</span>' : '') + tot + over + '</div><div class="cards">' +
+    return '<section class="grp" data-seg="' + seg.k + '" aria-label="' + seg.label + '"><div class="grp-h ' + segBand(seg) + '">' + (seg.point ? ICON.dia : '') + '<h2>' + seg.label + '</h2>' + (range ? '<span>' + range + '</span>' : '') + tot + over +
+      (cards.length ? '<button type="button" class="icon-btn grp-copy" data-act="copy-grp" data-v="' + seg.k + '" aria-label="' + seg.label + 'のシーンをテキストでコピー" title="' + seg.label + 'のシーンをテキストでコピー">' + ICON.dup + '</button>' : '') + '</div><div class="cards">' +
       cards.map(function(x){ return cardHTML(x.sc, x.n, schema, w); }).join('') +
       '<button type="button" class="add-dash card-add" data-act="add-scene" data-v="' + seg.k + '">' + ICON.plus + seg.label + 'にシーンを追加</button>' +
       '</div></section>';
   }).join('');
   if(S.boxFilter === 'all' && list.length === 0){
-    body = '<div class="empty"><p>まだシーンがありません。「シーンを追加」から最初のシーンを作ってください。</p></div>';
+    body = '<div class="empty"><p>まだシーンがありません。</p><button type="button" class="btn primary" data-act="add-scene" data-v="">' + ICON.plus + '最初のシーンを追加</button></div>';
   }
-  var allMin = list.reduce(function(a, x){ return a + (toInt(x.min, 0, 999) || 0); }, 0);
-  var top = '<div class="box-top"><p>シーン ' + list.length + '件' + (allMin ? '・合計 ' + allMin + '分（尺 ' + L + '分）' : '') + '</p><span class="spacer"></span>' + (list.length ? '<button type="button" class="btn" data-act="copy-boxes">すべてのシーンをテキストでコピー</button>' : '') + '<button type="button" class="btn primary" data-act="add-scene" data-v="' + (S.boxFilter === 'all' ? '' : S.boxFilter) + '">' + ICON.plus + 'シーンを追加</button></div>';
-  return '<div class="split">' + side + '<div class="side-main">' + top + body + '</div></div>';
+  return '<div class="split">' + side + '<div class="side-main">' + body + '</div></div>';
 }
 function cardHTML(sc, n, schema, w){
   var opts = SEGS.map(function(s){ return '<option value="' + s.k + '"' + (s.k === sc.seg ? ' selected' : '') + '>' + (s.short || s.label) + '</option>'; }).join('');
@@ -1733,7 +1779,7 @@ function createWork(){
   var w = {v:1, id:'w-' + uid(), title:m.title.trim() || '無題の作品', kind:m.kind, createdAt:Date.now(), updatedAt:Date.now(),
     schema:tpl, basic:{}, people:[]};
   /* ひな形は最新の形なので、古い形を直す処理は不要（済みの印を付けておく） */
-  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11','mig12'].forEach(function(k){ w[k] = true; });
+  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13'].forEach(function(k){ w[k] = true; });
   if(m.kind === 'serial'){
     var n = toInt(m.eps, 1, 100), base = toInt(m.base, 1, 600);
     if(!n || !base){ m.err = '話数と基本の1話の長さを数字で入力してください。'; renderModal(false); return; }
@@ -1979,6 +2025,9 @@ document.addEventListener('click', function(e){
       if(csc.length) copyText('シーン', smartFull(boxesText(w, csc)));
       break;
     case 'copy-boxes': copyText('箱書き', smartFull(boxesText(w, sceneCtx().list))); break;
+    case 'copy-grp':
+      var cg = sceneCtx().list.filter(function(x){ return x.seg === v; });
+      copyText(SEG_BY[v].label + 'のシーン', smartFull(boxesText(w, cg))); break;
     case 'pdf':
       flushAll();
       var selp = w.kind === 'serial' ? {basic:true, people:true, series:true, eps:true} : {basic:true, people:true, plot:true, boxes:true};
