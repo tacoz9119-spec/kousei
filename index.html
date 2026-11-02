@@ -470,8 +470,26 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .arc-flow.tall > .field{flex:none}
 .arc-flow.tall .arc-ar{width:auto;padding:0;transform:rotate(90deg)}
 .p-del{text-decoration:underline;padding:0}
-.people-a .f-role .seg{height:50px;padding:4px}
-.people-a .f-role .seg button{min-height:40px}
+.people-a .f-role .seg{height:38px;padding:3px}
+.people-a .f-role .seg button{min-height:30px}
+/* 箱書き：段の見出しを幕の色の帯に、入力欄を灰色の塗りに */
+.side.compact{background:var(--surface);border-radius:14px}
+.side.compact .side-item{justify-content:flex-start;gap:8px}
+.side.compact .side-item .cnt{margin-left:auto}
+.side.compact .side-item[aria-current]{background:var(--accent-weak)}
+.mk{flex:none;width:10px;height:10px;display:inline-flex;align-items:center;justify-content:center}
+.mk.sq{border-radius:3px}
+.mk .dia{width:10px;height:10px}
+.side-ta{background:var(--sunken);border-color:transparent}
+.side-ta:focus{background:var(--input-bg);border-color:var(--accent)}
+.grp-h.b1,.grp-h.b2,.grp-h.b3,.grp-h.pt{align-items:center;padding:8px 14px;border-radius:10px;margin-bottom:12px}
+.grp-h.b1 span,.grp-h.b2 span,.grp-h.b3 span{color:inherit;opacity:.85}
+.grp-h.pt{background:var(--point-bg);color:var(--point-fg);gap:8px}
+.grp-h.pt span{color:inherit;opacity:.85}
+.grp-h .over-pill{margin-left:auto;background:var(--danger);color:var(--on-accent);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700;white-space:nowrap}
+.cards .card{border-radius:14px}
+.cards .in,.cards .ta,.cards .sel{background:var(--sunken);border-color:transparent}
+.cards .in:focus,.cards .ta:focus,.cards .sel:focus{background:var(--input-bg);border-color:var(--accent)}
 /* プロット・シリーズ構成：幕の色の見出しを付けたカード */
 .pcol{padding:0;gap:0;overflow:hidden;border-radius:14px}
 .pcol-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:10px 16px;font-size:14px}
@@ -545,7 +563,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.67';
+var VERSION = '0.68';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -1412,6 +1430,9 @@ function plotBlock(root, obj, L, withHook){
 }
 
 /* ---------- boxes ---------- */
+/* 段の色：幕はプロット画面と同じ色、プロットポイントは赤 */
+function segBand(seg){ return seg.point ? 'pt' : (seg.k === 'a1' ? 'b1' : seg.k === 'a3' ? 'b3' : 'b2'); }
+function segMark(seg){ return seg.point ? '<span class="mk">' + ICON.dia + '</span>' : '<span class="mk sq ' + segBand(seg) + '"></span>'; }
 function sortScenes(list){
   return list.map(function(s,i){ return {s:s,i:i}; }).sort(function(a,b){ return (SEG_INDEX[a.s.seg]-SEG_INDEX[b.s.seg]) || (a.i-b.i); }).map(function(x){ return x.s; });
 }
@@ -1428,8 +1449,8 @@ function boxesBlock(w, ctx){
   list.forEach(function(s){ counts[s.seg] = (counts[s.seg]||0) + 1; });
   if(S.boxFilter !== 'all' && !SEG_BY[S.boxFilter]) S.boxFilter = 'all';
   var side = '<aside class="side narrow compact" aria-label="段で絞り込む">' +
-    '<button type="button" class="side-item" data-act="box-filter" data-v="all"' + (S.boxFilter === 'all' ? ' aria-current="true"' : '') + '>すべて<span class="cnt">' + list.length + '</span></button>' +
-    SEGS.map(function(s){ return '<button type="button" class="side-item" data-act="box-filter" data-v="' + s.k + '"' + (S.boxFilter === s.k ? ' aria-current="true"' : '') + '>' + (s.side || s.label) + '<span class="cnt">' + counts[s.k] + '</span></button>'; }).join('') +
+    '<button type="button" class="side-item" data-act="box-filter" data-v="all"' + (S.boxFilter === 'all' ? ' aria-current="true"' : '') + '><span class="mk"></span>すべて<span class="cnt">' + list.length + '</span></button>' +
+    SEGS.map(function(s){ return '<button type="button" class="side-item" data-act="box-filter" data-v="' + s.k + '"' + (S.boxFilter === s.k ? ' aria-current="true"' : '') + '>' + segMark(s) + (s.side || s.label) + '<span class="cnt">' + counts[s.k] + '</span></button>'; }).join('') +
     sidePlot(w, ctx) + '</aside>';
   var groups = S.boxFilter === 'all' ? SEGS.filter(function(s){ return counts[s.k] > 0; }) : [SEG_BY[S.boxFilter]];
   var body = groups.map(function(seg){
@@ -1437,8 +1458,9 @@ function boxesBlock(w, ctx){
     var range = seg.point ? '' : mins(L, seg.from) + '〜' + mins(L, seg.to) + '分';
     var sum = cards.reduce(function(a, x){ return a + (toInt(x.sc.min, 0, 999) || 0); }, 0);
     var segLen = seg.point ? 0 : mins(L, seg.to) - mins(L, seg.from);
-    var tot = sum ? '<span>シーン計 ' + sum + '分' + (!seg.point && sum > segLen ? '<b class="over">（目安より' + (sum - segLen) + '分長い）</b>' : '') + '</span>' : '';
-    return '<section class="grp" data-seg="' + seg.k + '" aria-label="' + seg.label + '"><div class="grp-h"><h2>' + seg.label + '</h2><span>' + range + '</span>' + tot + '</div><div class="cards">' +
+    var tot = sum ? '<span>シーン計 ' + sum + '分</span>' : '';
+    var over = !seg.point && sum > segLen ? '<b class="over-pill">目安より' + (sum - segLen) + '分長い</b>' : '';
+    return '<section class="grp" data-seg="' + seg.k + '" aria-label="' + seg.label + '"><div class="grp-h ' + segBand(seg) + '">' + (seg.point ? ICON.dia : '') + '<h2>' + seg.label + '</h2>' + (range ? '<span>' + range + '</span>' : '') + tot + over + '</div><div class="cards">' +
       cards.map(function(x){ return cardHTML(x.sc, x.n, schema, w); }).join('') +
       '<button type="button" class="add-dash card-add" data-act="add-scene" data-v="' + seg.k + '">' + ICON.plus + seg.label + 'にシーンを追加</button>' +
       '</div></section>';
