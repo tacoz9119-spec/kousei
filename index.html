@@ -615,7 +615,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.74';
+var VERSION = '0.76';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -666,10 +666,10 @@ var ICON = {
 
 var BASIC_ORDER = ['ジャンル','ログライン','テーマ','時代','場所（舞台）','主人公の目的','主人公の障害','メモ','類似作品・参考にした作品'];
 var LAYOUT = {
-  basic:{'ジャンル':{w:'M',rows:1}, 'ログライン':{w:'half',rows:3,nl:true}, 'テーマ':{w:'half',rows:3}, '時代':{w:'half',rows:1,nl:true}, '場所（舞台）':{w:'half',rows:3},
-    '主人公の目的':{w:'half',rows:2,nl:true}, '主人公の障害':{w:'half',rows:2}, 'メモ':{w:'half',rows:3,nl:true}, '類似作品・参考にした作品':{w:'half',rows:3}},
-  person:{'年齢':{w:'S',rows:1}, '職業':{w:'fill',rows:1}, '目的':{w:'fill',rows:1,nl:true}, '経歴':{w:'full',rows:2,nl:true}, 'ほかの人物との関係':{w:'full',rows:1,nl:true}},
-  arc:{}, card:{'登場人物':{rows:1,people:true}}
+  basic:{'ジャンル':{w:'M',rows:1}, 'ログライン':{w:'half',rows:1,nl:true}, 'テーマ':{w:'half',rows:1}, '時代':{w:'half',rows:1,nl:true}, '場所（舞台）':{w:'half',rows:1},
+    '主人公の目的':{w:'half',rows:1,nl:true}, '主人公の障害':{w:'half',rows:1}, 'メモ':{w:'half',rows:1,nl:true}, '類似作品・参考にした作品':{w:'half',rows:1}},
+  person:{'年齢':{w:'S',rows:1}, '職業':{w:'fill',rows:1}, '目的':{w:'fill',rows:1,nl:true}, '経歴':{w:'full',rows:1,nl:true}, 'ほかの人物との関係':{w:'full',rows:1,nl:true}},
+  arc:{'始まりの状態':{rows:1}, '変化のきっかけ':{rows:1}, '終わりの状態':{rows:1}}, card:{'登場人物':{rows:1,people:true}, '出来事':{rows:1}, 'セリフ':{rows:1}}
 };
 function isHead(f){ return !!f && f.kind === 'h'; }
 /* 基本設定の見出し。見出しから次の見出しまでの項目を1枚のカードにまとめる */
@@ -751,19 +751,31 @@ var ROWS13 = {'地（場所）':[5,3], '目的':[3,2], '障害':[3,2], '作品�
 function migRows13(sch){
   ((sch && sch.basic) || []).forEach(function(f){ var d = !isHead(f) && ROWS13[f.label]; if(d && f.rows === d[0]) f.rows = d[1]; });
 }
+/* 箱書きのカード：出来事とセリフの初期の行数を1行にする（初期値のままの項目だけ） */
+function migCard14(sch){
+  ((sch && sch.card) || []).forEach(function(f){ if((f.label === '出来事' || f.label === 'セリフ') && f.rows === 2) f.rows = 1; });
+}
+/* 基本設定・人物・アークの欄も、最初は1行で表示する（初期値のままの項目だけ） */
+var ROWS15 = {basic:{'ログライン':3, 'テーマ':3, '地（場所）':3, '目的':2, '障害':2, '作品の背景・イメージなど':3, '類似作品・参考にした作品':3},
+  person:{'経歴':2}, arc:{'始まりの状態':2, '変化のきっかけ':2, '終わりの状態':2}};
+function migRows15(sch){
+  if(!sch) return;
+  Object.keys(ROWS15).forEach(function(tab){
+    (sch[tab] || []).forEach(function(f){ if(!isHead(f) && ROWS15[tab][f.label] === f.rows) f.rows = 1; });
+  });
+}
 /* 人物：経歴を目的の前に置く */
 function migPerson12(sch){
   var l = sch && sch.person; if(!l) return;
   var a = l.findIndex(function(f){ return f.label === '目的'; }), b = l.findIndex(function(f){ return f.label === '経歴'; });
   if(a >= 0 && b > a){ var x = l[a]; l[a] = l[b]; l[b] = x; }
 }
-/* 基本設定の項目名を、見出しの中で通じる短い名前にする。「地（場所）」は初期の行数を5行にする */
+/* 基本設定の項目名を、見出しの中で通じる短い名前にする */
 var BASIC_RENAME = {'時代':'天（時代）', '場所（舞台）':'地（場所）', '主人公の目的':'目的', '主人公の障害':'障害'};
 function migBasic11(sch){
   ((sch && sch.basic) || []).forEach(function(f){
     if(isHead(f)) return;
     if(BASIC_RENAME[f.label]) f.label = BASIC_RENAME[f.label];
-    if(f.label === '地（場所）' && f.rows === 1) f.rows = 5;
   });
 }
 function migMemoRows(sch){
@@ -771,7 +783,7 @@ function migMemoRows(sch){
 }
 function migrateTemplates(){
   var t = S.templates, ch = false;
-  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13'].forEach(function(k){ t[k] = true; }); return true; }
+  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15'].forEach(function(k){ t[k] = true; }); return true; }
   if(t.movie && !t.mig5){ t.single = t.movie; delete t.movie; delete t.other; ch = true; }
   if(!t.mig5){ t.mig5 = true; ch = true; }
   if(!t.single){ t.single = defaultTemplate(); ch = true; }
@@ -788,6 +800,8 @@ function migrateTemplates(){
   if(!t.mig11){ KIND_ORDER.forEach(function(k){ migBasic11(t[k]); }); t.mig11 = true; ch = true; }
   if(!t.mig12){ KIND_ORDER.forEach(function(k){ migPerson12(t[k]); }); t.mig12 = true; ch = true; }
   if(!t.mig13){ KIND_ORDER.forEach(function(k){ migRows13(t[k]); }); t.mig13 = true; ch = true; }
+  if(!t.mig14){ KIND_ORDER.forEach(function(k){ migCard14(t[k]); }); t.mig14 = true; ch = true; }
+  if(!t.mig15){ KIND_ORDER.forEach(function(k){ migRows15(t[k]); }); t.mig15 = true; ch = true; }
   return ch;
 }
 function migrateWork(w){
@@ -805,6 +819,8 @@ function migrateWork(w){
   if(!w.mig11){ migBasic11(w.schema); w.mig11 = true; ch = true; }
   if(!w.mig12){ migPerson12(w.schema); w.mig12 = true; ch = true; }
   if(!w.mig13){ migRows13(w.schema); w.mig13 = true; ch = true; }
+  if(!w.mig14){ migCard14(w.schema); w.mig14 = true; ch = true; }
+  if(!w.mig15){ migRows15(w.schema); w.mig15 = true; ch = true; }
   return ch;
 }
 function defaultTemplates(){ var t = {}; KIND_ORDER.forEach(function(k){ t[k] = defaultTemplate(); }); return t; }
@@ -1793,7 +1809,7 @@ function createWork(){
   var w = {v:1, id:'w-' + uid(), title:m.title.trim() || '無題の作品', kind:m.kind, createdAt:Date.now(), updatedAt:Date.now(),
     schema:tpl, basic:{}, people:[]};
   /* ひな形は最新の形なので、古い形を直す処理は不要（済みの印を付けておく） */
-  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13'].forEach(function(k){ w[k] = true; });
+  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15'].forEach(function(k){ w[k] = true; });
   if(m.kind === 'serial'){
     var n = toInt(m.eps, 1, 100), base = toInt(m.base, 1, 600);
     if(!n || !base){ m.err = '話数と基本の1話の長さを数字で入力してください。'; renderModal(false); return; }
