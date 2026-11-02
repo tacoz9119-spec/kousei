@@ -10,8 +10,19 @@
 <meta name="apple-mobile-web-app-title" content="構成プランナー">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
+<link rel="apple-touch-icon" id="touchIcon" href="icon-180.png">
+<script>
+/* ホーム画面のアイコン：iPadはホーム画面に追加したときに1回だけアイコンを取り込む。
+   そのときの外観がダークなら黒背景に白文字、ライトなら白背景に黒文字のアイコンを使う */
+(function(){
+  var l=document.getElementById('touchIcon'), m=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)');
+  function u(){ l.href=(m&&m.matches)?'icon-180-dark.png':'icon-180.png'; }
+  u(); if(m){ if(m.addEventListener) m.addEventListener('change',u); else if(m.addListener) m.addListener(u); }
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@600&display=swap">
@@ -450,7 +461,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.49';
+var VERSION = '0.50';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
