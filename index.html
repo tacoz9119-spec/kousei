@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>構成プランナー</title>
-<meta name="theme-color" content="#FFFFFF">
+<meta name="theme-color" content="#F5F6F6">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="構成プランナー">
@@ -29,34 +29,34 @@
 <style>
 /* Layout: sticky work header + tab strip, content in a centered 1440px column; plot uses a 1:2:1 grid that mirrors screen time. */
 :root{
-  --bg:#EEF0F3; --surface:#FFFFFF; --surface2:#F7F8FA; --sunken:#F3F5F8;
-  --fg:#1C2128; --fg2:#3B434E; --muted:#59626E; --line:#D5DAE1; --line2:#C3CAD3;
-  --accent:#2D5B8C; --accent-strong:#1E4166; --accent-weak:#E3ECF6; --on-accent:#FFFFFF;
-  --act1:#C9D8EA; --act1-fg:#1E4166; --act2:#2D5B8C; --act2-fg:#FFFFFF; --act3:#8FADCF; --act3-fg:#14304F;
-  --point-bg:#FFF4E5; --point-line:#E8C48F; --point-fg:#7A4A0B; --point-mark:#C27A1A;
-  --input-bg:#FFFFFF; --danger:#B3261E; --danger-weak:#FBE9E7; --overlay:rgba(28,33,40,.55); --shadow:rgba(28,33,40,.18);
+  --bg:#E6E9E9; --surface:#FCFCFB; --surface2:#F5F6F6; --sunken:#ECEEEE; --bar:#F5F6F6;
+  --fg:#1D2224; --fg2:#3A4244; --muted:#5C6668; --line:#CDD2D3; --line2:#C3C8C9;
+  --accent:#1D2224; --accent-strong:#1D2224; --accent-weak:#E6E9E9; --on-accent:#FCFCFB; --mark:#B23F27;
+  --act1:#D4D7D8; --act1-fg:#1D2224; --act2:#5C6668; --act2-fg:#FCFCFB; --act3:#AEB4B5; --act3-fg:#1D2224;
+  --point-bg:#F8EFEB; --point-line:#E0BCAF; --point-fg:#8E3420; --point-mark:#B23F27;
+  --input-bg:#FCFCFB; --danger:#B3261E; --danger-weak:#FBE9E7; --overlay:rgba(29,34,36,.5); --shadow:rgba(29,34,36,.16);
   --f-body:'Noto Sans JP','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',system-ui,sans-serif;
   --f-title:'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#14171C; --surface:#1D2128; --surface2:#191C22; --sunken:#232832;
-  --fg:#E6E9EE; --fg2:#C3C9D2; --muted:#98A1AD; --line:#2E343E; --line2:#3C4450;
-  --accent:#8DB4E2; --accent-strong:#B5D0F0; --accent-weak:#22334A; --on-accent:#0E1724;
-  --act1:#2A3B52; --act1-fg:#D3E2F4; --act2:#8DB4E2; --act2-fg:#0E1724; --act3:#4B6A90; --act3-fg:#EAF1FA;
-  --point-bg:#33281A; --point-line:#6B5130; --point-fg:#F0C98E; --point-mark:#E0A04B;
-  --input-bg:#161A20; --danger:#F2B8B5; --danger-weak:#3A1F1E; --overlay:rgba(0,0,0,.6); --shadow:rgba(0,0,0,.5);
+  --bg:#131718; --surface:#1E2325; --surface2:#181D1E; --sunken:#262C2E; --bar:#181D1E;
+  --fg:#E7E4DD; --fg2:#C9CCC8; --muted:#98A2A4; --line:#343C3E; --line2:#3E4749;
+  --accent:#E7E4DD; --accent-strong:#E7E4DD; --accent-weak:#2A3133; --on-accent:#131718; --mark:#E5835F;
+  --act1:#343C3E; --act1-fg:#E7E4DD; --act2:#5C6668; --act2-fg:#F0EEE9; --act3:#454E50; --act3-fg:#E7E4DD;
+  --point-bg:#33241E; --point-line:#6E4A3C; --point-fg:#F0B49C; --point-mark:#E5835F;
+  --input-bg:#181D1E; --danger:#F2B8B5; --danger-weak:#3A1F1E; --overlay:rgba(0,0,0,.6); --shadow:rgba(0,0,0,.5);
   color-scheme:dark; } }
 :root[data-theme="dark"]{
-  --bg:#14171C; --surface:#1D2128; --surface2:#191C22; --sunken:#232832;
-  --fg:#E6E9EE; --fg2:#C3C9D2; --muted:#98A1AD; --line:#2E343E; --line2:#3C4450;
-  --accent:#8DB4E2; --accent-strong:#B5D0F0; --accent-weak:#22334A; --on-accent:#0E1724;
-  --act1:#2A3B52; --act1-fg:#D3E2F4; --act2:#8DB4E2; --act2-fg:#0E1724; --act3:#4B6A90; --act3-fg:#EAF1FA;
-  --point-bg:#33281A; --point-line:#6B5130; --point-fg:#F0C98E; --point-mark:#E0A04B;
-  --input-bg:#161A20; --danger:#F2B8B5; --danger-weak:#3A1F1E; --overlay:rgba(0,0,0,.6); --shadow:rgba(0,0,0,.5);
+  --bg:#131718; --surface:#1E2325; --surface2:#181D1E; --sunken:#262C2E; --bar:#181D1E;
+  --fg:#E7E4DD; --fg2:#C9CCC8; --muted:#98A2A4; --line:#343C3E; --line2:#3E4749;
+  --accent:#E7E4DD; --accent-strong:#E7E4DD; --accent-weak:#2A3133; --on-accent:#131718; --mark:#E5835F;
+  --act1:#343C3E; --act1-fg:#E7E4DD; --act2:#5C6668; --act2-fg:#F0EEE9; --act3:#454E50; --act3-fg:#E7E4DD;
+  --point-bg:#33241E; --point-line:#6E4A3C; --point-fg:#F0B49C; --point-mark:#E5835F;
+  --input-bg:#181D1E; --danger:#F2B8B5; --danger-weak:#3A1F1E; --overlay:rgba(0,0,0,.6); --shadow:rgba(0,0,0,.5);
   color-scheme:dark; }
 
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.6}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bar)}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
@@ -66,7 +66,7 @@ button{cursor:pointer}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* header */
-.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bar);border-bottom:1px solid var(--line)}
 .topbar-in{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding-block:12px}
 .brand{font-family:var(--f-title);font-size:20px;font-weight:600;letter-spacing:.06em}
 .spacer{flex:1}
@@ -146,7 +146,7 @@ button{cursor:pointer}
 .side-h{margin:4px 8px 6px;font-size:15px;font-weight:700}
 .side-note{margin:0 8px 8px;font-size:13px;color:var(--muted)}
 .side-item{min-height:48px;padding:8px 12px;border:none;border-radius:8px;background:transparent;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--fg2)}
-.side-item[aria-current="true"]{background:var(--surface);color:var(--accent-strong);font-weight:700;box-shadow:inset 3px 0 0 var(--accent)}
+.side-item[aria-current="true"]{background:var(--accent-weak);color:var(--fg);font-weight:700}
 .side-item .cnt{font-size:13px;color:var(--muted);font-weight:400;font-variant-numeric:tabular-nums}
 .side-item .two{display:flex;flex-direction:column;align-items:flex-start;line-height:1.4;min-width:0}
 .side-item .two small{font-size:13px;color:var(--muted);font-weight:400}
@@ -198,7 +198,7 @@ button{cursor:pointer}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .card-h{display:flex;align-items:center;gap:4px;flex-wrap:nowrap}
-.card-h .no{font-size:14px;font-weight:700;color:var(--accent);margin-right:4px}
+.card-h .no{font-size:14px;font-weight:700;color:var(--mark);margin-right:4px}
 .card-h .sel{width:auto;height:36px;font-size:13px;flex:1;min-width:120px;max-width:190px}
 .cf{display:grid;grid-template-columns:72px minmax(0,1fr);gap:10px;align-items:start}
 .cf label{font-size:13px;font-weight:500;color:var(--fg2);padding-top:10px}
@@ -461,7 +461,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.51';
+var VERSION = '0.52';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
