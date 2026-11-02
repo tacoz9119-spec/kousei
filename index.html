@@ -55,7 +55,8 @@
   --input-bg:#181D1E; --danger:#F2B8B5; --danger-weak:#3A1F1E; --overlay:rgba(0,0,0,.6); --shadow:rgba(0,0,0,.5);
   color-scheme:dark; }
 
-body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.6}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.6}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bar)}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
@@ -450,6 +451,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 </head>
 <body>
 
+<header id="topbar" class="topbar"></header>
 <div id="app"><div class="loading">読み込んでいます…</div></div>
 <div id="modal-root"></div>
 <div id="toast-root" aria-live="polite"></div>
@@ -461,7 +463,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.52';
+var VERSION = '0.53';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -512,7 +514,7 @@ var ICON = {
 var BASIC_ORDER = ['ジャンル','ログライン','テーマ','時代','場所（舞台）','主人公の目的','主人公の障害','メモ','類似作品・参考にした作品'];
 var LAYOUT = {
   basic:{'ジャンル':{w:'M',rows:1}, 'ログライン':{w:'half',rows:3,nl:true}, 'テーマ':{w:'half',rows:3}, '時代':{w:'half',rows:1,nl:true}, '場所（舞台）':{w:'half',rows:1},
-    '主人公の目的':{w:'half',rows:3,nl:true}, '主人公の障害':{w:'half',rows:3}, 'メモ':{w:'half',rows:6,nl:true}, '類似作品・参考にした作品':{w:'half',rows:6}},
+    '主人公の目的':{w:'half',rows:3,nl:true}, '主人公の障害':{w:'half',rows:3}, 'メモ':{w:'half',rows:5,nl:true}, '類似作品・参考にした作品':{w:'half',rows:5}},
   person:{'年齢':{w:'S',rows:1}, '職業':{w:'fill',rows:1}, '目的':{w:'fill',rows:1,nl:true}, '経歴':{w:'full',rows:2,nl:true}, 'ほかの人物との関係':{w:'full',rows:1,nl:true}},
   arc:{}, card:{'登場人物':{rows:1,people:true}}
 };
@@ -576,9 +578,12 @@ function migEra(list, values){
     if(v.indexOf('\n') < 0 && parts.length === 2 && parts[0].trim() && parts[1].trim()){ values[era.id] = parts[0].trim(); values[place.id] = parts[1].trim(); }
   }
 }
+function migMemoRows(sch){
+  ((sch && sch.basic) || []).forEach(function(f){ if((f.label === 'メモ' || f.label === '類似作品・参考にした作品') && f.rows === 6) f.rows = 5; });
+}
 function migrateTemplates(){
   var t = S.templates, ch = false;
-  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8'].forEach(function(k){ t[k] = true; }); return true; }
+  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9'].forEach(function(k){ t[k] = true; }); return true; }
   if(t.movie && !t.mig5){ t.single = t.movie; delete t.movie; delete t.other; ch = true; }
   if(!t.mig5){ t.mig5 = true; ch = true; }
   if(!t.single){ t.single = defaultTemplate(); ch = true; }
@@ -590,6 +595,7 @@ function migrateTemplates(){
   if(!t.mig2){ t.mig2 = true; ch = true; }
   KIND_ORDER.forEach(function(k){ TPL_TABS.forEach(function(x){ if(!t[k][x[0]]){ t[k][x[0]] = []; ch = true; } }); });
   if(!t.mig8){ KIND_ORDER.forEach(function(k){ migLayout(t[k]); }); t.mig8 = true; ch = true; }
+  if(!t.mig9){ KIND_ORDER.forEach(function(k){ migMemoRows(t[k]); }); t.mig9 = true; ch = true; }
   return ch;
 }
 function migrateWork(w){
@@ -602,6 +608,7 @@ function migrateWork(w){
   if(!w.mig3){ migPerson(w.schema.person); w.mig3 = true; ch = true; }
   if(!w.mig2){ (w.schema.basic || []).forEach(function(f){ if(f.label === '時代・舞台') f.multi = false; }); w.mig2 = true; ch = true; }
   if(!w.mig8){ migLayout(w.schema); w.mig8 = true; ch = true; }
+  if(!w.mig9){ migMemoRows(w.schema); w.mig9 = true; ch = true; }
   return ch;
 }
 function defaultTemplates(){ var t = {}; KIND_ORDER.forEach(function(k){ t[k] = defaultTemplate(); }); return t; }
@@ -1516,6 +1523,10 @@ function render(){
     else if(S.tab === 'series') html += renderSeries(w);
     else if(S.tab === 'episodes') html += renderEpisodes(w);
   }
+  /* 上部のメニューの枠は作り直さず、中身だけを入れ替える（iPadOS 26 のホーム画面のアプリでは、
+     上端の無地の帯が一度でも消えると、画面の上端がぼかされるため） */
+  var top = document.getElementById('topbar'), hm = /^<header class="topbar">([\s\S]*?)<\/header>/.exec(html);
+  if(hm){ top.innerHTML = hm[1]; html = html.slice(hm[0].length); }
   app.innerHTML = html;
   fitAll(app);
   try{ localStorage.setItem(LOCAL_KEY + '-ui', JSON.stringify({tplKind:S.tplKind, listFilter:S.listFilter})); }catch(e){}
