@@ -634,7 +634,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.80';
+var VERSION = '0.81';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -1748,8 +1748,10 @@ function sidePlot(w, ctx){
     '<textarea id="sp-' + seg.k + '" class="ta fit2 side-ta" rows="' + (seg.point ? 3 : 8) + '" data-bind="' + root + '|plot|' + seg.k + '">' + esc(plot[seg.k]) + '</textarea>' +
     '<p class="side-plot-note">ここで直した内容は、プロット画面にも反映されます。</p></div>';
 }
+var ACT_PP = {a1:'pp1', a2a:'mp', a2b:'pp2'}, PP_ACT = {pp1:'a1', mp:'a2a', pp2:'a2b'};
 function boxesBlock(w, ctx){
   var list = ctx.list, L = ctx.length, schema = w.schema.card || [];
+  function segSum(k){ return list.reduce(function(a, x){ return a + (x.seg === k ? (toInt(x.min, 0, 999) || 0) : 0); }, 0); }
   var counts = {}; SEGS.forEach(function(s){ counts[s.k] = 0; });
   list.forEach(function(s){ counts[s.seg] = (counts[s.seg]||0) + 1; });
   if(S.boxFilter !== 'all' && !SEG_BY[S.boxFilter]) S.boxFilter = 'all';
@@ -1761,12 +1763,15 @@ function boxesBlock(w, ctx){
   var body = groups.map(function(seg){
     var cards = list.map(function(sc, idx){ return {sc:sc, n:idx+1}; }).filter(function(x){ return x.sc.seg === seg.k; });
     var range = seg.point ? '' : mins(L, seg.from) + '〜' + mins(L, seg.to) + '分';
-    var sum = cards.reduce(function(a, x){ return a + (toInt(x.sc.min, 0, 999) || 0); }, 0);
+    var sum = segSum(seg.k);
     var segLen = seg.point ? 0 : mins(L, seg.to) - mins(L, seg.from);
-    var tot = sum ? '<span>シーン計 ' + sum + '分</span>' : '';
+    /* プロットポイントの分数は、ぶら下がっている幕の合計に入れる（PP1→第一幕、MP→第二幕前半、PP2→第二幕後半） */
+    var child = ACT_PP[seg.k], ppSum = child ? segSum(child) : 0, total = sum + ppSum, parent = PP_ACT[seg.k], tot = '';
+    if(seg.point) tot = sum ? '<span>シーン計 ' + sum + '分' + (parent ? '（' + SEG_BY[parent].label + 'の目安に含めて計算）' : '') + '</span>' : '';
+    else tot = total ? '<span>シーン計 ' + total + '分' + (ppSum ? '（うち' + SEG_BY[child].label + ' ' + ppSum + '分）' : '') + '</span>' : '';
     /* 目安との差：長いときは赤、短いときは黄土色（目安を1つも入れていない段には出さない） */
-    var over = seg.point || !sum ? '' : sum > segLen ? '<b class="over-pill">目安より' + (sum - segLen) + '分長い</b>'
-      : sum < segLen ? '<b class="over-pill short">目安より' + (segLen - sum) + '分短い</b>' : '';
+    var over = seg.point || !total ? '' : total > segLen ? '<b class="over-pill">目安より' + (total - segLen) + '分長い</b>'
+      : total < segLen ? '<b class="over-pill short">目安より' + (segLen - total) + '分短い</b>' : '';
     return '<section class="grp" data-seg="' + seg.k + '" aria-label="' + seg.label + '"><div class="grp-h ' + segBand(seg) + '">' + (seg.point ? ICON.dia : '') + '<h2>' + seg.label + '</h2>' + (range ? '<span>' + range + '</span>' : '') + tot + over +
       (cards.length ? '<button type="button" class="icon-btn grp-copy" data-act="copy-grp" data-v="' + seg.k + '" aria-label="' + seg.label + 'のシーンをテキストでコピー" title="' + seg.label + 'のシーンをテキストでコピー">' + ICON.dup + '</button>' : '') + '</div><div class="cards">' +
       cards.map(function(x){ return cardHTML(x.sc, x.n, schema, w); }).join('') +
