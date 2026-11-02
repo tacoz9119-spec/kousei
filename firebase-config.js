@@ -1,12 +1,19 @@
 /* ===== Firebaseの設定 =====
-   脚本エディタと同じFirebaseプロジェクトを使います。
-   脚本エディタのGitHubリポジトリ（kyakuhon）にある firebase-config.js を開き、
-   「const firebaseConfig = {」から「};」までをコピーして、
-   下の「ここに貼り付け」の行と入れ替えてください。
-   （脚本エディタの firebase-config.js を、そのままこのファイルと差し替えてもかまいません）
-   この値は公開されても問題のない値です（作品は、ログインした本人しか読み書きできないよう、ルールで守られています）。 */
+   手順書の「手順5」で、Firebaseの画面に次のような部分が表示されます。
 
-// ここに貼り付け
+     const firebaseConfig = {
+       apiKey: "……",
+       authDomain: "……",
+       ……
+     };
+
+   その部分（const firebaseConfig = { から }; まで）をそのままコピーして、
+   下の「ここに貼り付け」の行と入れ替えてください。
+   この値は公開されても問題のない値です（原稿はログインした本人しか読み書きできないよう、ルールで守ります）。 */
+
+const firebaseConfig = {  apiKey: "AIzaSyBz9d7UDB91Jz_7i3-7AUu7x88l-i3ctFs",  authDomain: "genko-script.firebaseapp.com",  projectId: "genko-script",  storageBucket: "genko-script.firebasestorage.app",  messagingSenderId: "83518733081",  appId: "1:83518733081:web:cfff85e9d1201c717e6388"
+
+};
 
 /* ↓ここから下は変更しないでください */
 window.GENKO_FIREBASE = (typeof firebaseConfig !== 'undefined') ? firebaseConfig : null;
