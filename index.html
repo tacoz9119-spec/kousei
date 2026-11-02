@@ -524,6 +524,20 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .grp-h .grp-copy{margin:-6px -8px -6px auto;width:32px;height:32px;color:inherit}
 .grp-h .grp-copy:hover{background:rgba(127,127,127,.18);color:inherit}
 .grp-h .over-pill + .grp-copy{margin-left:4px}
+/* 人物・箱書きの左パネル：見出しを灰色の帯にする（選ぶための一覧なので、書き込むカードの青と分ける） */
+.people-a .side,.side.compact{padding:0 0 10px;overflow:hidden;gap:2px}
+.people-a .side > :not(.side-top),.side.compact > :not(.side-top){margin-left:10px;margin-right:10px}
+.side .side-top{background:var(--sunken);color:var(--fg);padding:10px 16px;margin:0 0 8px;font-size:14px}
+.side .side-top b{color:inherit}
+.side .side-top span{color:var(--muted);font-size:12.5px}
+.side .add-dash{width:auto}
+.side.narrow.compact{width:232px}
+@media (max-width: 980px){ .side.narrow.compact{width:auto} }
+/* 役割：脚本エディタの「柱・ト書き・セリフ」と同じ形のボタン */
+.people-a .f-role .seg{width:auto;align-self:flex-start;height:40px;padding:0;gap:0;background:var(--surface);border:1px solid var(--line2);border-radius:8px;overflow:hidden}
+.people-a .f-role .seg button{min-height:0;height:100%;border-radius:0;padding:0 16px;background:transparent;color:var(--fg);font-weight:400;box-shadow:none}
+.people-a .f-role .seg button + button{border-left:1px solid var(--line2)}
+.people-a .f-role .seg button[aria-pressed="true"]{background:var(--act2);color:var(--act2-fg);font-weight:700}
 .grp-h .over-pill{margin-left:auto;background:var(--danger);color:var(--on-accent);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700;white-space:nowrap}
 .cards .card{border-radius:14px}
 .cards .in,.cards .ta,.cards .sel{background:var(--sunken);border-color:transparent}
@@ -601,7 +615,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.73';
+var VERSION = '0.74';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -1507,7 +1521,7 @@ function boxesBlock(w, ctx){
   var counts = {}; SEGS.forEach(function(s){ counts[s.k] = 0; });
   list.forEach(function(s){ counts[s.seg] = (counts[s.seg]||0) + 1; });
   if(S.boxFilter !== 'all' && !SEG_BY[S.boxFilter]) S.boxFilter = 'all';
-  var side = '<aside class="side narrow compact" aria-label="段で絞り込む">' +
+  var side = '<aside class="side narrow compact" aria-label="段で絞り込む"><div class="side-top"><b>段</b></div>' +
     '<button type="button" class="side-item" data-act="box-filter" data-v="all"' + (S.boxFilter === 'all' ? ' aria-current="true"' : '') + '><span class="mk"></span>すべて<span class="cnt">' + list.length + '</span></button>' +
     SEGS.map(function(s){ return '<button type="button" class="side-item" data-act="box-filter" data-v="' + s.k + '"' + (S.boxFilter === s.k ? ' aria-current="true"' : '') + '>' + segMark(s) + (s.side || s.label) + '<span class="cnt">' + counts[s.k] + '</span></button>'; }).join('') +
     sidePlot(w, ctx) + '</aside>';
