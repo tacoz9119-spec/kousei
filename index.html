@@ -634,7 +634,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.81';
+var VERSION = '0.82';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -1800,7 +1800,7 @@ function cardHTML(sc, n, schema, w){
       return '<div class="cf"><label for="' + id + '">' + esc(f.label) + '</label><div class="cf-in">' +
         fieldInput('S:' + sc.id + '|values|' + f.id, getPath(sc, ['values', f.id]), f, id) + picks + '</div></div>';
     }).join('') +
-    '<div class="cf"><label for="m-' + sc.id + '">目安</label><div class="cf-in num-row"><input id="m-' + sc.id + '" class="in min-in" type="text" inputmode="numeric" value="' + esc(sc.min || '') + '" data-bind="S:' + sc.id + '|min" data-change="scene-min" data-id="' + sc.id + '"><span class="sub-l">分</span><span class="spacer"></span>' +
+    '<div class="cf"><label for="m-' + sc.id + '">長さ</label><div class="cf-in num-row"><input id="m-' + sc.id + '" class="in min-in" type="text" inputmode="numeric" value="' + esc(sc.min || '') + '" data-bind="S:' + sc.id + '|min" data-change="scene-min" data-id="' + sc.id + '"><span class="sub-l">分</span><span class="spacer"></span>' +
     '<button type="button" class="icon-btn card-del" data-act="scene-del" data-id="' + sc.id + '" aria-label="シーン' + n + 'を削除">' + ICON.trash + '</button></div></div>' +
     '</article>';
 }
@@ -2583,7 +2583,7 @@ function pdfScenes(P, w, list){
   list.forEach(function(sc, i){
     P.h2('シーン' + (i+1) + '　' + SEG_BY[sc.seg].label);
     (w.schema.card || []).forEach(function(f){ P.field(f.label, getPath(sc, ['values', f.id]), 4); });
-    if(!isBlank(sc.min)) P.field('目安', sc.min + '分', 4);
+    if(!isBlank(sc.min)) P.field('長さ', sc.min + '分', 4);
   });
 }
 async function makePdf(){
