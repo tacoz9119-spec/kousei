@@ -615,7 +615,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.76';
+var VERSION = '0.77';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -848,6 +848,7 @@ var M = {works:{}, tpl:{base:0, dirty:false}, deleted:{}};
 var dirtyEps = {}, editSeq = {};
 function wm(wid){ return M.works[wid] || (M.works[wid] = {base:0, dirty:false}); }
 function nextRev(base){ return Math.max((base || 0) + 1, Date.now()); }
+function DEVICE(){ return navigator.maxTouchPoints > 1 ? 'iPad' : 'Mac'; }
 /* Firebase (same project and login as 脚本エディタ). Each document stores the JSON text,
    so the data shape is exactly the same as in the artifact version. */
 function withTimeout(p, ms){
@@ -883,6 +884,7 @@ function fsAdapter(fs){
 }
 var Store = {
   mode:'pending', db:null, base:null, ready:false, configured:false, auth:null, user:null, unsub:null, authKnown:false,
+  signedOut: function(){ return this.configured && this.authKnown && !this.user; },
   init: function(){
     var cfg = window.GENKO_FIREBASE;
     if(!window.FB || !cfg || !cfg.apiKey){ this.mode = 'local'; this.ready = true; this.authKnown = true; return; }
@@ -935,7 +937,7 @@ function saveFile(name, data, type){
   })();
 }
 S.dl = {save:function(o){ var n = o.filename; return saveFile(n, o.data, /\.pdf$/.test(n) ? 'application/pdf' : 'application/json'); }};
-var localTimer = null, localError = false;
+var localTimer = null, localError = false, editPending = false;
 var IDB = {
   db:null,
   open:function(){
@@ -962,7 +964,7 @@ var IDB = {
   }
 };
 function persistLocalNow(){
-  clearTimeout(localTimer); localTimer = null;
+  clearTimeout(localTimer); localTimer = null; editPending = false;
   var str = JSON.stringify({v:2, templates:S.templates, works:S.works, episodes:S.episodes, meta:M, dirtyEps:dirtyEps});
   if(IDB.db){
     IDB.put('state', str).then(function(){ if(localError){ localError = false; paintStatus(); } }, function(){ localError = true; paintStatus(); });
@@ -971,7 +973,9 @@ function persistLocalNow(){
   try{ localStorage.setItem(LOCAL_KEY, str); localError = false; }
   catch(e){ localError = true; }
 }
-function localSoon(){ clearTimeout(localTimer); localTimer = setTimeout(function(){ persistLocalNow(); paintStatus(); }, 250); }
+/* 同期の頻度とタイミングは脚本エディタと同じ：手を止めて0.4秒後に端末へ保存し、その5秒後にアカウントへ送る */
+var LOCAL_DELAY = 400, PUSH_DELAY = 5400, RETRY_DELAY = 20000;
+function localSoon(){ clearTimeout(localTimer); localTimer = setTimeout(function(){ persistLocalNow(); paintStatus(); }, LOCAL_DELAY); }
 async function loadLocal(){
   var str = null;
   if(await IDB.open()) str = await IDB.get('state');
@@ -984,7 +988,7 @@ var timers = {}, jobs = {}, inflight = 0, lastError = null;
 function queue(key, fn, delay){
   if(timers[key]) clearTimeout(timers[key]);
   jobs[key] = fn;
-  timers[key] = setTimeout(function(){ run(key); }, delay == null ? 700 : delay);
+  timers[key] = setTimeout(function(){ run(key); }, delay == null ? PUSH_DELAY : delay);
   paintStatus();
 }
 async function run(key){
@@ -993,15 +997,19 @@ async function run(key){
   if(!fn) return;
   inflight++; paintStatus();
   try{ await fn(); lastError = null; }
-  catch(e){ lastError = e || {}; }
+  catch(e){ lastError = e || {}; retrySoon(); }
   finally{ inflight--; paintStatus(); }
 }
+/* 送れなかったときは、20秒後に送り直す（脚本エディタと同じ） */
+var retryTimer = null;
+function retrySoon(){ if(retryTimer) return; retryTimer = setTimeout(function(){ retryTimer = null; syncDirty(); }, RETRY_DELAY); }
 function flushAll(){ if(localTimer) persistLocalNow(); Object.keys(jobs).forEach(function(k){ run(k); }); }
 function cancelJob(k){ if(timers[k]){ clearTimeout(timers[k]); delete timers[k]; } delete jobs[k]; }
 function saveWorkQuiet(w, migrationOnly){
   var m = wm(w.id);
   m.dirty = migrationOnly ? (m.dirty === true ? true : 'mig') : true;
   editSeq[w.id] = (editSeq[w.id] || 0) + 1;
+  if(!migrationOnly) editPending = true;
   localSoon();
   if(Store.mode === 'db') queue('w:' + w.id, function(){ return pushWork(w.id); }); else paintStatus();
 }
@@ -1011,6 +1019,7 @@ function saveEpSoon(w, ep){ markEp(w, ep.id); saveWorkSoon(w); }
 function saveTemplatesSoon(migrationOnly){
   M.tpl.dirty = migrationOnly === true ? (M.tpl.dirty === true ? true : 'mig') : true;
   M.tpl.fresh = false;
+  if(migrationOnly !== true) editPending = true;
   localSoon();
   if(Store.mode === 'db') queue('templates', pushTemplates); else paintStatus();
 }
@@ -1098,15 +1107,20 @@ async function handleRemote(type, d){
   delete remote.dev;
   if(remote.kind === 'serial') eps = await fetchEps(wid);
   if(m.dirty === true && S.works[wid]){
-    var cid = 'w-' + uid(), localTitle = S.works[wid].title || '無題の作品';
-    remote.id = cid; remote.title = (remote.title || '無題の作品') + '（別の端末の版）'; delete remote.rev;
-    migrateWork(remote);
-    S.works[cid] = remote;
-    if(eps){ S.episodes[cid] = eps; Object.keys(eps).forEach(function(eid){ markEp(remote, eid); }); }
-    saveWorkQuiet(remote);
-    m.base = Math.max(m.base || 0, rv);
-    queue('w:' + wid, function(){ return pushWork(wid); }, 0);
-    toast('「' + localTitle + '」は別の端末でも変更されていたため、その内容を別の作品として残しました');
+    /* 両方の端末で書き換えられていた：アカウントにある版（もう一方の端末の版）を元の作品として残し、
+       この端末で書き換えた版は「（iPadで書いた版）」などの別の作品にする（脚本エディタと同じ） */
+    if(localTimer) persistLocalNow();
+    var mine = clone(S.works[wid]), mineEps = S.episodes[wid] ? clone(S.episodes[wid]) : null, cid = 'w-' + uid(), tag = '（' + DEVICE() + 'で書いた版）';
+    mine.id = cid; mine.title = (mine.title || '無題の作品') + tag; delete mine.rev;
+    S.works[cid] = mine;
+    if(mineEps){ S.episodes[cid] = mineEps; Object.keys(mineEps).forEach(function(eid){ markEp(mine, eid); }); }
+    cancelJob('w:' + wid); delete dirtyEps[wid];
+    S.works[wid] = remote; if(eps) S.episodes[wid] = eps; else if(remote.kind === 'serial') S.episodes[wid] = {}; else delete S.episodes[wid];
+    m.base = rv; m.dirty = false; editSeq[wid] = (editSeq[wid] || 0) + 1;
+    if(migrateWork(remote)) saveWorkQuiet(remote, true);
+    saveWorkQuiet(mine); queue('w:' + cid, function(){ return pushWork(cid); }, 1000);
+    if(S.view === 'work' && S.workId === wid) histReset();
+    toast('別の端末で新しく書かれた版を読み込みました。この端末で書き換えた分は「' + tag + '」として残しています');
     renderKeep(); return;
   }
   S.works[wid] = remote; if(eps) S.episodes[wid] = eps; else if(remote.kind === 'serial') S.episodes[wid] = {};
@@ -1142,9 +1156,31 @@ function syncDirty(){
   Object.keys(M.works).forEach(function(wid){ if(M.works[wid].dirty && S.works[wid]) queue('w:' + wid, function(){ return pushWork(wid); }, 0); });
   if(M.tpl.dirty) queue('templates', pushTemplates, 0);
 }
-window.addEventListener('online', function(){ lastError = null; syncDirty(); paintStatus(); });
+/* 通信が戻ったら、開いている作品の最新の版を確かめてから、0.5秒後に送る（脚本エディタと同じ） */
+window.addEventListener('online', function(){ lastError = null; paintStatus(); checkLatest().then(function(){ setTimeout(syncDirty, 500); }); });
 window.addEventListener('offline', paintStatus);
-setInterval(function(){ if(Store.mode === 'db' && Store.ready && anyDirty() && !Object.keys(timers).length && !inflight) syncDirty(); }, 20000);
+function isOffline(){ return navigator.onLine === false; }
+/* アプリを手前に戻したとき：開いている作品の最新の版を確かめる。確かめ終わるまで（最長8秒）入力を待ってもらう */
+var syncWait = false, waitTimer = null, checking = false;
+function applyWaitRO(){ document.querySelectorAll('#app input.in, #app textarea').forEach(function(el){ el.readOnly = syncWait; }); }
+function setWait(on){
+  syncWait = on; clearTimeout(waitTimer);
+  if(on) waitTimer = setTimeout(function(){ setWait(false); }, 8000);
+  applyWaitRO(); paintStatus();
+}
+function timeoutP(p, ms){ return Promise.race([p, new Promise(function(_, rej){ setTimeout(function(){ rej({code:'timeout'}); }, ms); })]); }
+async function checkLatest(){
+  if(Store.mode !== 'db' || !Store.ready || checking || isOffline()) return;
+  if(S.view !== 'work' || !S.workId) return;
+  checking = true; setWait(true);
+  try{
+    var snap = await timeoutP(Store.db.collection(Store.base).get(), 6000);
+    var d = snap.docs.find(function(x){ return x.id === S.workId; });
+    if(d) await handleRemote('modified', d);
+  }catch(e){}
+  checking = false; setWait(false);
+}
+document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') checkLatest(); });
 function errorText(e){
   if(!e) return '';
   if(e.code === 'permission-denied') return 'このアカウントでは同期できません（この端末には保存済み）';
@@ -1153,16 +1189,19 @@ function errorText(e){
   if(e.code === 'invalid_argument') return 'データが大きすぎて同期できませんでした。';
   return '同期できませんでした（この端末には保存済み）';
 }
+/* 表示の文言は脚本エディタと同じ */
 function statusInfo(){
-  var busy = Object.keys(timers).length > 0 || inflight > 0;
-  if(localError) return {text:'この端末に保存できませんでした', err:true};
-  if(Store.mode === 'pending') return {text:'この端末に保存済み', err:false};
-  if(Store.mode !== 'db') return {text:busy ? '保存中…' : 'この端末に保存済み', err:false};
-  if(offline()) return {text:'オフライン（この端末に保存済み）', err:false};
-  if(!Store.ready) return {text:lastError ? errorText(lastError) : '同期の準備中…', err:!!lastError};
-  if(busy) return {text:'同期中…', err:false};
-  if(lastError) return {text:errorText(lastError), err:true};
-  if(anyDirty()) return {text:'未同期（この端末に保存済み）', err:false};
+  var waiting = Store.mode === 'db' && anyDirty();
+  if(localError) return {text:'端末に保存できません', err:true};
+  if(syncWait) return {text:'最新の版を確認中…', err:false};
+  if(editPending) return {text:'保存中…', err:false};
+  if(Store.mode === 'pending') return {text:'端末に保存済み', err:false};
+  if(Store.mode !== 'db') return {text:Store.signedOut && Store.signedOut() ? '端末に保存済み・未ログイン' : '端末に保存済み（同期なし）', err:false};
+  if(isOffline()) return {text:waiting ? '端末に保存済み・同期待ち（オフライン）' : '端末に保存済み（オフライン）', err:false};
+  if(!Store.ready) return lastError ? {text:'同期に失敗（再試行します）', err:true} : {text:'最新の版を確認中…', err:false};
+  if(lastError) return {text:'同期に失敗（再試行します）', err:true};
+  if(inflight > 0) return {text:'同期中…', err:false};
+  if(waiting) return {text:'端末に保存済み・同期待ち', err:false};
   return {text:'同期済み', err:false};
 }
 function paintStatus(){
@@ -1199,7 +1238,7 @@ function undo(){ if(!H.undo.length) return; H.redo.push(snapWork()); restoreWork
 function redo(){ if(!H.redo.length) return; H.undo.push(snapWork()); restoreWork(H.redo.pop()); lastTextBind = null; render(); }
 
 document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'hidden') flushAll(); });
-window.addEventListener('pagehide', flushAll);
+window.addEventListener('pagehide', function(){ if(localTimer) persistLocalNow(); });
 
 /* ---------- binding ---------- */
 function sceneCtx(){
@@ -1784,6 +1823,7 @@ function render(){
   if(hm){ top.innerHTML = hm[1]; html = html.slice(hm[0].length); }
   app.innerHTML = html;
   fitAll(app);
+  if(syncWait) applyWaitRO();
   try{ localStorage.setItem(LOCAL_KEY + '-ui', JSON.stringify({tplKind:S.tplKind, listFilter:S.listFilter})); }catch(e){}
 }
 function autosize(el){ el.style.height = ''; if(!el.value) return; if(el.scrollHeight > el.clientHeight + 2) el.style.height = (el.scrollHeight + 2) + 'px'; }
