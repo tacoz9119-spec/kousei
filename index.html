@@ -474,7 +474,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.58';
+var VERSION = '0.59';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -1150,12 +1150,12 @@ function syncPanel(){
       '<button type="button" class="btn" data-act="sign-out"' + (syncBusy ? ' disabled' : '') + '>ログアウト</button>';
   } else {
     body = '<p>脚本エディタと同じメールアドレスとパスワードでログインすると、MacとiPadの間で作品を同期できます。</p>' +
-      '<form class="sync-form" id="sign-in-form">' +
+      '<div class="sync-form">' +
       '<label class="sr" for="si-mail">メールアドレス</label><input id="si-mail" class="in" type="email" autocomplete="username" placeholder="メールアドレス" required>' +
       '<label class="sr" for="si-pass">パスワード</label><input id="si-pass" class="in" type="password" autocomplete="current-password" placeholder="パスワード" required>' +
-      '<button type="submit" class="btn primary"' + (syncBusy ? ' disabled' : '') + '>ログイン</button>' +
+      '<button type="button" class="btn primary" data-act="sign-in"' + (syncBusy ? ' disabled' : '') + '>ログイン</button>' +
       '<button type="button" class="linkish" data-act="reset-pass">パスワードを忘れた場合</button>' +
-      '</form>';
+      '</div>';
   }
   return '<section class="backup panel" aria-labelledby="sy-h"><h2 id="sy-h">同期</h2>' + body + '</section>';
 }
@@ -1167,15 +1167,14 @@ function authError(e){
   if(c === 'auth/network-request-failed') return '通信できませんでした。接続を確かめてください';
   return 'ログインできませんでした';
 }
-document.addEventListener('submit', function(e){
-  if(e.target.id !== 'sign-in-form') return;
-  e.preventDefault();
+/* ログイン欄はフォームにしない。フォームにすると、Safariがパスワードの自動入力のあとにログインまで済ませてしまうため（脚本エディタと同じ作り） */
+function signInNow(){
   var mail = document.getElementById('si-mail').value.trim(), pass = document.getElementById('si-pass').value;
   if(!mail || !pass || !Store.auth) return;
   syncBusy = true; render();
   FB.signInWithEmailAndPassword(Store.auth, mail, pass).then(function(){ syncBusy = false; toast('ログインしました'); render(); },
     function(err){ syncBusy = false; render(); var m = document.getElementById('si-mail'); if(m) m.value = mail; toast(authError(err)); });
-});
+}
 function signOutNow(){
   flushAll();
   syncBusy = true; render();
@@ -1721,6 +1720,7 @@ document.addEventListener('click', function(e){
     case 'export': exportBackup(); break;
     case 'sign-out': signOutNow(); break;
     case 'reset-pass': resetPass(); break;
+    case 'sign-in': signInNow(); break;
 
     case 'tab': flushAll(); S.tab = v; render(); window.scrollTo(0,0); break;
     case 'work-settings': openModal({type:'settings'}); break;
