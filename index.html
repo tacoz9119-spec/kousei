@@ -470,6 +470,21 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .arc-flow.tall > .field{flex:none}
 .arc-flow.tall .arc-ar{width:auto;padding:0;transform:rotate(90deg)}
 .p-del{text-decoration:underline;padding:0}
+.people-a .f-role .seg{height:50px;padding:4px}
+.people-a .f-role .seg button{min-height:40px}
+/* プロット・シリーズ構成：幕の色の見出しを付けたカード */
+.pcol{padding:0;gap:0;overflow:hidden;border-radius:14px}
+.pcol-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:10px 16px;font-size:14px}
+.pcol-hd b{font-weight:700}
+.pcol-hd span{font-size:12.5px;opacity:.85;font-variant-numeric:tabular-nums}
+.pcol-bd{flex:1;display:flex;flex-direction:column;gap:12px;padding:14px 16px 16px;min-width:0}
+.psub{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.psub b{color:var(--fg2);font-weight:700}
+.pgrid .ta{background:var(--sunken);border-color:transparent}
+.pgrid .ta:focus{background:var(--input-bg);border-color:var(--accent)}
+.pgrid .point{border:0}
+.pgrid .point .ta,.pgrid .hook .ta{background:var(--surface)}
+.pgrid .point .ta:focus,.pgrid .hook .ta:focus{background:var(--input-bg)}
 @media (max-width: 760px){ .bgrid{grid-template-columns:minmax(0,1fr)} .bcard.wide{grid-column:auto}
   .arc-flow{flex-direction:column;align-items:stretch} .arc-flow > .field{flex:none} .arc-ar{width:auto;padding:0;transform:rotate(90deg)} }
 .list-tools{margin-top:40px;padding-top:22px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px 40px;align-items:start}
@@ -530,7 +545,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.66';
+var VERSION = '0.67';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -1383,16 +1398,17 @@ function plotBlock(root, obj, L, withHook){
   var r = function(a,b){ return mins(L,a) + '〜' + mins(L,b) + '分'; };
   function ta(k, cls, label){ return '<textarea id="pl-' + k + '" class="ta fit ' + (cls||'') + '" rows="14" data-bind="' + root + '|plot|' + k + '"' + (label ? ' aria-label="' + label + 'の内容"' : '') + '>' + esc(obj.plot[k]) + '</textarea>'; }
   function point(k, label){ return '<div class="point"><label for="pl-' + k + '">' + ICON.dia + label + '</label><textarea id="pl-' + k + '" class="ta fit2" rows="2" data-bind="' + root + '|plot|' + k + '">' + esc(obj.plot[k]) + '</textarea></div>'; }
-  return '<div class="plot-bar" aria-hidden="true"><div class="b1">第一幕　' + r(0,.25) + '</div><div class="b2">第二幕前半　' + r(.25,.5) + '　／　第二幕後半　' + r(.5,.75) + '</div><div class="b3">第三幕　' + r(.75,1) + '</div></div>' +
-    '<div class="plot-grid">' +
-    '<section class="col" aria-label="第一幕"><div class="col-h narrow-only"><b>第一幕</b><span>' + r(0,.25) + '</span></div>' + ta('a1','grow','第一幕') + point('pp1','プロットポイント1') + '</section>' +
-    '<section class="col" aria-label="第二幕"><div class="act2-in">' +
-      '<div class="half"><div class="col-h narrow-only"><b>第二幕前半</b><span>' + r(.25,.5) + '</span></div>' + ta('a2a','grow','第二幕前半') + point('mp','ミッドポイント') + '</div>' +
-      '<div class="half"><div class="col-h narrow-only"><b>第二幕後半</b><span>' + r(.5,.75) + '</span></div>' + ta('a2b','grow','第二幕後半') + point('pp2','プロットポイント2') + '</div>' +
-    '</div></section>' +
-    '<section class="col" aria-label="第三幕"><div class="col-h narrow-only"><b>第三幕</b><span>' + r(.75,1) + '</span></div>' + ta('a3','grow','第三幕') +
+  /* 幕の色の帯を、それぞれのカードの見出しにする */
+  function hd(cls, name, range){ return '<div class="pcol-hd ' + cls + '"><b>' + name + '</b><span>' + range + '</span></div>'; }
+  return '<div class="plot-grid pgrid">' +
+    '<section class="col pcol" aria-label="第一幕">' + hd('b1','第一幕', r(0,.25)) + '<div class="pcol-bd">' + ta('a1','grow','第一幕') + point('pp1','プロットポイント1') + '</div></section>' +
+    '<section class="col pcol" aria-label="第二幕">' + hd('b2','第二幕', r(.25,.75)) + '<div class="pcol-bd"><div class="act2-in">' +
+      '<div class="half"><div class="psub"><b>前半</b><span>' + r(.25,.5) + '</span></div>' + ta('a2a','grow','第二幕前半') + point('mp','ミッドポイント') + '</div>' +
+      '<div class="half"><div class="psub"><b>後半</b><span>' + r(.5,.75) + '</span></div>' + ta('a2b','grow','第二幕後半') + point('pp2','プロットポイント2') + '</div>' +
+    '</div></div></section>' +
+    '<section class="col pcol" aria-label="第三幕">' + hd('b3','第三幕', r(.75,1)) + '<div class="pcol-bd">' + ta('a3','grow','第三幕') +
       (withHook ? '<div class="hook"><label for="pl-hook">次の話への引き</label><textarea id="pl-hook" class="ta fit2" rows="2" data-bind="' + root + '|plot|hook">' + esc(obj.plot.hook) + '</textarea></div>' : '') +
-    '</section></div>';
+    '</div></section></div>';
 }
 
 /* ---------- boxes ---------- */
@@ -1470,12 +1486,12 @@ function renderSeries(w){
   function chips(k){ var ids = (s[k] && s[k].eps) || []; var list = ids.filter(function(id){ return epNo(w,id) > 0; }).sort(function(a,b){ return epNo(w,a)-epNo(w,b); });
     return '<div class="chips">' + (list.length ? list.map(function(id){ return '<span class="chip">第' + epNo(w,id) + '話</span>'; }).join('') : '<span class="none">まだ割り当てていません</span>') + '</div>'; }
   function act(k, label, extra){
-    return '<section class="col" aria-label="シリーズの' + label + '"><div class="col-h"><b>' + label + '</b></div>' + chips(k) +
+    return '<section class="col pcol" aria-label="シリーズの' + label + '"><div class="pcol-hd b' + k.slice(1) + '"><b>' + label + '</b></div><div class="pcol-bd">' + chips(k) +
       '<button type="button" class="btn" data-act="assign" data-v="' + k + '">話を割り当て</button>' +
-      '<textarea id="sr-' + k + '-text" class="ta grow" rows="8" aria-label="シリーズの' + label + 'の内容" data-bind="W|series|' + k + '|text">' + esc(getPath(s, [k,'text'])) + '</textarea>' + (extra||'') + '</section>';
+      '<textarea id="sr-' + k + '-text" class="ta grow" rows="8" aria-label="シリーズの' + label + 'の内容" data-bind="W|series|' + k + '|text">' + esc(getPath(s, [k,'text'])) + '</textarea>' + (extra||'') + '</div></section>';
   }
   function point(k, label){ return '<div class="point"><label for="sr-' + k + '">' + ICON.dia + label + '</label><textarea id="sr-' + k + '" class="ta" rows="2" data-bind="W|series|' + k + '">' + esc(s[k]) + '</textarea></div>'; }
-  var main = '<div class="series-grid">' + act('a1','第一幕', point('pp1','プロットポイント1')) + act('a2','第二幕', point('mp','ミッドポイント') + point('pp2','プロットポイント2')) + act('a3','第三幕') + '</div>';
+  var main = '<div class="series-grid pgrid">' + act('a1','第一幕', point('pp1','プロットポイント1')) + act('a2','第二幕', point('mp','ミッドポイント') + point('pp2','プロットポイント2')) + act('a3','第三幕') + '</div>';
   return '<main class="page gut"><div class="wrap"><div class="split">' + side + '<div class="side-main">' + main + '</div></div></div></main>';
 }
 
