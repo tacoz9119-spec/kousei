@@ -29,7 +29,7 @@
 <style>
 /* Layout: sticky work header + tab strip, content in a centered 1440px column; plot uses a 1:2:1 grid that mirrors screen time. */
 :root{
-  --bg:#E6E9E9; --surface:#FCFCFB; --surface2:#F5F6F6; --sunken:#ECEEEE; --bar:#F5F6F6;
+  --bg:#F5F6F6; --surface:#FCFCFB; --surface2:#F5F6F6; --sunken:#ECEEEE; --bar:#F5F6F6;
   --fg:#1D2224; --fg2:#3A4244; --muted:#5C6668; --line:#CDD2D3; --line2:#C3C8C9;
   --accent:#1D2224; --accent-strong:#1D2224; --accent-weak:#E6E9E9; --on-accent:#FCFCFB; --mark:#B23F27;
   --act1:#D4D7D8; --act1-fg:#1D2224; --act2:#5C6668; --act2-fg:#FCFCFB; --act3:#AEB4B5; --act3-fg:#1D2224;
@@ -39,7 +39,7 @@
   --f-title:'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#131718; --surface:#1E2325; --surface2:#181D1E; --sunken:#262C2E; --bar:#181D1E;
+  --bg:#131718; --surface:#1E2325; --surface2:#181D1E; --sunken:#262C2E; --bar:#131718;
   --fg:#E7E4DD; --fg2:#C9CCC8; --muted:#98A2A4; --line:#343C3E; --line2:#3E4749;
   --accent:#E7E4DD; --accent-strong:#E7E4DD; --accent-weak:#2A3133; --on-accent:#131718; --mark:#E5835F;
   --act1:#343C3E; --act1-fg:#E7E4DD; --act2:#5C6668; --act2-fg:#F0EEE9; --act3:#454E50; --act3-fg:#E7E4DD;
@@ -47,7 +47,7 @@
   --input-bg:#181D1E; --danger:#F2B8B5; --danger-weak:#3A1F1E; --overlay:rgba(0,0,0,.6); --shadow:rgba(0,0,0,.5);
   color-scheme:dark; } }
 :root[data-theme="dark"]{
-  --bg:#131718; --surface:#1E2325; --surface2:#181D1E; --sunken:#262C2E; --bar:#181D1E;
+  --bg:#131718; --surface:#1E2325; --surface2:#181D1E; --sunken:#262C2E; --bar:#131718;
   --fg:#E7E4DD; --fg2:#C9CCC8; --muted:#98A2A4; --line:#343C3E; --line2:#3E4749;
   --accent:#E7E4DD; --accent-strong:#E7E4DD; --accent-weak:#2A3133; --on-accent:#131718; --mark:#E5835F;
   --act1:#343C3E; --act1-fg:#E7E4DD; --act2:#5C6668; --act2-fg:#F0EEE9; --act3:#454E50; --act3-fg:#E7E4DD;
@@ -463,7 +463,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.53';
+var VERSION = '0.54';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
