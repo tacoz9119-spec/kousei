@@ -455,7 +455,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .people-a .side-main{display:flex;flex-direction:column;gap:16px}
 .phead{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-end}
 .phead .p-nm{flex:1 1 260px;min-width:0}
-.people-a #p-name{height:50px;font-size:20px;letter-spacing:.02em;font-feature-settings:"palt"}
+.people-a #p-name{height:50px}
 .people-a .seg{background:var(--sunken);border-color:transparent;padding:3px;gap:2px}
 .people-a .seg button{min-height:36px}
 .people-a .seg button[aria-pressed="true"]{background:var(--act2);color:var(--act2-fg);font-weight:700}
@@ -510,17 +510,17 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .bhead .fw-title{flex-basis:200px}
 .bhead .fw-M{flex-basis:200px}
 .basic-b #b-title{height:40px}
-.people-a #p-name{height:40px;font-size:19px}
+.people-a #p-name{height:40px}
 .bhead .ta.auto{height:40px;padding-top:9px}
 .basic-b .bhead .readout,.bhead .num .in{height:40px}
 .people-a .f-role .seg{height:40px}
 .people-a .f-role .seg button{min-height:32px}
-.tabs-row{display:flex;align-items:center;gap:12px}
-.tabs-row .tabs{flex:1;min-width:0}
+.tabs-row{display:flex;flex-wrap:wrap;align-items:center;gap:0 12px}
+.tabs-row .tabs{flex:1 0 auto}
+.tab-tools{margin-left:auto;display:flex;align-items:center;gap:10px;padding-bottom:3px}
 .tab-info{flex:none;font-size:13px;color:var(--fg2);white-space:nowrap;font-variant-numeric:tabular-nums}
-.side-all{display:flex;align-items:center;gap:2px}
-.side-all .side-item{flex:1;min-width:0}
-.side-copy-all{width:32px;height:32px}
+.tab-btn{min-height:30px;padding:0 10px;font-size:12.5px}
+.tab-btn svg{width:13px;height:13px}
 .grp-h .grp-copy{margin:-6px -8px -6px auto;width:32px;height:32px;color:inherit}
 .grp-h .grp-copy:hover{background:rgba(127,127,127,.18);color:inherit}
 .grp-h .over-pill + .grp-copy{margin-left:4px}
@@ -601,7 +601,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.72';
+var VERSION = '0.73';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -1272,7 +1272,8 @@ function boxInfo(w){
     ctx = sceneCtx();
   } else return '';
   var all = ctx.list.reduce(function(a, x){ return a + (toInt(x.min, 0, 999) || 0); }, 0);
-  return '<span class="tab-info">シーン ' + ctx.list.length + '件' + (all ? '・合計 ' + all + '分（尺 ' + ctx.length + '分）' : '') + '</span>';
+  return '<div class="tab-tools"><span class="tab-info">シーン ' + ctx.list.length + '件' + (all ? '・合計 ' + all + '分（尺 ' + ctx.length + '分）' : '') + '</span>' +
+    (ctx.list.length ? '<button type="button" class="btn tab-btn" data-act="copy-boxes">' + ICON.dup + 'すべてのシーンをテキストでコピー</button>' : '') + '</div>';
 }
 
 /* ---------- list ---------- */
@@ -1507,8 +1508,7 @@ function boxesBlock(w, ctx){
   list.forEach(function(s){ counts[s.seg] = (counts[s.seg]||0) + 1; });
   if(S.boxFilter !== 'all' && !SEG_BY[S.boxFilter]) S.boxFilter = 'all';
   var side = '<aside class="side narrow compact" aria-label="段で絞り込む">' +
-    '<div class="side-all"><button type="button" class="side-item" data-act="box-filter" data-v="all"' + (S.boxFilter === 'all' ? ' aria-current="true"' : '') + '><span class="mk"></span>すべて<span class="cnt">' + list.length + '</span></button>' +
-    (list.length ? '<button type="button" class="icon-btn side-copy-all" data-act="copy-boxes" aria-label="すべてのシーンをテキストでコピー" title="すべてのシーンをテキストでコピー">' + ICON.dup + '</button>' : '') + '</div>' +
+    '<button type="button" class="side-item" data-act="box-filter" data-v="all"' + (S.boxFilter === 'all' ? ' aria-current="true"' : '') + '><span class="mk"></span>すべて<span class="cnt">' + list.length + '</span></button>' +
     SEGS.map(function(s){ return '<button type="button" class="side-item" data-act="box-filter" data-v="' + s.k + '"' + (S.boxFilter === s.k ? ' aria-current="true"' : '') + '>' + segMark(s) + (s.side || s.label) + '<span class="cnt">' + counts[s.k] + '</span></button>'; }).join('') +
     sidePlot(w, ctx) + '</aside>';
   var groups = S.boxFilter === 'all' ? SEGS.filter(function(s){ return counts[s.k] > 0; }) : [SEG_BY[S.boxFilter]];
