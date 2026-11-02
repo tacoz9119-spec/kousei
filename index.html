@@ -31,8 +31,8 @@
 :root{
   --bg:#F5F6F6; --surface:#FCFCFB; --surface2:#F5F6F6; --sunken:#ECEEEE; --bar:#F5F6F6;
   --fg:#1D2224; --fg2:#3A4244; --muted:#5C6668; --line:#CDD2D3; --line2:#C3C8C9;
-  --accent:#1D2224; --accent-strong:#1D2224; --accent-weak:#E6E9E9; --on-accent:#FCFCFB; --mark:#B23F27;
-  --act1:#D4D7D8; --act1-fg:#1D2224; --act2:#5C6668; --act2-fg:#FCFCFB; --act3:#AEB4B5; --act3-fg:#1D2224;
+  --accent:#1D2224; --accent-strong:#1D2224; --accent-weak:#E6E9E9; --on-accent:#FCFCFB; --mark:#2D5B8C;
+  --act1:#C9D8EA; --act1-fg:#1E4166; --act2:#2D5B8C; --act2-fg:#FFFFFF; --act3:#8FADCF; --act3-fg:#14304F;
   --point-bg:#F8EFEB; --point-line:#E0BCAF; --point-fg:#8E3420; --point-mark:#B23F27;
   --input-bg:#FCFCFB; --danger:#B3261E; --danger-weak:#FBE9E7; --overlay:rgba(29,34,36,.5); --shadow:rgba(29,34,36,.16);
   --f-body:'Noto Sans JP','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',system-ui,sans-serif;
@@ -41,16 +41,16 @@
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#131718; --surface:#1E2325; --surface2:#181D1E; --sunken:#262C2E; --bar:#131718;
   --fg:#E7E4DD; --fg2:#C9CCC8; --muted:#98A2A4; --line:#343C3E; --line2:#3E4749;
-  --accent:#E7E4DD; --accent-strong:#E7E4DD; --accent-weak:#2A3133; --on-accent:#131718; --mark:#E5835F;
-  --act1:#343C3E; --act1-fg:#E7E4DD; --act2:#5C6668; --act2-fg:#F0EEE9; --act3:#454E50; --act3-fg:#E7E4DD;
+  --accent:#E7E4DD; --accent-strong:#E7E4DD; --accent-weak:#2A3133; --on-accent:#131718; --mark:#8DB4E2;
+  --act1:#2A3B52; --act1-fg:#D3E2F4; --act2:#8DB4E2; --act2-fg:#0E1724; --act3:#4B6A90; --act3-fg:#EAF1FA;
   --point-bg:#33241E; --point-line:#6E4A3C; --point-fg:#F0B49C; --point-mark:#E5835F;
   --input-bg:#181D1E; --danger:#F2B8B5; --danger-weak:#3A1F1E; --overlay:rgba(0,0,0,.6); --shadow:rgba(0,0,0,.5);
   color-scheme:dark; } }
 :root[data-theme="dark"]{
   --bg:#131718; --surface:#1E2325; --surface2:#181D1E; --sunken:#262C2E; --bar:#131718;
   --fg:#E7E4DD; --fg2:#C9CCC8; --muted:#98A2A4; --line:#343C3E; --line2:#3E4749;
-  --accent:#E7E4DD; --accent-strong:#E7E4DD; --accent-weak:#2A3133; --on-accent:#131718; --mark:#E5835F;
-  --act1:#343C3E; --act1-fg:#E7E4DD; --act2:#5C6668; --act2-fg:#F0EEE9; --act3:#454E50; --act3-fg:#E7E4DD;
+  --accent:#E7E4DD; --accent-strong:#E7E4DD; --accent-weak:#2A3133; --on-accent:#131718; --mark:#8DB4E2;
+  --act1:#2A3B52; --act1-fg:#D3E2F4; --act2:#8DB4E2; --act2-fg:#0E1724; --act3:#4B6A90; --act3-fg:#EAF1FA;
   --point-bg:#33241E; --point-line:#6E4A3C; --point-fg:#F0B49C; --point-mark:#E5835F;
   --input-bg:#181D1E; --danger:#F2B8B5; --danger-weak:#3A1F1E; --overlay:rgba(0,0,0,.6); --shadow:rgba(0,0,0,.5);
   color-scheme:dark; }
@@ -342,7 +342,7 @@ body{font-size:14px}
 .card-h .no{flex:none;white-space:nowrap}
 .card-h .icon-btn{width:30px;flex:none}
 .card-h .del-gap{margin-left:-2px}
-.card-h .no{margin-right:0}
+.card-h .no{margin-right:10px}
 .grip{width:30px;height:32px;margin-left:-6px;border:none;border-radius:6px;background:transparent;color:var(--muted);display:inline-flex;align-items:center;justify-content:center;flex:none;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
 .side.compact{gap:0}
 .side.compact .side-item{min-height:30px;padding:3px 8px;white-space:nowrap;letter-spacing:-.01em}
@@ -422,6 +422,14 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .hit-t{font-size:14px;color:var(--fg);overflow-wrap:anywhere}
 .hit mark{background:var(--point-bg);color:var(--fg);border-bottom:2px solid var(--point-mark)}
 .narrow-only{display:none}
+/* トップ画面：中身の幅を絞り、同期とバックアップは区切り線の下に控えめに置く */
+.wrap.list-w{max-width:820px}
+.list-tools{margin-top:40px;padding-top:22px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px 40px;align-items:start}
+.list-tools .panel{background:none;border:0;border-radius:0;padding:0;margin:0;gap:10px}
+.list-tools h2{font-size:13px;font-weight:700;color:var(--fg2)}
+.list-tools p{font-size:13px}
+.list-tools .foot{margin-top:0}
+.foot{margin-top:28px}
 /* 箱書きの箱をコンパクトに：文字13px、枠との間隔を縮め、項目名の欄を狭くする */
 .card{padding:6px 8px 8px;gap:5px}
 .cf{grid-template-columns:50px minmax(0,1fr);gap:6px}
@@ -474,7 +482,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.61';
+var VERSION = '0.63';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -517,7 +525,7 @@ var ICON = {
   redo:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>',
   floppy:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>',
   dup:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
-  search:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
+  search:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>',
   grip:'<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="5.5" cy="3.5" r="1.4"/><circle cx="10.5" cy="3.5" r="1.4"/><circle cx="5.5" cy="8" r="1.4"/><circle cx="10.5" cy="8" r="1.4"/><circle cx="5.5" cy="12.5" r="1.4"/><circle cx="10.5" cy="12.5" r="1.4"/></svg>',
   dia:'<svg class="dia" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0l6 6-6 6-6-6z" fill="var(--point-mark)"/></svg>'
 };
@@ -1086,7 +1094,6 @@ function workHeader(w){
     '<button type="button" class="icon-btn" id="btn-redo" data-act="redo" aria-label="やり直す" title="やり直す"' + (H.redo.length ? '' : ' disabled') + '>' + ICON.redo + '</button>' +
     '<span class="status' + (st.err ? ' err' : '') + '" id="status" role="status">' + esc(st.text) + '</span>' +
     '<button type="button" class="btn" data-act="pdf">PDF出力</button>' +
-    '<button type="button" class="btn" data-act="work-settings">作品の設定</button>' +
     '</div><nav class="tabs" aria-label="作品のタブ">' +
     tabs.map(function(t){ return '<button type="button" class="tab" data-act="tab" data-v="' + t[0] + '"' + (S.tab === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</button>'; }).join('') +
     '</nav></div></header>';
@@ -1116,22 +1123,24 @@ function renderList(){
   }
   var backup = '<button type="button" class="btn" data-act="export">バックアップを保存</button>';
   var st = statusInfo();
-  return '<header class="topbar"><div class="wrap gut"><div class="topbar-in">' +
+  return '<header class="topbar"><div class="wrap list-w gut"><div class="topbar-in">' +
     '<div class="brand">構成プランナー</div><span class="spacer"></span>' +
     '<span class="status' + (st.err ? ' err' : '') + '" id="status" role="status">' + esc(st.text) + '</span>' +
     '<button type="button" class="btn" data-act="open-templates">ひな形を編集</button>' +
     '<button type="button" class="btn primary" data-act="new-work">' + ICON.plus + '新しい作品</button>' +
     '</div></div></header>' +
-    '<main class="page gut"><div class="wrap">' +
-    '<div class="list-head"><h1>作品</h1><div class="seg" role="group" aria-label="作品の種類で絞り込む">' +
+    '<main class="page gut"><div class="wrap list-w">' +
+    '<div class="list-head"><h1 class="sr">作品一覧</h1><div class="seg" role="group" aria-label="作品の種類で絞り込む">' +
     filters.map(function(f){ return '<button type="button" data-act="list-filter" data-v="' + f[0] + '" aria-pressed="' + (S.listFilter === f[0]) + '">' + f[1] + '</button>'; }).join('') +
     '</div></div>' + rows +
+    '<div class="list-tools">' +
     syncPanel() +
     '<section class="backup panel" aria-labelledby="bk-h"><h2 id="bk-h">バックアップ</h2>' +
     '<p>すべての作品とひな形を1つのファイルに保存します。アーティファクト版で保存したバックアップも読み込めます。</p>' +
     backup +
     '<label class="btn" for="import-file">バックアップを読み込む</label><input id="import-file" class="sr" type="file" accept=".json,application/json">' +
     '</section>' +
+    '</div>' +
     '<p class="foot">バージョン ' + VERSION + '　保存先：' + (Store.mode === 'db' ? 'この端末と、あなたのアカウント（MacとiPadで同期）' : 'この端末') + '<br>PDFの書体：Noto Sans JP（SIL Open Font License 1.1）</p>' +
     '</div></main>';
 }
@@ -1197,7 +1206,9 @@ function renderBasic(w){
       fieldInput('W|basic|' + f.id, getPath(w, ['basic', f.id]), f, 'b-' + f.id) + '</div>';
   };
   var title = '<div class="field fw-title"><label class="fl" for="b-title">タイトル</label>' + inputFor('W|title', w.title, 'line', 'b-title') + '</div>';
-  var len = '<div class="field f-len"><span class="fl">尺</span><div class="readout">' + esc(lenText) + '</div></div>';
+  var len = w.kind === 'serial'
+    ? '<div class="field f-len"><span class="fl">尺</span><div class="readout">' + esc(lenText) + '</div></div>'
+    : '<div class="field f-len"><label class="fl" for="b-len">尺</label><div class="num"><input id="b-len" class="in" type="text" inputmode="numeric" data-change="w-len" value="' + w.length + '"><span>分</span></div></div>';
   return '<main class="page gut"><div class="wrap">' + flowRows(w.schema.basic || [], cell, [title], [len]) + '</div></main>';
 }
 
@@ -1385,7 +1396,7 @@ function renderEpisodes(w){
 var W_OPTS = [['S','小（160px）'],['M','中（260px）'],['half','半分'],['fill','残りの幅'],['full','全幅']];
 function renderTemplates(){
   var k = S.tplKind, t = S.tplTab, list = S.templates[k][t], isCard = t === 'card';
-  var fixed = t === 'basic' ? [['タイトル','1行目の先頭。残りの幅に広がります'],['尺','1行目の最後。作品の長さが自動で入ります']]
+  var fixed = t === 'basic' ? [['タイトル','1行目の先頭。残りの幅に広がります'],['尺','1行目の最後。作品の長さ（分）を入力します。連続ドラマでは話数が自動で入ります']]
     : t === 'person' ? [['名前','1行目の先頭（中の幅）'],['役割','最初に「改行」した行の先頭']] : [];
   var notes = {
     basic:'「改行」にチェックした項目から新しい行になります。1行目には、タイトル・尺と、先頭から「改行」のない項目が並びます。PDFもこの順で出力します。',
@@ -1441,16 +1452,6 @@ function modalHTML(m){
       len + (m.err ? '<p class="err-text">' + esc(m.err) + '</p>' : '') +
       '<p class="sub-l">記入欄は「' + KINDS[m.kind].label + '」のひな形から作られます。</p>' +
       '<div class="modal-actions"><button type="button" class="btn" data-act="close-modal">キャンセル</button><button type="button" class="btn primary" data-act="nw-create">作成</button></div>';
-  }
-  if(m.type === 'settings'){
-    var w = curWork();
-    return '<h2 id="m-title">作品の設定</h2>' +
-      '<div class="field"><label class="fl" for="ws-title">作品名</label><input id="ws-title" class="in" type="text" value="' + esc(w.title) + '"></div>' +
-      (w.kind === 'serial'
-        ? '<p class="sub-l">話数と各話の長さは「シリーズ構成」で変更できます。</p>'
-        : '<div class="field"><label class="fl" for="ws-len">長さ</label><div class="num"><input id="ws-len" class="in" type="text" inputmode="numeric" value="' + w.length + '"><span>分</span></div></div>') +
-      (m.err ? '<p class="err-text">' + esc(m.err) + '</p>' : '') +
-      '<div class="modal-actions"><button type="button" class="btn" data-act="close-modal">キャンセル</button><button type="button" class="btn primary" data-act="ws-save">保存</button></div>';
   }
   if(m.type === 'epcount'){
     var w2 = curWork();
@@ -1646,6 +1647,13 @@ document.addEventListener('change', function(e){
     var rest = ctx.list.filter(function(s){ return s !== sc; });
     ctx.owner.scenes = sortScenes(rest.concat([sc]));
     ctx.save(); render(); focusSoon('#seg-' + sc.id);
+  } else if(a === 'w-len'){
+    var wl = toInt(el.value, 1, 600);
+    if(!wl){ el.value = w.length; toast('尺は1〜600の数字（分）で入力してください'); return; }
+    el.value = wl;
+    if(wl === w.length) return;
+    checkpoint(); w.length = wl; saveWorkSoon(w);
+    var mt = document.querySelector('.topbar .meta'); if(mt) mt.textContent = '（' + workMeta(w) + '）';
   } else if(a === 'ep-len'){
     var ep = S.episodes[w.id][el.dataset.id], n = toInt(el.value, 1, 600);
     if(!n){ el.value = ep.length; return; }
@@ -1723,14 +1731,6 @@ document.addEventListener('click', function(e){
     case 'sign-in': signInNow(); break;
 
     case 'tab': flushAll(); S.tab = v; render(); window.scrollTo(0,0); break;
-    case 'work-settings': openModal({type:'settings'}); break;
-    case 'ws-save':
-      var sv = readModal(['ws-title','ws-len']);
-      var L = w.kind !== 'serial' ? toInt(sv['ws-len'], 1, 600) : null;
-      if(w.kind !== 'serial' && !L){ S.modal.err = '長さを分単位の数字で入力してください。'; renderModal(false); return; }
-      checkpoint(); if(L) w.length = L;
-      w.title = (sv['ws-title'] || '').trim() || '無題の作品';
-      saveWorkSoon(w); closeModal(); render(); break;
 
     case 'pick-person': S.personId = id; render(); break;
     case 'person-up': case 'person-down':
