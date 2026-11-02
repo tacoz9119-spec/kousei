@@ -458,7 +458,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .people-a #p-name{height:50px;font-size:20px;letter-spacing:.02em;font-feature-settings:"palt"}
 .people-a .seg{background:var(--sunken);border-color:transparent;padding:3px;gap:2px}
 .people-a .seg button{min-height:36px}
-.people-a .seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.14)}
+.people-a .seg button[aria-pressed="true"]{background:var(--act2);color:var(--act2-fg);font-weight:700}
 .bcard-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
 .bcard-top .bcard-h{margin:0}
 .bcard-top .link-btn{min-height:28px;text-decoration:underline}
@@ -486,6 +486,18 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .grp-h.b1 span,.grp-h.b2 span,.grp-h.b3 span{color:inherit;opacity:.85}
 .grp-h.pt{background:var(--point-bg);color:var(--point-fg);gap:8px}
 .grp-h.pt span{color:inherit;opacity:.85}
+/* カードの見出しを、プロットの第一幕と同じ色の帯にする */
+.bcard{padding:0 0 20px;overflow:hidden}
+.bcard > .frow,.bcard > .arc-flow,.bcard > p{margin-left:20px;margin-right:20px}
+.bcard > .bcard-h,.bcard-top{background:var(--act1);color:var(--act1-fg)}
+.bcard > .bcard-h{margin:0 0 14px;padding:10px 20px;color:var(--act1-fg)}
+.bcard-h::before{display:none}
+.bcard-top{margin:0 0 14px;padding:6px 20px}
+.bcard-top .bcard-h{padding:4px 0;color:inherit}
+.bcard-top .link-btn{color:inherit;opacity:.8}
+.bcard-top .link-btn:hover{opacity:1}
+.bcard > .bcard-top:only-child{margin-bottom:0}
+.bcard:has(> .bcard-top:only-child){padding-bottom:0}
 .grp-h .over-pill{margin-left:auto;background:var(--danger);color:var(--on-accent);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700;white-space:nowrap}
 .cards .card{border-radius:14px}
 .cards .in,.cards .ta,.cards .sel{background:var(--sunken);border-color:transparent}
@@ -563,7 +575,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.68';
+var VERSION = '0.69';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
