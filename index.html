@@ -259,7 +259,7 @@ button{cursor:pointer}
 /* sizing: compact controls matched to 脚本エディタ (buttons and tabs 34px / 13px, body 14px, inputs 15px) */
 body{font-size:14px}
 .topbar-in{padding-block:10px;gap:8px 14px}
-.brand{font-size:19px;font-family:var(--f-body);font-weight:500}
+.brand{font-size:18px;font-family:var(--f-body);font-weight:400;letter-spacing:.02em;font-feature-settings:"palt"}
 .wtitle{font-size:18px;font-family:var(--f-body);font-weight:500}
 .work-open .wt{font-family:var(--f-body);font-weight:500}
 .meta{margin-left:-8px}
@@ -463,7 +463,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.54';
+var VERSION = '0.55';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
