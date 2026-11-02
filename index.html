@@ -445,7 +445,33 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .h-tag{font-weight:700;color:var(--mark)}
 .tpl-adds{display:flex;gap:12px;flex-wrap:wrap}
 .tpl-adds .add-dash{flex:1 1 200px}
-@media (max-width: 760px){ .bgrid{grid-template-columns:minmax(0,1fr)} .bcard.wide{grid-column:auto} }
+/* 人物：名前と役割を上に、プロフィールとアークをカードに */
+.people-a .split{gap:20px}
+.people-a .side{background:var(--surface);border-radius:14px;width:240px}
+.side-top{display:flex;align-items:baseline;justify-content:space-between;padding:2px 8px 8px;font-size:13px;color:var(--muted)}
+.side-top b{font-size:14px;color:var(--fg)}
+.people-a .side-item[aria-current]{background:var(--accent-weak)}
+.side-copy{align-self:center;min-height:30px;font-size:12.5px;color:var(--muted);margin-top:2px}
+.people-a .side-main{display:flex;flex-direction:column;gap:16px}
+.phead{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-end}
+.phead .p-nm{flex:1 1 260px;min-width:0}
+.people-a #p-name{height:50px;font-size:20px;letter-spacing:.02em;font-feature-settings:"palt"}
+.people-a .seg{background:var(--sunken);border-color:transparent;padding:3px;gap:2px}
+.people-a .seg button{min-height:36px}
+.people-a .seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.14)}
+.bcard-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.bcard-top .bcard-h{margin:0}
+.bcard-top .link-btn{min-height:28px;text-decoration:underline}
+.arc-flow{display:flex;align-items:stretch;gap:8px}
+.arc-flow > .field{flex:1 1 0;min-width:0;display:flex;flex-direction:column}
+.arc-flow > .field .ta{flex:1 1 auto}
+.arc-ar{flex:none;width:22px;padding-top:36px;display:flex;justify-content:center;color:var(--mark)}
+.arc-flow.tall{flex-direction:column;align-items:stretch}
+.arc-flow.tall > .field{flex:none}
+.arc-flow.tall .arc-ar{width:auto;padding:0;transform:rotate(90deg)}
+.p-del{text-decoration:underline;padding:0}
+@media (max-width: 760px){ .bgrid{grid-template-columns:minmax(0,1fr)} .bcard.wide{grid-column:auto}
+  .arc-flow{flex-direction:column;align-items:stretch} .arc-flow > .field{flex:none} .arc-ar{width:auto;padding:0;transform:rotate(90deg)} }
 .list-tools{margin-top:40px;padding-top:22px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px 40px;align-items:start}
 .list-tools .panel{background:none;border:0;border-radius:0;padding:0;margin:0;gap:10px}
 .list-tools h2{font-size:13px;font-weight:700;color:var(--fg2)}
@@ -504,7 +530,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.65';
+var VERSION = '0.66';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -549,6 +575,7 @@ var ICON = {
   dup:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
   search:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>',
   grip:'<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="5.5" cy="3.5" r="1.4"/><circle cx="10.5" cy="3.5" r="1.4"/><circle cx="5.5" cy="8" r="1.4"/><circle cx="10.5" cy="8" r="1.4"/><circle cx="5.5" cy="12.5" r="1.4"/><circle cx="10.5" cy="12.5" r="1.4"/></svg>',
+  arrow:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
   dia:'<svg class="dia" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0l6 6-6 6-6-6z" fill="var(--point-mark)"/></svg>'
 };
 
@@ -594,13 +621,14 @@ function migLayout(sch){
 function defaultTemplate(){
   var t = {
     basic:[fld('ジャンル',0), fld('ログライン',1), fld('テーマ',1), fld('時代',0), fld('場所（舞台）',0), fld('主人公の目的',1), fld('主人公の障害',1), fld('メモ',1), fld('類似作品・参考にした作品',1)],
-    person:[fld('年齢',0), fld('職業',0), fld('目的',0), fld('経歴',1), fld('ほかの人物との関係',1)],
+    person:[fld('年齢',0), fld('職業',0), fld('目的',0), fld('経歴',1), fld('ほかの人物との関係',1)],  /* 目的と経歴の順は migPerson12 で入れ替える */
     arc:[fld('始まりの状態',1), fld('変化のきっかけ',1), fld('終わりの状態',1)],
     card:[fld('場面',0), fld('登場人物',0), fld('出来事',1), fld('セリフ',1)]
   };
   migLayout(t);
   migHeads(t.basic);
   migBasic11(t);
+  migPerson12(t);
   return t;
 }
 function migPerson(list){
@@ -633,6 +661,12 @@ function migEra(list, values){
     if(v.indexOf('\n') < 0 && parts.length === 2 && parts[0].trim() && parts[1].trim()){ values[era.id] = parts[0].trim(); values[place.id] = parts[1].trim(); }
   }
 }
+/* 人物：経歴を目的の前に置く */
+function migPerson12(sch){
+  var l = sch && sch.person; if(!l) return;
+  var a = l.findIndex(function(f){ return f.label === '目的'; }), b = l.findIndex(function(f){ return f.label === '経歴'; });
+  if(a >= 0 && b > a){ var x = l[a]; l[a] = l[b]; l[b] = x; }
+}
 /* 基本設定の項目名を、見出しの中で通じる短い名前にする。「地（場所）」は初期の行数を5行にする */
 var BASIC_RENAME = {'時代':'天（時代）', '場所（舞台）':'地（場所）', '主人公の目的':'目的', '主人公の障害':'障害'};
 function migBasic11(sch){
@@ -647,7 +681,7 @@ function migMemoRows(sch){
 }
 function migrateTemplates(){
   var t = S.templates, ch = false;
-  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10','mig11'].forEach(function(k){ t[k] = true; }); return true; }
+  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10','mig11','mig12'].forEach(function(k){ t[k] = true; }); return true; }
   if(t.movie && !t.mig5){ t.single = t.movie; delete t.movie; delete t.other; ch = true; }
   if(!t.mig5){ t.mig5 = true; ch = true; }
   if(!t.single){ t.single = defaultTemplate(); ch = true; }
@@ -662,6 +696,7 @@ function migrateTemplates(){
   if(!t.mig9){ KIND_ORDER.forEach(function(k){ migMemoRows(t[k]); }); t.mig9 = true; ch = true; }
   if(!t.mig10){ KIND_ORDER.forEach(function(k){ migHeads(t[k].basic); }); t.mig10 = true; ch = true; }
   if(!t.mig11){ KIND_ORDER.forEach(function(k){ migBasic11(t[k]); }); t.mig11 = true; ch = true; }
+  if(!t.mig12){ KIND_ORDER.forEach(function(k){ migPerson12(t[k]); }); t.mig12 = true; ch = true; }
   return ch;
 }
 function migrateWork(w){
@@ -677,6 +712,7 @@ function migrateWork(w){
   if(!w.mig9){ migMemoRows(w.schema); w.mig9 = true; ch = true; }
   if(!w.mig10){ migHeads(w.schema.basic); w.mig10 = true; ch = true; }
   if(!w.mig11){ migBasic11(w.schema); w.mig11 = true; ch = true; }
+  if(!w.mig12){ migPerson12(w.schema); w.mig12 = true; ch = true; }
   return ch;
 }
 function defaultTemplates(){ var t = {}; KIND_ORDER.forEach(function(k){ t[k] = defaultTemplate(); }); return t; }
@@ -1302,9 +1338,9 @@ function renderPeople(w){
       '<button type="button" class="icon-btn" data-act="person-up" data-id="' + p.id + '" aria-label="' + nm + 'を上へ"' + (canUp ? '' : ' disabled') + '>' + ICON.up + '</button>' +
       '<button type="button" class="icon-btn" data-act="person-down" data-id="' + p.id + '" aria-label="' + nm + 'を下へ"' + (canDown ? '' : ' disabled') + '>' + ICON.down + '</button></div></div>';
   }).join('');
-  var side = '<aside class="side narrow" aria-label="人物の一覧"><div class="side-note">' + w.people.length + '人</div>' + list +
+  var side = '<aside class="side narrow" aria-label="人物の一覧"><div class="side-top"><b>人物</b><span>' + w.people.length + '人</span></div>' + list +
     '<button type="button" class="add-dash" data-act="add-person" style="margin-top:6px">' + ICON.plus + '人物を追加</button>' +
-    (w.people.length ? '<button type="button" class="btn" data-act="copy-people" style="margin-top:6px">一覧をコピー</button>' : '') + '</aside>';
+    (w.people.length ? '<button type="button" class="btn quiet side-copy" data-act="copy-people">一覧をコピー</button>' : '') + '</aside>';
   var main;
   var p = w.people.find(function(x){ return x.id === S.personId; });
   if(!p){
@@ -1312,28 +1348,34 @@ function renderPeople(w){
   } else {
     var arc;
     if(p.arc){
-      var arcCell = function(f){
-        return '<div class="field ' + fwClass(f.w) + '"><label class="sub-l" for="a-' + p.id + '-' + f.id + '">' + esc(f.label) + '</label>' +
+      /* アークの欄は、始まりから終わりへ矢印でつないで横に並べる（5つ以上のときと狭い画面では縦） */
+      var arcF = w.schema.arc || [];
+      var arcCells = arcF.map(function(f){
+        return '<div class="field"><label class="fl" for="a-' + p.id + '-' + f.id + '">' + esc(f.label) + '</label>' +
           fieldInput('P:' + p.id + '|arc|' + f.id, getPath(p, ['arc', f.id]), f, 'a-' + p.id + '-' + f.id) + '</div>';
-      };
-      arc = '<div class="field" role="group" aria-labelledby="arc-h-' + p.id + '"><div class="arc-head"><span id="arc-h-' + p.id + '" class="fl">アーク</span>' +
+      }).join('<div class="arc-ar">' + ICON.arrow + '</div>');
+      arc = '<section class="bcard" aria-labelledby="arc-h-' + p.id + '"><div class="bcard-top"><h2 class="bcard-h" id="arc-h-' + p.id + '">アーク</h2>' +
         '<button type="button" class="link-btn" data-act="remove-arc" data-id="' + p.id + '">アークを外す</button></div>' +
-        '<div class="arc-box">' + flowRows(w.schema.arc || [], arcCell) + '</div></div>';
+        (arcF.length ? '<div class="arc-flow' + (arcF.length > 4 ? ' tall' : '') + '">' + arcCells + '</div>' : '<p class="sub-l">アークの項目がありません。「ひな形を編集」で追加できます。</p>') + '</section>';
     } else {
-      arc = '<div class="field"><span class="fl">アーク</span><div><button type="button" class="btn" data-act="add-arc" data-id="' + p.id + '">' + ICON.plus + 'アークを追加</button></div></div>';
+      arc = '<section class="bcard" aria-labelledby="arc-h-' + p.id + '"><div class="bcard-top"><h2 class="bcard-h" id="arc-h-' + p.id + '">アーク</h2>' +
+        '<button type="button" class="btn" data-act="add-arc" data-id="' + p.id + '">' + ICON.plus + 'アークを追加</button></div></section>';
     }
     var cell = function(f){
       return '<div class="field ' + fwClass(f.w) + '"><label class="fl" for="pv-' + f.id + '">' + esc(f.label) + '</label>' +
         fieldInput('P:' + p.id + '|values|' + f.id, getPath(p, ['values', f.id]), f, 'pv-' + f.id) + '</div>';
     };
-    var nameCell = '<div class="field fw-M"><label class="fl" for="p-name">名前</label>' + inputFor('P:' + p.id + '|name', p.name, 'line', 'p-name') + '</div>';
+    var nameCell = '<div class="field p-nm"><label class="fl" for="p-name">名前</label>' + inputFor('P:' + p.id + '|name', p.name, 'line', 'p-name') + '</div>';
     var roleCell = '<div class="field f-role"><span class="fl" id="role-h">役割</span><div class="seg" role="group" aria-labelledby="role-h">' +
       ROLES.map(function(r){ return '<button type="button" data-act="set-role" data-id="' + p.id + '" data-v="' + r[0] + '" aria-pressed="' + ((p.role || '') === r[0]) + '">' + r[1] + '</button>'; }).join('') +
       '</div></div>';
-    main = '<div class="stack"><div>' + flowRows(w.schema.person || [], cell, [nameCell], null, roleCell) + '</div>' + arc +
-      '<div style="padding-top:12px;border-top:1px solid var(--line)"><button type="button" class="btn" data-act="delete-person" data-id="' + p.id + '">この人物を削除</button></div></div>';
+    var pf = w.schema.person || [];
+    main = '<div class="phead">' + nameCell + roleCell + '</div>' +
+      '<section class="bcard" aria-labelledby="pf-h-' + p.id + '"><h2 class="bcard-h" id="pf-h-' + p.id + '">プロフィール</h2>' +
+      (pf.length ? flowRows(pf, cell) : '<p class="sub-l">プロフィールの項目がありません。「ひな形を編集」で追加できます。</p>') + '</section>' +
+      arc + '<div><button type="button" class="link-btn p-del" data-act="delete-person" data-id="' + p.id + '">この人物を削除</button></div>';
   }
-  return '<main class="page gut"><div class="wrap"><div class="split">' + side + '<div class="side-main">' + main + '</div></div></div></main>';
+  return '<main class="page gut basic-b people-a"><div class="wrap"><div class="split">' + side + '<div class="side-main">' + main + '</div></div></div></main>';
 }
 
 /* ---------- plot ---------- */
@@ -1641,7 +1683,7 @@ function createWork(){
   var w = {v:1, id:'w-' + uid(), title:m.title.trim() || '無題の作品', kind:m.kind, createdAt:Date.now(), updatedAt:Date.now(),
     schema:tpl, basic:{}, people:[]};
   /* ひな形は最新の形なので、古い形を直す処理は不要（済みの印を付けておく） */
-  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11'].forEach(function(k){ w[k] = true; });
+  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11','mig12'].forEach(function(k){ w[k] = true; });
   if(m.kind === 'serial'){
     var n = toInt(m.eps, 1, 100), base = toInt(m.base, 1, 600);
     if(!n || !base){ m.err = '話数と基本の1話の長さを数字で入力してください。'; renderModal(false); return; }
