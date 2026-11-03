@@ -558,6 +558,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .card-h .icon-btn{width:28px}
 .grp-h .over-pill{margin-left:auto;background:var(--danger);color:var(--on-accent);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700;white-space:nowrap}
 .grp-h .over-pill.short{background:var(--short)}
+.grp-h h2 small{font-size:12px;font-weight:400;opacity:.85}
 /* シーンのない段：追加ボタンを横いっぱいの細い枠にする */
 .card-add.first{grid-column:1/-1;min-height:48px}
 .cards .card{border-radius:14px}
@@ -636,7 +637,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.87';
+var VERSION = '0.89';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -1767,17 +1768,20 @@ function boxesBlock(w, ctx){
   var groups = S.boxFilter === 'all' ? SEGS : [SEG_BY[S.boxFilter]];
   var body = groups.map(function(seg){
     var cards = list.map(function(sc, idx){ return {sc:sc, n:idx+1}; }).filter(function(x){ return x.sc.seg === seg.k; });
-    var range = seg.point ? '' : mins(L, seg.from) + '〜' + mins(L, seg.to) + '分';
+    /* 見出しのかっこ書き：幕は目安の範囲、PP・MPはどの幕に含めるか */
+    var range = seg.point ? (PP_ACT[seg.k] ? '（' + SEG_BY[PP_ACT[seg.k]].label + 'に含む）' : '') : '（' + mins(L, seg.from) + '〜' + mins(L, seg.to) + '分）';
     var sum = segSum(seg.k);
     var segLen = seg.point ? 0 : mins(L, seg.to) - mins(L, seg.from);
     /* プロットポイントの分数は、ぶら下がっている幕の合計に入れる（PP1→第一幕、MP→第二幕前半、PP2→第二幕後半） */
     var child = ACT_PP[seg.k], ppSum = child ? segSum(child) : 0, total = sum + ppSum, parent = PP_ACT[seg.k], tot = '';
-    if(seg.point) tot = sum ? '<span>シーン計 ' + sum + '分' + (parent ? '（' + SEG_BY[parent].label + 'に含めて計算）' : '') + '</span>' : '';
-    else tot = total ? '<span>シーン計 ' + total + '分' + (ppSum ? '（うち' + segName(SEG_BY[child]) + ' ' + ppSum + '分）' : '') + '</span>' : '';
+    /* 件数も分数と同じ範囲で数える（幕の帯はぶら下がっているプロットポイントのシーンも含む） */
+    var num = counts[seg.k] + (child ? counts[child] : 0);
+    /* PP・MPの帯には件数と分数を出さない（ぶら下がっている幕の帯にまとめて出す） */
+    if(num && !seg.point) tot = '<span>シーン ' + num + '件' + (total ? '・計 ' + total + '分' : '') + (child && counts[child] ? '（' + segName(SEG_BY[child]) + 'を含む）' : '') + '</span>';
     /* 目安との差：長いときは赤、短いときは黄土色（目安を1つも入れていない段には出さない） */
     var over = seg.point || !total ? '' : total > segLen ? '<b class="over-pill">' + (total - segLen) + '分長い</b>'
       : total < segLen ? '<b class="over-pill short">' + (segLen - total) + '分短い</b>' : '';
-    return '<section class="grp" data-seg="' + seg.k + '" aria-label="' + seg.label + '"><div class="grp-h ' + segBand(seg) + '">' + (seg.point ? ICON.dia : '') + '<h2>' + segName(seg) + '</h2>' + (range ? '<span>' + range + '</span>' : '') + tot + over +
+    return '<section class="grp" data-seg="' + seg.k + '" aria-label="' + seg.label + '"><div class="grp-h ' + segBand(seg) + '">' + (seg.point ? ICON.dia : '') + '<h2>' + segName(seg) + (range ? '<small>' + range + '</small>' : '') + '</h2>' + tot + over +
       (cards.length ? '<button type="button" class="icon-btn grp-copy" data-act="copy-grp" data-v="' + seg.k + '" aria-label="' + segName(seg) + 'のシーンをコピー" title="' + segName(seg) + 'のシーンをコピー">' + ICON.dup + '</button>' : '') + '</div><div class="cards">' +
       cards.map(function(x){ return cardHTML(x.sc, x.n, schema, w); }).join('') +
       '<button type="button" class="add-dash card-add' + (cards.length ? '' : ' first') + '" data-act="add-scene" data-v="' + seg.k + '">' + ICON.plus + segName(seg) + 'にシーンを追加</button>' +
