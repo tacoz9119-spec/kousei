@@ -332,6 +332,7 @@ body{font-size:14px}
 .grow{min-height:220px}
 .plot-grid .grow{min-height:354px}
 .ta.fit,.ta.fit2{resize:none;overflow:hidden}
+.ta.fit,.ta.fit2:not(.side-ta){padding-top:5px;padding-bottom:5px}
 .box-top p{font-size:13px}
 .grp-h h2{font-size:15px}
 .grp-h span{font-size:12px}
@@ -396,7 +397,8 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .fw-half{flex:0 0 calc(50% - 12px);min-width:0}
 .fw-fill{flex:1 1 200px;min-width:0}
 .fw-full{flex:1 1 100%;min-width:0}
-.ta.auto{resize:none;overflow:hidden;line-height:1.5;padding:7px 10px;min-height:0;height:calc(var(--rows,1) * 1.5em + 16px)}
+/* 1行の入力欄は35px（文字15px・行の高さ1.5倍・上下の余白5px）。基本設定・人物・プロットでそろえる */
+.ta.auto{resize:none;overflow:hidden;line-height:1.5;padding:5px 10px;min-height:0;height:calc(var(--rows,1) * 1.5em + 12.5px)}
 .cf .ta.auto{padding:6px 9px;min-height:0;height:calc(var(--rows,1) * 1.5em + 14px)}
 .arc-box{display:block}
 .cf-in{min-width:0}
@@ -512,11 +514,11 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .bhead .f-len{min-width:140px;flex:0 0 auto}
 .bhead .fw-title{flex-basis:200px}
 .bhead .fw-M{flex-basis:200px}
-.basic-b #b-title{height:40px}
-.people-a #p-name{height:40px}
-.bhead .ta.auto{height:40px;padding-top:9px}
-.basic-b .bhead .readout,.bhead .num .in{height:40px}
-.people-a .f-role .seg{height:40px}
+.basic-b #b-title{height:35px}
+.people-a #p-name{height:35px}
+.bhead .ta.auto{height:35px}
+.basic-b .bhead .readout,.bhead .num .in{height:35px}
+.people-a .f-role .seg{height:35px}
 .people-a .f-role .seg button{min-height:32px}
 .tabs-row{display:flex;flex-wrap:wrap;align-items:center;gap:0 12px}
 .tabs-row .tabs{flex:1 0 auto}
@@ -537,7 +539,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .side.narrow.compact{width:232px}
 @media (max-width: 980px){ .side.narrow.compact{width:auto} }
 /* 役割：脚本エディタの「柱・ト書き・セリフ」と同じ形のボタン */
-.people-a .f-role .seg{width:auto;align-self:flex-start;height:40px;padding:0;gap:0;background:var(--surface);border:1px solid var(--line2);border-radius:8px;overflow:hidden}
+.people-a .f-role .seg{width:auto;align-self:flex-start;height:35px;padding:0;gap:0;background:var(--surface);border:1px solid var(--line2);border-radius:8px;overflow:hidden}
 .people-a .f-role .seg button{min-height:0;height:100%;border-radius:0;padding:0 16px;background:transparent;color:var(--fg);font-weight:400;box-shadow:none}
 .people-a .f-role .seg button + button{border-left:1px solid var(--line2)}
 .people-a .f-role .seg button[aria-pressed="true"]{background:var(--act2);color:var(--act2-fg);font-weight:700}
@@ -640,7 +642,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.90';
+var VERSION = '0.91';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
