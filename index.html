@@ -482,7 +482,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .mk .dia{width:10px;height:10px}
 .side-ta{background:var(--sunken);border-color:transparent}
 .side-ta:focus{background:var(--input-bg);border-color:var(--accent)}
-.grp-h.b1,.grp-h.b2,.grp-h.b3,.grp-h.pt{align-items:center;padding:8px 14px;border-radius:10px;margin-bottom:12px}
+.grp-h.b1,.grp-h.b2,.grp-h.b3,.grp-h.pt{align-items:center;padding:6px 14px;border-radius:10px;margin-bottom:12px}
 .grp-h.b1 span,.grp-h.b2 span,.grp-h.b3 span{color:inherit;opacity:.85}
 .grp-h.pt{background:var(--point-bg);color:var(--point-fg);gap:8px}
 .grp-h.pt span{color:inherit;opacity:.85}
@@ -490,10 +490,13 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .bcard{padding:0 0 20px;overflow:hidden}
 .bcard > .frow,.bcard > .arc-flow,.bcard > p{margin-left:20px;margin-right:20px}
 .bcard > .bcard-h,.bcard-top{background:var(--act1);color:var(--act1-fg)}
-.bcard > .bcard-h{margin:0 0 14px;padding:10px 20px;color:var(--act1-fg)}
+.bcard > .bcard-h{margin:0 0 14px;padding:7px 20px;color:var(--act1-fg)}
 .bcard-h::before{display:none}
-.bcard-top{margin:0 0 14px;padding:6px 20px}
-.bcard-top .bcard-h{padding:4px 0;color:inherit}
+.bcard-top{margin:0 0 14px;padding:4px 20px;min-height:36px;box-sizing:border-box}
+/* 見出しのバー（高さ36px）に収まるよう、アークのバーのボタンは小さめにする */
+.bcard-top .btn{min-height:28px;padding:0 10px;font-size:12px;gap:4px}
+.bcard-top .btn svg{width:14px;height:14px}
+.bcard-top .bcard-h{padding:0;color:inherit}
 .bcard-top .link-btn{color:inherit;opacity:.8}
 .bcard-top .link-btn:hover{opacity:1}
 .bcard > .bcard-top:only-child{margin-bottom:0}
@@ -501,7 +504,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 /* 基本設定のタイトル・ジャンル・尺、人物の名前・役割も、見出しを青い帯にした角丸の枠にする */
 .basic-b .bhead .frow,.phead{align-items:stretch}
 .bhead .field,.phead .field{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;gap:0;padding-bottom:14px}
-.bhead .field > .fl,.phead .field > .fl{display:block;background:var(--act1);color:var(--act1-fg);padding:10px 20px;font-size:14px;font-weight:700}
+.bhead .field > .fl,.phead .field > .fl{display:block;background:var(--act1);color:var(--act1-fg);padding:7px 20px;font-size:14px;font-weight:700}
 .bhead .field > :not(.fl),.phead .field > :not(.fl){margin:14px 20px 0;width:calc(100% - 40px);box-sizing:border-box}
 .basic-b .bhead{margin-bottom:16px}
 .basic-b .bhead .frow,.phead{gap:16px}
@@ -521,13 +524,13 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .tab-info{flex:none;font-size:13px;color:var(--fg2);white-space:nowrap;font-variant-numeric:tabular-nums}
 .tab-btn{min-height:30px;padding:0 10px;font-size:12.5px}
 .tab-btn svg{width:13px;height:13px}
-.grp-h .grp-copy{margin:-6px -8px -6px auto;width:32px;height:32px;color:inherit}
+.grp-h .grp-copy{margin:-8px -8px -8px auto;width:32px;height:32px;color:inherit}
 .grp-h .grp-copy:hover{background:rgba(127,127,127,.18);color:inherit}
 .grp-h .over-pill + .grp-copy{margin-left:4px}
 /* 人物・箱書きの左パネル：見出しを灰色の帯にする（選ぶための一覧なので、書き込むカードの青と分ける） */
 .people-a .side,.side.compact{padding:0 0 10px;overflow:hidden;gap:2px}
 .people-a .side > :not(.side-top),.side.compact > :not(.side-top){margin-left:10px;margin-right:10px}
-.side .side-top{background:var(--sunken);color:var(--fg);padding:10px 16px;margin:0 0 8px;font-size:14px}
+.side .side-top{background:var(--sunken);color:var(--fg);padding:7px 16px;margin:0 0 8px;font-size:14px}
 .side .side-top b{color:inherit}
 .side .side-top span{color:var(--muted);font-size:12.5px}
 .side .add-dash{width:auto}
@@ -566,7 +569,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .cards .in:focus,.cards .ta:focus,.cards .sel:focus{background:var(--input-bg);border-color:var(--accent)}
 /* プロット・シリーズ構成：幕の色の見出しを付けたカード */
 .pcol{padding:0;gap:0;overflow:hidden;border-radius:14px}
-.pcol-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:10px 16px;font-size:14px}
+.pcol-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:7px 16px;font-size:14px}
 .pcol-hd b{font-weight:700}
 .pcol-hd span{font-size:12.5px;opacity:.85;font-variant-numeric:tabular-nums}
 .pcol-bd{flex:1;display:flex;flex-direction:column;gap:12px;padding:14px 16px 16px;min-width:0}
@@ -637,7 +640,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.89';
+var VERSION = '0.90';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
