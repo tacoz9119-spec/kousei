@@ -339,7 +339,7 @@ body{font-size:14px}
 .cards{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
 .card{padding:8px 10px 12px;gap:8px}
 .card-h .no{font-size:13px}
-.card-h .sel{height:30px;font-size:12px;flex:0 0 auto;width:auto;min-width:0;max-width:none;padding:0 4px 0 8px}
+.card-h .sel{height:26px;font-size:12px;flex:0 0 auto;width:auto;min-width:0;max-width:none;padding:0 4px 0 8px}
 .card-h .no{flex:none;white-space:nowrap}
 .card-h .icon-btn{width:30px;flex:none}
 .card-h .del-gap{margin-left:-2px}
@@ -593,11 +593,12 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 /* 箱書きの箱をコンパクトに：文字13px、枠との間隔を縮め、項目名の欄を狭くする */
 .card{padding:6px 8px 8px;gap:5px}
 .cf{grid-template-columns:50px minmax(0,1fr);gap:6px}
-.cf label{font-size:12px;padding-top:5px;white-space:nowrap}
-.cf .in{height:30px;font-size:13px;padding:0 6px}
-.cf .ta,.cf .ta.auto{font-size:13px;padding:4px 6px;min-height:0;height:calc(var(--rows,1) * 1.5em + 10px)}
-.cf .in.min-in{width:56px;height:28px}
-.cf label[for^="m-"]{padding-top:4px}
+.cf label{font-size:12px;padding-top:3px;white-space:nowrap}
+/* 箱の入力欄は26px（文字13px・行の高さ1.5倍・上下の余白2px） */
+.cf .in{height:26px;font-size:13px;padding:0 6px}
+.cf .ta,.cf .ta.auto{font-size:13px;padding:2px 6px;min-height:0;height:calc(var(--rows,1) * 1.5em + 6.5px)}
+.cf .in.min-in{width:56px;height:26px}
+.cf label[for^="m-"]{padding-top:3px}
 .num-row .spacer{flex:1}
 .card-del{width:30px;height:28px;margin-right:-2px}
 .picks{margin-top:4px}
@@ -642,7 +643,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.91';
+var VERSION = '0.92';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
