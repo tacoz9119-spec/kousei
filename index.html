@@ -558,6 +558,8 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .card-h .icon-btn{width:28px}
 .grp-h .over-pill{margin-left:auto;background:var(--danger);color:var(--on-accent);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700;white-space:nowrap}
 .grp-h .over-pill.short{background:var(--short)}
+/* シーンのない段：追加ボタンを横いっぱいの細い枠にする */
+.card-add.first{grid-column:1/-1;min-height:48px}
 .cards .card{border-radius:14px}
 .cards .in,.cards .ta,.cards .sel{background:var(--sunken);border-color:transparent}
 .cards .in:focus,.cards .ta:focus,.cards .sel:focus{background:var(--input-bg);border-color:var(--accent)}
@@ -634,7 +636,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.82';
+var VERSION = '0.87';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -651,6 +653,8 @@ var SEGS = [
 ];
 var SEG_INDEX = {}; SEGS.forEach(function(s,i){ SEG_INDEX[s.k]=i; });
 var SEG_BY = {}; SEGS.forEach(function(s){ SEG_BY[s.k]=s; });
+/* 箱書きの本体（帯・コピー・追加ボタン）では略称を使う。左パネル・プロット欄・PDFは正式名のまま */
+function segName(s){ return s.short || s.label; }
 var ACTS = [['a1','第一幕'],['a2','第二幕'],['a3','第三幕']];
 var TPL_TABS = [['basic','基本設定'],['person','人物'],['arc','アーク'],['card','箱書きカード']];
 var LOCAL_KEY = 'kousei-planner-v1';
@@ -1517,8 +1521,8 @@ function boxInfo(w){
     ctx = sceneCtx();
   } else return '';
   var all = ctx.list.reduce(function(a, x){ return a + (toInt(x.min, 0, 999) || 0); }, 0);
-  return '<div class="tab-tools"><span class="tab-info">シーン ' + ctx.list.length + '件' + (all ? '・合計 ' + all + '分（尺 ' + ctx.length + '分）' : '') + '</span>' +
-    (ctx.list.length ? '<button type="button" class="btn tab-btn" data-act="copy-boxes">' + ICON.dup + 'すべてのシーンをテキストでコピー</button>' : '') + '</div>';
+  return '<div class="tab-tools"><span class="tab-info">シーン ' + ctx.list.length + '件' + (all ? '・計 ' + all + '分（尺 ' + ctx.length + '分）' : '') + '</span>' +
+    (ctx.list.length ? '<button type="button" class="btn tab-btn" data-act="copy-boxes">' + ICON.dup + '全シーンをコピー</button>' : '') + '</div>';
 }
 
 /* ---------- list ---------- */
@@ -1759,7 +1763,8 @@ function boxesBlock(w, ctx){
     '<button type="button" class="side-item" data-act="box-filter" data-v="all"' + (S.boxFilter === 'all' ? ' aria-current="true"' : '') + '><span class="mk"></span>すべて<span class="cnt">' + list.length + '</span></button>' +
     SEGS.map(function(s){ return '<button type="button" class="side-item" data-act="box-filter" data-v="' + s.k + '"' + (S.boxFilter === s.k ? ' aria-current="true"' : '') + '>' + segMark(s) + (s.side || s.label) + '<span class="cnt">' + counts[s.k] + '</span></button>'; }).join('') +
     sidePlot(w, ctx) + '</aside>';
-  var groups = S.boxFilter === 'all' ? SEGS.filter(function(s){ return counts[s.k] > 0; }) : [SEG_BY[S.boxFilter]];
+  /* 「すべて」ではシーンのない段の帯も出す（帯ごとに最初のシーンを追加できるように） */
+  var groups = S.boxFilter === 'all' ? SEGS : [SEG_BY[S.boxFilter]];
   var body = groups.map(function(seg){
     var cards = list.map(function(sc, idx){ return {sc:sc, n:idx+1}; }).filter(function(x){ return x.sc.seg === seg.k; });
     var range = seg.point ? '' : mins(L, seg.from) + '〜' + mins(L, seg.to) + '分';
@@ -1767,20 +1772,17 @@ function boxesBlock(w, ctx){
     var segLen = seg.point ? 0 : mins(L, seg.to) - mins(L, seg.from);
     /* プロットポイントの分数は、ぶら下がっている幕の合計に入れる（PP1→第一幕、MP→第二幕前半、PP2→第二幕後半） */
     var child = ACT_PP[seg.k], ppSum = child ? segSum(child) : 0, total = sum + ppSum, parent = PP_ACT[seg.k], tot = '';
-    if(seg.point) tot = sum ? '<span>シーン計 ' + sum + '分' + (parent ? '（' + SEG_BY[parent].label + 'の目安に含めて計算）' : '') + '</span>' : '';
-    else tot = total ? '<span>シーン計 ' + total + '分' + (ppSum ? '（うち' + SEG_BY[child].label + ' ' + ppSum + '分）' : '') + '</span>' : '';
+    if(seg.point) tot = sum ? '<span>シーン計 ' + sum + '分' + (parent ? '（' + SEG_BY[parent].label + 'に含めて計算）' : '') + '</span>' : '';
+    else tot = total ? '<span>シーン計 ' + total + '分' + (ppSum ? '（うち' + segName(SEG_BY[child]) + ' ' + ppSum + '分）' : '') + '</span>' : '';
     /* 目安との差：長いときは赤、短いときは黄土色（目安を1つも入れていない段には出さない） */
-    var over = seg.point || !total ? '' : total > segLen ? '<b class="over-pill">目安より' + (total - segLen) + '分長い</b>'
-      : total < segLen ? '<b class="over-pill short">目安より' + (segLen - total) + '分短い</b>' : '';
-    return '<section class="grp" data-seg="' + seg.k + '" aria-label="' + seg.label + '"><div class="grp-h ' + segBand(seg) + '">' + (seg.point ? ICON.dia : '') + '<h2>' + seg.label + '</h2>' + (range ? '<span>' + range + '</span>' : '') + tot + over +
-      (cards.length ? '<button type="button" class="icon-btn grp-copy" data-act="copy-grp" data-v="' + seg.k + '" aria-label="' + seg.label + 'のシーンをテキストでコピー" title="' + seg.label + 'のシーンをテキストでコピー">' + ICON.dup + '</button>' : '') + '</div><div class="cards">' +
+    var over = seg.point || !total ? '' : total > segLen ? '<b class="over-pill">' + (total - segLen) + '分長い</b>'
+      : total < segLen ? '<b class="over-pill short">' + (segLen - total) + '分短い</b>' : '';
+    return '<section class="grp" data-seg="' + seg.k + '" aria-label="' + seg.label + '"><div class="grp-h ' + segBand(seg) + '">' + (seg.point ? ICON.dia : '') + '<h2>' + segName(seg) + '</h2>' + (range ? '<span>' + range + '</span>' : '') + tot + over +
+      (cards.length ? '<button type="button" class="icon-btn grp-copy" data-act="copy-grp" data-v="' + seg.k + '" aria-label="' + segName(seg) + 'のシーンをコピー" title="' + segName(seg) + 'のシーンをコピー">' + ICON.dup + '</button>' : '') + '</div><div class="cards">' +
       cards.map(function(x){ return cardHTML(x.sc, x.n, schema, w); }).join('') +
-      '<button type="button" class="add-dash card-add" data-act="add-scene" data-v="' + seg.k + '">' + ICON.plus + seg.label + 'にシーンを追加</button>' +
+      '<button type="button" class="add-dash card-add' + (cards.length ? '' : ' first') + '" data-act="add-scene" data-v="' + seg.k + '">' + ICON.plus + segName(seg) + 'にシーンを追加</button>' +
       '</div></section>';
   }).join('');
-  if(S.boxFilter === 'all' && list.length === 0){
-    body = '<div class="empty"><p>まだシーンがありません。</p><button type="button" class="btn primary" data-act="add-scene" data-v="">' + ICON.plus + '最初のシーンを追加</button></div>';
-  }
   return '<div class="split">' + side + '<div class="side-main">' + body + '</div></div>';
 }
 function cardHTML(sc, n, schema, w){
@@ -2287,7 +2289,7 @@ document.addEventListener('click', function(e){
     case 'copy-boxes': copyText('箱書き', smartFull(boxesText(w, sceneCtx().list))); break;
     case 'copy-grp':
       var cg = sceneCtx().list.filter(function(x){ return x.seg === v; });
-      copyText(SEG_BY[v].label + 'のシーン', smartFull(boxesText(w, cg))); break;
+      copyText(segName(SEG_BY[v]) + 'のシーン', smartFull(boxesText(w, cg))); break;
     case 'pdf':
       flushAll();
       var selp = w.kind === 'serial' ? {basic:true, people:true, series:true, eps:true} : {basic:true, people:true, plot:true, boxes:true};
