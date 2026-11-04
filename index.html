@@ -95,6 +95,8 @@ button{cursor:pointer}
 .seg button{min-height:40px;padding:0 16px;border:none;border-radius:7px;background:transparent;color:var(--fg2);font-size:14px}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);font-weight:500}
 .fl{font-size:14px;font-weight:500;color:var(--fg2)}
+.fl-link{margin-left:8px;font-size:11px;font-weight:400;opacity:.8}
+.p-none{margin:4px 0 18px}
 .sub-l{font-size:13px;color:var(--muted)}
 .in,.ta,.sel{width:100%;box-sizing:border-box;border:1px solid var(--line2);border-radius:8px;background:var(--input-bg);color:var(--fg);font-size:16px}
 .in{height:46px;padding:0 12px}
@@ -412,6 +414,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .grp-h span+span::before{content:"・"}
 .del-far{margin-left:6px}
 .tpl-cols,.tpl-row{grid-template-columns:64px minmax(0,1fr) 128px 84px 96px 34px}
+.tpl-cols.tpl-p,.tpl-row.tpl-p{grid-template-columns:64px minmax(110px,1fr) 112px 70px 66px 104px 34px;gap:8px}
 .tpl-span{grid-column:3 / -1}
 .num-cell{display:flex;align-items:center;gap:6px;font-size:13px}
 .in.sm{width:52px;height:34px;text-align:right;font-variant-numeric:tabular-nums}
@@ -447,6 +450,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .h-tag{font-weight:700;color:var(--mark)}
 .tpl-adds{display:flex;gap:12px;flex-wrap:wrap}
 .tpl-adds .add-dash{flex:1 1 200px}
+.tpl-reset{margin-top:20px;text-align:right}
 /* 人物：名前と役割を上に、プロフィールとアークをカードに */
 .people-a .split{gap:20px}
 .people-a .side{background:var(--surface);border-radius:14px;width:240px}
@@ -619,7 +623,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
   .work-open .dt{grid-column:1 / -1;text-align:left}
   .kind-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .tpl-cols{display:none}
-  .tpl-row{grid-template-columns:minmax(0,1fr) 44px;padding:10px 12px}
+  .tpl-row,.tpl-row.tpl-p{grid-template-columns:minmax(0,1fr) 44px;padding:10px 12px}
   .tpl-row .mv{grid-column:1 / -1}
   .modal{padding:22px 18px}
 }
@@ -643,7 +647,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.93';
+var VERSION = '0.95';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -745,6 +749,7 @@ function defaultTemplate(){
   migHeads(t.basic);
   migBasic11(t);
   migPerson12(t);
+  migPerson16(t);
   return t;
 }
 function migPerson(list){
@@ -801,6 +806,43 @@ function migPerson12(sch){
   var a = l.findIndex(function(f){ return f.label === '目的'; }), b = l.findIndex(function(f){ return f.label === '経歴'; });
   if(a >= 0 && b > a){ var x = l[a]; l[a] = l[b]; l[b] = x; }
 }
+/* 人物：主人公と主要人物で項目を分ける（f.who）。目的・障害は基本設定の同じ項目と連動させる（f.link）。
+   作品に使うときは、なくなる欄の内容を対応する欄へ移す。新しい欄のIDは端末ごとに変わらないよう固定の名前にする */
+function linkField(list, kind){ return (list || []).find(function(f){ return !isHead(f) && f.link === kind; }); }
+function visiblePF(w, p){ return (w.schema.person || []).filter(function(f){ return !f.who || f.who === p.role; }); }
+function hasProfile(p){ return p.role === 'main' || p.role === 'major'; }
+function migPerson16(sch, w){
+  if(!sch) return;
+  var b = sch.basic || (sch.basic = []);
+  [['goal',['目的','主人公の目的']], ['obstacle',['障害','主人公の障害']]].forEach(function(x){
+    if(linkField(b, x[0])) return;
+    var bf = b.find(function(f){ return !isHead(f) && !f.link && x[1].indexOf(f.label) >= 0; }); if(bf) bf.link = x[0];
+  });
+  var l = sch.person; if(!l || l.some(function(f){ return f.who || f.link; })) return;
+  function take(lab){ var i = l.findIndex(function(f){ return f.label === lab; }); return i >= 0 ? l.splice(i, 1)[0] : null; }
+  function line(f, id, label, extra){ f = f || {id:id}; f.label = label; f.multi = true; f.rows = f.rows || 1; f.w = 'full'; f.nl = true; Object.keys(extra || {}).forEach(function(k){ f[k] = extra[k]; }); return f; }
+  var age = take('年齢'), job = take('職業'), rel = take('ほかの人物との関係'), goal = take('目的'), bg = take('経歴'), rest = l.splice(0);
+  if(job && job.w === 'full') job.w = 'fill';
+  if(job) job.nl = false;
+  rel = line(rel, 'f16relmain', '主要人物との関係', {who:'main'});
+  var relM = line(null, 'f16relmajor', '主人公との関係', {who:'major'});
+  goal = line(goal, 'f16goal', '目的', {who:'main', link:'goal'}); goal.rows = 1;
+  var obst = line(null, 'f16obst', '障害', {who:'main', link:'obstacle'});
+  bg = line(bg, 'f16bg', '背景・経歴');
+  [age, job, rel, relM, goal, obst, bg].filter(Boolean).concat(rest).forEach(function(f){ l.push(f); });
+  if(!w) return;
+  var bgoal = linkField(b, 'goal'); w.basic = w.basic || {};
+  (w.people || []).forEach(function(p){
+    var v = p.values || (p.values = {});
+    if(p.role === 'major' && v[rel.id]){ v[relM.id] = v[rel.id]; delete v[rel.id]; }
+    var g = String(v[goal.id] || '').trim(); delete v[goal.id];
+    if(!g) return;
+    var cur = bgoal ? String(w.basic[bgoal.id] || '').trim() : null;
+    if(p.role === 'main' && bgoal && !cur){ w.basic[bgoal.id] = g; return; }
+    if(p.role === 'main' && cur === g) return;
+    v[bg.id] = (String(v[bg.id] || '').trim() ? v[bg.id] + '\n' : '') + '目的：' + g;
+  });
+}
 /* 基本設定の項目名を、見出しの中で通じる短い名前にする */
 var BASIC_RENAME = {'時代':'天（時代）', '場所（舞台）':'地（場所）', '主人公の目的':'目的', '主人公の障害':'障害'};
 function migBasic11(sch){
@@ -814,7 +856,7 @@ function migMemoRows(sch){
 }
 function migrateTemplates(){
   var t = S.templates, ch = false;
-  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15'].forEach(function(k){ t[k] = true; }); return true; }
+  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16'].forEach(function(k){ t[k] = true; }); return true; }
   if(t.movie && !t.mig5){ t.single = t.movie; delete t.movie; delete t.other; ch = true; }
   if(!t.mig5){ t.mig5 = true; ch = true; }
   if(!t.single){ t.single = defaultTemplate(); ch = true; }
@@ -833,6 +875,7 @@ function migrateTemplates(){
   if(!t.mig13){ KIND_ORDER.forEach(function(k){ migRows13(t[k]); }); t.mig13 = true; ch = true; }
   if(!t.mig14){ KIND_ORDER.forEach(function(k){ migCard14(t[k]); }); t.mig14 = true; ch = true; }
   if(!t.mig15){ KIND_ORDER.forEach(function(k){ migRows15(t[k]); }); t.mig15 = true; ch = true; }
+  if(!t.mig16){ KIND_ORDER.forEach(function(k){ migPerson16(t[k]); }); t.mig16 = true; ch = true; }
   return ch;
 }
 function migrateWork(w){
@@ -852,6 +895,7 @@ function migrateWork(w){
   if(!w.mig13){ migRows13(w.schema); w.mig13 = true; ch = true; }
   if(!w.mig14){ migCard14(w.schema); w.mig14 = true; ch = true; }
   if(!w.mig15){ migRows15(w.schema); w.mig15 = true; ch = true; }
+  if(!w.mig16){ migPerson16(w.schema, w); w.mig16 = true; ch = true; }
   return ch;
 }
 function defaultTemplates(){ var t = {}; KIND_ORDER.forEach(function(k){ t[k] = defaultTemplate(); }); return t; }
@@ -1711,18 +1755,21 @@ function renderPeople(w){
         '<button type="button" class="btn" data-act="add-arc" data-id="' + p.id + '">' + ICON.plus + 'アークを追加</button></div></section>';
     }
     var cell = function(f){
-      return '<div class="field ' + fwClass(f.w) + '"><label class="fl" for="pv-' + f.id + '">' + esc(f.label) + '</label>' +
-        fieldInput('P:' + p.id + '|values|' + f.id, getPath(p, ['values', f.id]), f, 'pv-' + f.id) + '</div>';
+      /* 目的・障害は基本設定の同じ項目をそのまま読み書きする */
+      var bf = f.link && linkField(w.schema.basic, f.link);
+      return '<div class="field ' + fwClass(f.w) + '"><label class="fl" for="pv-' + f.id + '">' + esc(f.label) + (bf ? '<span class="fl-link">基本設定と連動</span>' : '') + '</label>' +
+        (bf ? fieldInput('W|basic|' + bf.id, getPath(w, ['basic', bf.id]), f, 'pv-' + f.id) : fieldInput('P:' + p.id + '|values|' + f.id, getPath(p, ['values', f.id]), f, 'pv-' + f.id)) + '</div>';
     };
     var nameCell = '<div class="field p-nm"><label class="fl" for="p-name">名前</label>' + inputFor('P:' + p.id + '|name', p.name, 'line', 'p-name') + '</div>';
     var roleCell = '<div class="field f-role"><span class="fl" id="role-h">役割</span><div class="seg" role="group" aria-labelledby="role-h">' +
       ROLES.map(function(r){ return '<button type="button" data-act="set-role" data-id="' + p.id + '" data-v="' + r[0] + '" aria-pressed="' + ((p.role || '') === r[0]) + '">' + r[1] + '</button>'; }).join('') +
       '</div></div>';
-    var pf = w.schema.person || [];
-    main = '<div class="phead">' + nameCell + roleCell + '</div>' +
+    var pf = visiblePF(w, p);
+    /* プロフィールとアークは、主人公と主要人物にだけ出す（指定なしの人物に書いた内容は消さずに残す） */
+    main = '<div class="phead">' + nameCell + roleCell + '</div>' + (hasProfile(p) ?
       '<section class="bcard" aria-labelledby="pf-h-' + p.id + '"><h2 class="bcard-h" id="pf-h-' + p.id + '">プロフィール</h2>' +
-      (pf.length ? flowRows(pf, cell) : '<p class="sub-l">プロフィールの項目がありません。「ひな形を編集」で追加できます。</p>') + '</section>' +
-      arc + '<div><button type="button" class="link-btn p-del" data-act="delete-person" data-id="' + p.id + '">この人物を削除</button></div>';
+      (pf.length ? flowRows(pf, cell) : '<p class="sub-l">プロフィールの項目がありません。「ひな形を編集」で追加できます。</p>') + '</section>' + arc
+      : '<p class="sub-l p-none">プロフィールとアークは、役割を「主人公」か「主要人物」にすると表示されます。</p>') + '<div><button type="button" class="link-btn p-del" data-act="delete-person" data-id="' + p.id + '">この人物を削除</button></div>';
   }
   return '<main class="page gut basic-b people-a"><div class="wrap"><div class="split">' + side + '<div class="side-main">' + main + '</div></div></div></main>';
 }
@@ -1869,7 +1916,7 @@ function renderTemplates(){
     : t === 'person' ? [['名前','1行目の先頭（中の幅）'],['役割','最初に「改行」した行の先頭']] : [];
   var notes = {
     basic:'見出しから次の見出しまでの項目が、1枚のカードにまとまります。幅を「半分」にした見出しのカードが続くと、左右に並びます。最初の見出しより前の項目は、タイトル・尺と同じ行に並びます。幅が「半分」の見出しのカードの中では、項目は縦に1つずつ並びます。カードの中では、「改行」にチェックした項目から新しい行になります。PDFもこの順で出力します。',
-    person:'「改行」にチェックした項目から新しい行になります。1行目には、名前と、先頭から「改行」のない項目が並びます。',
+    person:'「改行」にチェックした項目から新しい行になります。1行目には、名前と、先頭から「改行」のない項目が並びます。プロフィールとアークは、役割が「主人公」か「主要人物」の人物にだけ表示されます。「表示する人物」で、項目ごとにどちらに出すかを選べます。',
     arc:'人物ごとに「アークを追加」したときに表示される欄です。「改行」にチェックした項目から新しい行になります。',
     card:'箱書きのシーンカードに並ぶ欄です。「人物候補」にチェックした欄では、入力中に人物の名前を候補として表示します。'
   };
@@ -1889,16 +1936,19 @@ function renderTemplates(){
     var wSel = isCard ? '<div class="tag">—</div>'
       : '<div><label class="sr" for="tw-' + f.id + '">幅</label><select id="tw-' + f.id + '" class="sel" data-change="tpl-w" ' + base + '>' +
         W_OPTS.map(function(o){ return '<option value="' + o[0] + '"' + ((f.w || 'fill') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>';
+    var who = t !== 'person' ? '' : f.link ? '<div class="tag">主人公（基本設定と連動）</div>'
+      : '<div><label class="sr" for="to-' + f.id + '">表示する人物</label><select id="to-' + f.id + '" class="sel" data-change="tpl-who" ' + base + '>' +
+        [['','両方'],['main','主人公'],['major','主要人物']].map(function(o){ return '<option value="' + o[0] + '"' + ((f.who || '') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>';
     var flag = isCard
       ? '<label class="chk"><input type="checkbox" data-change="tpl-people" ' + base + (f.people ? ' checked' : '') + '>人物候補</label>'
       : '<label class="chk"><input type="checkbox" data-change="tpl-nl" ' + base + (f.nl ? ' checked' : '') + '>改行</label>';
-    return '<div class="tpl-row"><div class="mv">' +
+    return '<div class="tpl-row' + (t === 'person' ? ' tpl-p' : '') + '"><div class="mv">' +
       '<button type="button" class="icon-btn" data-act="tpl-up" ' + base + ' aria-label="' + esc(f.label) + 'を上へ"' + (i === 0 ? ' disabled' : '') + '>' + ICON.up + '</button>' +
       '<button type="button" class="icon-btn" data-act="tpl-down" ' + base + ' aria-label="' + esc(f.label) + 'を下へ"' + (i === list.length-1 ? ' disabled' : '') + '>' + ICON.down + '</button></div>' +
       '<div><label class="sr" for="tl-' + f.id + '">項目名</label><input id="tl-' + f.id + '" class="in" type="text" value="' + esc(f.label) + '" data-bind="T:' + k + ':' + t + ':' + f.id + '|label"></div>' +
       wSel +
       '<div class="num-cell"><label class="sr" for="tr-' + f.id + '">初期の行数</label><input id="tr-' + f.id + '" class="in sm" type="text" inputmode="numeric" value="' + (f.rows || 1) + '" data-change="tpl-rows" ' + base + '><span>行</span></div>' +
-      flag +
+      flag + who +
       '<button type="button" class="icon-btn" data-act="tpl-del" ' + base + ' aria-label="' + esc(f.label) + 'を削除">' + ICON.trash + '</button></div>';
   }).join('');
   var st = statusInfo();
@@ -1911,9 +1961,10 @@ function renderTemplates(){
     '<div class="split"><nav class="side" aria-label="ひな形のタブ">' + TPL_TABS.map(function(x){ return '<button type="button" class="side-item" data-act="tpl-tab" data-v="' + x[0] + '"' + (x[0] === t ? ' aria-current="true"' : '') + '>' + x[1] + '</button>'; }).join('') + '</nav>' +
     '<section class="side-main" aria-label="' + TPL_TABS.filter(function(x){ return x[0] === t; })[0][1] + 'の記入欄">' +
     '<p class="sub-l" style="margin:0 0 12px">' + notes[t] + '</p>' +
-    '<div class="tpl-cols" aria-hidden="true"><div>並べ替え</div><div>項目名</div><div>' + (isCard ? '' : '幅') + '</div><div>初期の行数</div><div>' + (isCard ? '人物候補' : '改行') + '</div><div></div></div>' + rows +
+    '<div class="tpl-cols' + (t === 'person' ? ' tpl-p' : '') + '" aria-hidden="true"><div>並べ替え</div><div>項目名</div><div>' + (isCard ? '' : '幅') + '</div><div>初期の行数</div><div>' + (isCard ? '人物候補' : '改行') + '</div>' + (t === 'person' ? '<div>表示する人物</div>' : '') + '<div></div></div>' + rows +
     '<div class="tpl-adds"><button type="button" class="add-dash" data-act="tpl-add" data-k="' + k + '" data-t="' + t + '">' + ICON.plus + '項目を追加</button>' +
     (t === 'basic' ? '<button type="button" class="add-dash" data-act="tpl-add-h" data-k="' + k + '" data-t="' + t + '">' + ICON.plus + '見出しを追加</button>' : '') + '</div>' +
+    '<div class="tpl-reset"><button type="button" class="link-btn" data-act="tpl-reset" data-k="' + k + '" data-t="' + t + '">「' + TPL_TABS.filter(function(x){ return x[0] === t; })[0][1] + '」を初期設定に戻す</button></div>' +
     '</section></div></div></main>';
 }
 /* ---------- modals ---------- */
@@ -2045,7 +2096,7 @@ function createWork(){
   var w = {v:1, id:'w-' + uid(), title:m.title.trim() || '無題の作品', kind:m.kind, createdAt:Date.now(), updatedAt:Date.now(),
     schema:tpl, basic:{}, people:[]};
   /* ひな形は最新の形なので、古い形を直す処理は不要（済みの印を付けておく） */
-  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15'].forEach(function(k){ w[k] = true; });
+  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16'].forEach(function(k){ w[k] = true; });
   if(m.kind === 'serial'){
     var n = toInt(m.eps, 1, 100), base = toInt(m.base, 1, 600);
     if(!n || !base){ m.err = '話数と基本の1話の長さを数字で入力してください。'; renderModal(false); return; }
@@ -2142,12 +2193,13 @@ document.addEventListener('change', function(e){
     if(n !== ep.length) checkpoint();
     ep.length = n; saveEpSoon(w, ep);
     el.value = n; el.closest('.ep-len').classList.toggle('changed', n !== w.baseLength);
-  } else if(a === 'tpl-w' || a === 'tpl-rows' || a === 'tpl-nl' || a === 'tpl-people'){
+  } else if(a === 'tpl-w' || a === 'tpl-rows' || a === 'tpl-nl' || a === 'tpl-people' || a === 'tpl-who'){
     var f = S.templates[el.dataset.k][el.dataset.t].find(function(x){ return x.id === el.dataset.id; });
     if(!f) return;
     if(a === 'tpl-w') f.w = el.value;
     else if(a === 'tpl-rows'){ f.rows = toInt(el.value, 1, 30) || 1; el.value = f.rows; }
     else if(a === 'tpl-nl') f.nl = el.checked;
+    else if(a === 'tpl-who'){ if(el.value) f.who = el.value; else delete f.who; }
     else f.people = el.checked;
     saveTemplatesSoon();
   } else if(a === 'scene-min'){
@@ -2283,6 +2335,14 @@ document.addEventListener('click', function(e){
       S.templates[el.dataset.k][el.dataset.t].push(nh); saveTemplatesSoon(); render(); focusSoon('#tl-' + nh.id);
       setTimeout(function(){ var x = document.getElementById('tl-' + nh.id); if(x) x.select(); }, 60);
       break;
+    case 'tpl-reset':
+      /* 初期設定は、アプリに組み込んだ最新のひな形（defaultTemplate）。開いているタブだけを戻す */
+      var rk = el.dataset.k, rt = el.dataset.t, rname = TPL_TABS.filter(function(x){ return x[0] === rt; })[0][1];
+      askConfirm('「' + rname + '」を初期設定に戻す', '「' + KINDS[rk].label + '」のひな形の「' + rname + '」を、初期設定の項目と並びに戻します。このタブで追加・変更した項目は元に戻せません。すでにある作品の記入欄は変わりません。', '初期設定に戻す', true, function(){
+        S.templates[rk][rt] = defaultTemplate()[rt];
+        saveTemplatesSoon(); closeModal(); render(); toast('「' + rname + '」を初期設定に戻しました');
+      });
+      break;
     case 'tpl-del':
       S.templates[el.dataset.k][el.dataset.t] = S.templates[el.dataset.k][el.dataset.t].filter(function(x){ return x.id !== id; });
       saveTemplatesSoon(); render(); break;
@@ -2405,7 +2465,8 @@ function searchEntries(w){
   sortPeople(w.people || []).forEach(function(p){
     var nm = p.name || '名前未設定';
     add('人物・' + nm + '・名前', p.name, {tab:'people', person:p.id, focus:'#p-name'});
-    (w.schema.person || []).forEach(function(f){ add('人物・' + nm + '・' + f.label, getPath(p, ['values', f.id]), {tab:'people', person:p.id, focus:'#pv-' + f.id}); });
+    if(!hasProfile(p)) return;
+    visiblePF(w, p).forEach(function(f){ if(!f.link || !linkField(w.schema.basic, f.link)) add('人物・' + nm + '・' + f.label, getPath(p, ['values', f.id]), {tab:'people', person:p.id, focus:'#pv-' + f.id}); });
     if(p.arc) (w.schema.arc || []).forEach(function(f){ add('人物・' + nm + '・アーク・' + f.label, getPath(p, ['arc', f.id]), {tab:'people', person:p.id, focus:'#a-' + p.id + '-' + f.id}); });
   });
   if(w.kind !== 'serial'){
@@ -2622,7 +2683,8 @@ async function makePdf(){
       if(!w.people.length) P.note('人物はまだ登録されていません。');
       sortPeople(w.people).forEach(function(p){
         P.h2((p.name || '名前未設定') + (p.role ? '（' + roleLabel(p.role) + '）' : ''));
-        (w.schema.person || []).forEach(function(f){ P.field(f.label, getPath(p, ['values', f.id]), 4); });
+        if(!hasProfile(p)) return;
+        visiblePF(w, p).forEach(function(f){ var bf = f.link && linkField(w.schema.basic, f.link); P.field(f.label, bf ? getPath(w, ['basic', bf.id]) : getPath(p, ['values', f.id]), 4); });
         if(p.arc){ P.label('アーク', 4);(w.schema.arc || []).forEach(function(f){ P.field(f.label, getPath(p, ['arc', f.id]), 8); }); }
       });
     }
