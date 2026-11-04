@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>構成プランナー</title>
+<title>Kousei</title>
 <meta name="theme-color" content="#F5F6F6">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="構成プランナー">
+<meta name="apple-mobile-web-app-title" content="Kousei">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -643,7 +643,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.92';
+var VERSION = '0.93';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -1557,7 +1557,7 @@ function renderList(){
   var backup = '<button type="button" class="btn" data-act="export">バックアップを保存</button>';
   var st = statusInfo();
   return '<header class="topbar"><div class="wrap list-w gut"><div class="topbar-in">' +
-    '<div class="brand">構成プランナー</div><span class="spacer"></span>' +
+    '<div class="brand">Kousei</div><span class="spacer"></span>' +
     '<span class="status' + (st.err ? ' err' : '') + '" id="status" role="status">' + esc(st.text) + '</span>' +
     '<button type="button" class="btn" data-act="open-templates">ひな形を編集</button>' +
     '<button type="button" class="btn primary" data-act="new-work">' + ICON.plus + '新しい作品</button>' +
@@ -2093,7 +2093,7 @@ async function exportBackup(){
   flushAll();
   var data = {app:'kyakuhon-kousou', version:VERSION, exportedAt:new Date().toISOString(), templates:S.templates,
     works:Object.keys(S.works).map(function(id){ var w = clone(S.works[id]); if(w.kind === 'serial') w.episodes = epsOf(S.works[id]).map(clone); return w; })};
-  var d = new Date(), name = '構成プランナー_バックアップ_' + d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0') + '.json';
+  var d = new Date(), name = 'Kousei-backup-' + d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0') + '.json';
   try{ await S.dl.save({filename:name, data:JSON.stringify(data, null, 1)}); toast('バックアップを保存しました'); }
   catch(e){ if(e && e.code !== 'declined') toast('バックアップを保存できませんでした'); }
 }
@@ -2102,7 +2102,7 @@ function importBackup(file){
   reader.onload = function(){
     var data = null;
     try{ data = JSON.parse(reader.result); }catch(e){}
-    if(!data || data.app !== 'kyakuhon-kousou' || !Array.isArray(data.works)){ toast('このファイルは構成プランナーのバックアップではありません'); return; }
+    if(!data || data.app !== 'kyakuhon-kousou' || !Array.isArray(data.works)){ toast('このファイルはKouseiのバックアップではありません'); return; }
     askConfirm('バックアップを読み込む', '作品' + data.works.length + '件と、ひな形を読み込みます。同じ作品がある場合は、バックアップの内容で上書きします。', '読み込む', false, function(){
       if(data.templates) { S.templates = data.templates; migrateTemplates(); saveTemplatesSoon(); }
       data.works.forEach(function(w){
@@ -2652,7 +2652,7 @@ async function makePdf(){
     var n = doc.getNumberOfPages();
     for(var i=1;i<=n;i++){ doc.setPage(i); doc.setFontSize(8); doc.setTextColor(120,128,138); doc.text((w.title || '') + '　' + i + ' / ' + n, P.PW/2, P.PH - 10, {align:'center'}); }
     var blob = doc.output('blob');
-    var name = (w.title || '構成プランナー').replace(/[\\/:*?"<>|]/g, '_') + '.pdf';
+    var name = (w.title || 'Kousei').replace(/[\\/:*?"<>|]/g, '_') + '.pdf';
     m.busy = false; renderModal(false);
     try{ await S.dl.save({filename:name, data:blob}); closeModal(); toast('PDFを保存しました'); }
     catch(e){ if(e && e.code === 'declined'){ return; } m.err = 'PDFを保存できませんでした。'; renderModal(false); }
