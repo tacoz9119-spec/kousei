@@ -647,7 +647,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.96';
+var VERSION = '0.99';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -750,6 +750,8 @@ function defaultTemplate(){
   migBasic11(t);
   migPerson12(t);
   migPerson16(t);
+  migPerson18(t);
+  migPerson19(t);
   return t;
 }
 function migPerson(list){
@@ -850,6 +852,19 @@ function migPerson17(sch){
   if(!g || !o || g.w !== 'full' || o.w !== 'full') return;
   g.w = 'half'; g.nl = true; o.w = 'half'; o.nl = false;
 }
+/* 人物：背景・経歴の行を左右に分け、左に特徴・習慣を置く（背景・経歴が全幅のままのときだけ） */
+function migPerson18(sch){
+  var l = sch && sch.person; if(!l || l.some(function(f){ return f.label === '特徴・習慣'; })) return;
+  var i = l.findIndex(function(f){ return !f.link && f.label === '背景・経歴'; }); if(i < 0 || l[i].w !== 'full') return;
+  l[i].w = 'half'; l[i].nl = false;
+  l.splice(i, 0, {id:'f18trait', label:'特徴・習慣', multi:true, rows:1, w:'half', nl:true});
+}
+/* 人物：1行目を年齢・性別・職業にする。性別は年齢と同じ幅 */
+function migPerson19(sch){
+  var l = sch && sch.person; if(!l || l.some(function(f){ return f.label === '性別'; })) return;
+  var i = l.findIndex(function(f){ return f.label === '年齢'; }); if(i < 0) return;
+  l.splice(i + 1, 0, {id:'f19gender', label:'性別', multi:false, rows:1, w:l[i].w || 'S', nl:false});
+}
 /* 基本設定の項目名を、見出しの中で通じる短い名前にする */
 var BASIC_RENAME = {'時代':'天（時代）', '場所（舞台）':'地（場所）', '主人公の目的':'目的', '主人公の障害':'障害'};
 function migBasic11(sch){
@@ -863,7 +878,7 @@ function migMemoRows(sch){
 }
 function migrateTemplates(){
   var t = S.templates, ch = false;
-  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16','mig17'].forEach(function(k){ t[k] = true; }); return true; }
+  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16','mig17','mig18','mig19'].forEach(function(k){ t[k] = true; }); return true; }
   if(t.movie && !t.mig5){ t.single = t.movie; delete t.movie; delete t.other; ch = true; }
   if(!t.mig5){ t.mig5 = true; ch = true; }
   if(!t.single){ t.single = defaultTemplate(); ch = true; }
@@ -884,6 +899,8 @@ function migrateTemplates(){
   if(!t.mig15){ KIND_ORDER.forEach(function(k){ migRows15(t[k]); }); t.mig15 = true; ch = true; }
   if(!t.mig16){ KIND_ORDER.forEach(function(k){ migPerson16(t[k]); }); t.mig16 = true; ch = true; }
   if(!t.mig17){ KIND_ORDER.forEach(function(k){ migPerson17(t[k]); }); t.mig17 = true; ch = true; }
+  if(!t.mig18){ KIND_ORDER.forEach(function(k){ migPerson18(t[k]); }); t.mig18 = true; ch = true; }
+  if(!t.mig19){ KIND_ORDER.forEach(function(k){ migPerson19(t[k]); }); t.mig19 = true; ch = true; }
   return ch;
 }
 function migrateWork(w){
@@ -905,6 +922,8 @@ function migrateWork(w){
   if(!w.mig15){ migRows15(w.schema); w.mig15 = true; ch = true; }
   if(!w.mig16){ migPerson16(w.schema, w); w.mig16 = true; ch = true; }
   if(!w.mig17){ migPerson17(w.schema); w.mig17 = true; ch = true; }
+  if(!w.mig18){ migPerson18(w.schema); w.mig18 = true; ch = true; }
+  if(!w.mig19){ migPerson19(w.schema); w.mig19 = true; ch = true; }
   return ch;
 }
 function defaultTemplates(){ var t = {}; KIND_ORDER.forEach(function(k){ t[k] = defaultTemplate(); }); return t; }
@@ -1727,7 +1746,8 @@ function renderPeople(w){
   if(!w.people.some(function(p){ return p.id === S.personId; })) S.personId = w.people.length ? w.people[0].id : null;
   var list = w.people.map(function(p, idx){
     var sub = '';
-    var firstLine = (w.schema.person || [])[1] || (w.schema.person || [])[0];
+    /* 一覧の名前の下には職業を出す（職業の欄がなければ2番目の項目） */
+    var psch = w.schema.person || [], firstLine = psch.find(function(f){ return f.label === '職業'; }) || psch[1] || psch[0];
     if(firstLine) sub = getPath(p, ['values', firstLine.id]);
     var item = '<button type="button" class="side-item" data-act="pick-person" data-id="' + p.id + '"' + (p.id === S.personId ? ' aria-current="true"' : '') + '>' +
       '<span class="two"><span data-pname="' + p.id + '">' + esc(p.name || '名前未設定') + '</span>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span>' +
@@ -1778,7 +1798,7 @@ function renderPeople(w){
     main = '<div class="phead">' + nameCell + roleCell + '</div>' + (hasProfile(p) ?
       '<section class="bcard" aria-labelledby="pf-h-' + p.id + '"><h2 class="bcard-h" id="pf-h-' + p.id + '">プロフィール</h2>' +
       (pf.length ? flowRows(pf, cell) : '<p class="sub-l">プロフィールの項目がありません。「ひな形を編集」で追加できます。</p>') + '</section>' + arc
-      : '<p class="sub-l p-none">プロフィールとアークは、役割を「主人公」か「主要人物」にすると表示されます。</p>') + '<div><button type="button" class="link-btn p-del" data-act="delete-person" data-id="' + p.id + '">この人物を削除</button></div>';
+      : '') + '<div><button type="button" class="link-btn p-del" data-act="delete-person" data-id="' + p.id + '">この人物を削除</button></div>';
   }
   return '<main class="page gut basic-b people-a"><div class="wrap"><div class="split">' + side + '<div class="side-main">' + main + '</div></div></div></main>';
 }
@@ -1809,7 +1829,7 @@ function sortScenes(list){
   return list.map(function(s,i){ return {s:s,i:i}; }).sort(function(a,b){ return (SEG_INDEX[a.s.seg]-SEG_INDEX[b.s.seg]) || (a.i-b.i); }).map(function(x){ return x.s; });
 }
 function sidePlot(w, ctx){
-  if(S.boxFilter === 'all') return '<p class="side-plot-note">段を選ぶと、その段のプロットがここに表示されます。</p>';
+  if(S.boxFilter === 'all') return '';
   var seg = SEG_BY[S.boxFilter], root = w.kind === 'serial' ? 'E' : 'W', plot = ctx.owner.plot || {};
   return '<div class="side-plot"><label class="fl" for="sp-' + seg.k + '">プロット：' + seg.label + '</label>' +
     '<textarea id="sp-' + seg.k + '" class="ta fit2 side-ta" rows="' + (seg.point ? 3 : 8) + '" data-bind="' + root + '|plot|' + seg.k + '">' + esc(plot[seg.k]) + '</textarea>' +
@@ -2105,7 +2125,7 @@ function createWork(){
   var w = {v:1, id:'w-' + uid(), title:m.title.trim() || '無題の作品', kind:m.kind, createdAt:Date.now(), updatedAt:Date.now(),
     schema:tpl, basic:{}, people:[]};
   /* ひな形は最新の形なので、古い形を直す処理は不要（済みの印を付けておく） */
-  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16','mig17'].forEach(function(k){ w[k] = true; });
+  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16','mig17','mig18','mig19'].forEach(function(k){ w[k] = true; });
   if(m.kind === 'serial'){
     var n = toInt(m.eps, 1, 100), base = toInt(m.base, 1, 600);
     if(!n || !base){ m.err = '話数と基本の1話の長さを数字で入力してください。'; renderModal(false); return; }
