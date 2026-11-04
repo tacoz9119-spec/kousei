@@ -332,7 +332,8 @@ body{font-size:14px}
 .point .ta{min-height:56px}
 .hook label{font-size:13px}
 .grow{min-height:220px}
-.plot-grid .grow{min-height:354px}
+/* プロットの幕の欄：初期の高さは16行分（行の高さ24px） */
+.plot-grid .grow{min-height:402px}
 .ta.fit,.ta.fit2{resize:none;overflow:hidden}
 .ta.fit,.ta.fit2:not(.side-ta){padding-top:5px;padding-bottom:5px}
 .box-top p{font-size:13px}
@@ -647,7 +648,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '0.99';
+var VERSION = '1.00';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -1806,7 +1807,7 @@ function renderPeople(w){
 /* ---------- plot ---------- */
 function plotBlock(root, obj, L, withHook){
   var r = function(a,b){ return mins(L,a) + '〜' + mins(L,b) + '分'; };
-  function ta(k, cls, label){ return '<textarea id="pl-' + k + '" class="ta fit ' + (cls||'') + '" rows="14" data-bind="' + root + '|plot|' + k + '"' + (label ? ' aria-label="' + label + 'の内容"' : '') + '>' + esc(obj.plot[k]) + '</textarea>'; }
+  function ta(k, cls, label){ return '<textarea id="pl-' + k + '" class="ta fit ' + (cls||'') + '" rows="16" data-bind="' + root + '|plot|' + k + '"' + (label ? ' aria-label="' + label + 'の内容"' : '') + '>' + esc(obj.plot[k]) + '</textarea>'; }
   function point(k, label){ return '<div class="point"><label for="pl-' + k + '">' + ICON.dia + label + '</label><textarea id="pl-' + k + '" class="ta fit2" rows="2" data-bind="' + root + '|plot|' + k + '">' + esc(obj.plot[k]) + '</textarea></div>'; }
   /* 幕の色の帯を、それぞれのカードの見出しにする */
   function hd(cls, name, range){ return '<div class="pcol-hd ' + cls + '"><b>' + name + '</b><span>' + range + '</span></div>'; }
