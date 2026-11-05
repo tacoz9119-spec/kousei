@@ -648,7 +648,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.03';
+var VERSION = '1.04';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -669,7 +669,7 @@ var SEG_BY = {}; SEGS.forEach(function(s){ SEG_BY[s.k]=s; });
 function segName(s){ return s.short || s.label; }
 var ACTS = [['a1','第一幕'],['a2','第二幕'],['a3','第三幕']];
 var TPL_TABS = [['basic','基本設定'],['person','人物'],['arc','アーク'],['card','箱書きカード']];
-var LOCAL_KEY = 'kousei-planner-v1';
+var LOCAL_KEY = 'kousei-v1';
 
 /* ---------- helpers ---------- */
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
@@ -1047,7 +1047,7 @@ var IDB = {
   open:function(){
     return new Promise(function(res){
       try{
-        var rq = indexedDB.open('kousei-planner', 1);
+        var rq = indexedDB.open('kousei', 1);
         rq.onupgradeneeded = function(){ rq.result.createObjectStore('kv'); };
         rq.onsuccess = function(){ IDB.db = rq.result; res(true); };
         rq.onerror = rq.onblocked = function(){ res(false); };
@@ -1084,6 +1084,23 @@ async function loadLocal(){
   var str = null;
   if(await IDB.open()) str = await IDB.get('state');
   if(!str){ try{ str = localStorage.getItem(LOCAL_KEY); }catch(e){} }
+  /* v1.04で保存場所の名前を「kousei-planner」から「kousei」に変えた。古い名前の保存分があれば、新しい名前へ移してから古い方を消す */
+  var cleanOld = false;
+  if(!str){
+    str = await new Promise(function(res){
+      try{
+        var rq = indexedDB.open('kousei-planner', 1);
+        rq.onupgradeneeded = function(){ rq.result.createObjectStore('kv'); };
+        rq.onsuccess = function(){ try{ var q = rq.result.transaction('kv', 'readonly').objectStore('kv').get('state'); q.onsuccess = function(){ rq.result.close(); res(q.result || null); }; q.onerror = function(){ rq.result.close(); res(null); }; }catch(e){ rq.result.close(); res(null); } };
+        rq.onerror = rq.onblocked = function(){ res(null); };
+      }catch(e){ res(null); }
+    });
+    if(!str){ try{ str = localStorage.getItem('kousei-planner-v1'); }catch(e){} }
+    if(!str) cleanOld = true;
+    else if(IDB.db){ try{ await IDB.put('state', str); cleanOld = true; }catch(e){} }
+  }
+  try{ var oldUi = localStorage.getItem('kousei-planner-v1-ui'); if(oldUi && !localStorage.getItem(LOCAL_KEY + '-ui')) localStorage.setItem(LOCAL_KEY + '-ui', oldUi); }catch(e){}
+  if(cleanOld){ try{ indexedDB.deleteDatabase('kousei-planner'); localStorage.removeItem('kousei-planner-v1'); localStorage.removeItem('kousei-planner-v1-ui'); }catch(e){} }
   try{ return JSON.parse(str || 'null'); }catch(e){ return null; }
 }
 
