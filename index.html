@@ -549,20 +549,21 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .p-top .p-nm{flex:1 1 200px;min-width:0}
 .p-top .f-role{flex:none;margin-left:auto}
 /* 囲みの見出し */
-.bcard{padding-top:4px}
-.bcard > .bcard-h,.bcard-top{background:transparent;color:var(--fg);border-bottom:1px solid var(--line);margin:0 20px 12px;padding:14px 0 6px 12px;position:relative;font-size:15px}
-.bcard > .bcard-h::before,.bcard-top::before{display:block;content:"";position:absolute;left:0;top:17px;width:4px;height:16px;border-radius:2px;background:var(--mark)}
-.bcard-top{padding-top:10px;min-height:0}
+/* 見出しの高さ・文字の大きさは、プロットの幕の見出しにそろえる（上の余白12px・下8px・文字14px） */
+.bcard{padding-top:0}
+.bcard > .bcard-h,.bcard-top{background:transparent;color:var(--fg);border-bottom:1px solid var(--line);margin:0 20px 12px;padding:12px 0 8px 12px;position:relative;font-size:14px;line-height:22px}
+.bcard > .bcard-h::before,.bcard-top::before{display:block;content:"";position:absolute;left:0;top:15px;width:4px;height:16px;border-radius:2px;background:var(--mark)}
+.bcard-top{padding:4px 0 0 12px;height:43px;min-height:0;box-sizing:border-box}
 .bcard-top::before{top:15px}
-.bcard-top .bcard-h{font-size:15px}
+.bcard-top .bcard-h{font-size:14px;line-height:22px}
 .bcard-top .bcard-h::before{display:none}
 .bcard-top .btn{color:var(--fg)}
 .bcard > .bcard-top:only-child{margin-bottom:12px}
 /* 左パネル（人物・段）の見出し */
-.side .side-top{background:transparent;border-bottom:1px solid var(--line);margin:0 10px 8px;padding:8px 2px}
+.side .side-top{background:transparent;border-bottom:1px solid var(--line);margin:0 10px 8px;padding:12px 2px 8px;height:43px;box-sizing:border-box}
 /* プロットの幕の見出し：幕の色は左の印で示す */
-.pcol-hd.b1,.pcol-hd.b2,.pcol-hd.b3{background:transparent;color:var(--fg);border-bottom:1px solid var(--line);margin:0 16px;padding:12px 0 8px 12px;position:relative}
-.pcol-hd::before{content:"";position:absolute;left:0;top:14px;width:4px;height:16px;border-radius:2px}
+.pcol-hd.b1,.pcol-hd.b2,.pcol-hd.b3{background:transparent;color:var(--fg);border-bottom:1px solid var(--line);margin:0 16px;padding:12px 0 8px 12px;position:relative;height:43px;box-sizing:border-box}
+.pcol-hd::before{content:"";position:absolute;left:0;top:15px;width:4px;height:16px;border-radius:2px}
 .pcol-hd.b1::before,.grp-h.b1::before{background:var(--mk1)}
 .pcol-hd.b2::before,.grp-h.b2::before{background:var(--mk2)}
 .pcol-hd.b3::before,.grp-h.b3::before{background:var(--mk3)}
@@ -674,7 +675,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.07';
+var VERSION = '1.08';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -1874,10 +1875,10 @@ function plotBlock(root, obj, L, withHook){
   /* 幕の色の帯を、それぞれのカードの見出しにする */
   function hd(cls, name, range){ return '<div class="pcol-hd ' + cls + '"><b>' + name + '</b><span>' + range + '</span></div>'; }
   return '<div class="plot-grid pgrid">' +
-    '<section class="col pcol" aria-label="第一幕">' + hd('b1','第一幕', r(0,.25)) + '<div class="pcol-bd">' + ta('a1','grow','第一幕') + point('pp1','プロットポイント（PP）1') + '</div></section>' +
+    '<section class="col pcol" aria-label="第一幕">' + hd('b1','第一幕', r(0,.25)) + '<div class="pcol-bd">' + ta('a1','grow','第一幕') + point('pp1','PP1') + '</div></section>' +
     '<section class="col pcol" aria-label="第二幕">' + hd('b2','第二幕', r(.25,.75)) + '<div class="pcol-bd"><div class="act2-in">' +
-      '<div class="half"><div class="psub"><b>前半</b><span>' + r(.25,.5) + '</span></div>' + ta('a2a','grow','第二幕前半') + point('mp','ミッドポイント（MP）') + '</div>' +
-      '<div class="half"><div class="psub"><b>後半</b><span>' + r(.5,.75) + '</span></div>' + ta('a2b','grow','第二幕後半') + point('pp2','プロットポイント（PP）2') + '</div>' +
+      '<div class="half"><div class="psub"><b>前半</b><span>' + r(.25,.5) + '</span></div>' + ta('a2a','grow','第二幕前半') + point('mp','MP') + '</div>' +
+      '<div class="half"><div class="psub"><b>後半</b><span>' + r(.5,.75) + '</span></div>' + ta('a2b','grow','第二幕後半') + point('pp2','PP2') + '</div>' +
     '</div></div></section>' +
     '<section class="col pcol" aria-label="第三幕">' + hd('b3','第三幕', r(.75,1)) + '<div class="pcol-bd">' + ta('a3','grow','第三幕') +
       (withHook ? '<div class="hook"><label for="pl-hook">次の話への引き</label><textarea id="pl-hook" class="ta fit2" rows="2" data-bind="' + root + '|plot|hook">' + esc(obj.plot.hook) + '</textarea></div>' : '') +
@@ -1977,7 +1978,7 @@ function renderSeries(w){
       '<textarea id="sr-' + k + '-text" class="ta grow" rows="8" aria-label="シリーズの' + label + 'の内容" data-bind="W|series|' + k + '|text">' + esc(getPath(s, [k,'text'])) + '</textarea>' + (extra||'') + '</div></section>';
   }
   function point(k, label){ return '<div class="point"><label for="sr-' + k + '">' + ICON.dia + label + '</label><textarea id="sr-' + k + '" class="ta" rows="2" data-bind="W|series|' + k + '">' + esc(s[k]) + '</textarea></div>'; }
-  var main = '<div class="series-grid pgrid">' + act('a1','第一幕', point('pp1','プロットポイント（PP）1')) + act('a2','第二幕', point('mp','ミッドポイント（MP）') + point('pp2','プロットポイント（PP）2')) + act('a3','第三幕') + '</div>';
+  var main = '<div class="series-grid pgrid">' + act('a1','第一幕', point('pp1','PP1')) + act('a2','第二幕', point('mp','MP') + point('pp2','PP2')) + act('a3','第三幕') + '</div>';
   return '<main class="page gut"><div class="wrap"><div class="split">' + side + '<div class="side-main">' + main + '</div></div></div></main>';
 }
 
