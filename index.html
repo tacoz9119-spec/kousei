@@ -521,7 +521,8 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .bcard:has(> .bcard-top:only-child){padding-bottom:0}
 /* 基本設定のタイトル・ジャンル・尺は「概要」の囲みに入れる */
 .basic-b .bhead{margin-bottom:16px}
-.bhead .f-len{min-width:140px;flex:0 0 auto}
+/* 尺は中身の幅だけ取り、右端に寄せる */
+.bhead .f-len{min-width:0;flex:0 0 auto;margin-left:auto}
 .bhead .fw-title{flex-basis:200px}
 .bhead .fw-M{flex-basis:200px}
 .basic-b #b-title{height:35px}
@@ -548,6 +549,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .side .add-dash{width:auto}
 .side.narrow.compact{width:232px}
 .side.narrow.compact.box-side{width:176px}
+.unit-sel{width:auto;height:35px;padding:0 6px;font-size:14px;flex:none}
 .box-side .box-sel{height:35px;font-size:14px;width:auto}
 @media (max-width: 980px){ .side.narrow.compact,.side.narrow.compact.box-side{width:auto} }
 /* 役割：脚本エディタの「柱・ト書き・セリフ」と同じ形のボタン */
@@ -686,7 +688,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.10';
+var VERSION = '1.12';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -715,6 +717,17 @@ function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(
 function clone(o){ return JSON.parse(JSON.stringify(o)); }
 function fld(label, multi){ return {id:'f'+uid(), label:label, multi:!!multi}; }
 function mins(L, r){ return Math.round(L * r); }
+/* 長さの単位：作品ごとに「分」か「枚」（w.unit）。数字はそのままで、表示の単位だけが替わる */
+function U(w){ return w && w.unit === 'page' ? '枚' : '分'; }
+function unitSel(id, unit, extra){ return '<label class="sr" for="' + id + '">単位</label><select id="' + id + '" class="sel unit-sel"' + (extra || '') + '><option value="min"' + (unit !== 'page' ? ' selected' : '') + '>分</option><option value="page"' + (unit === 'page' ? ' selected' : '') + '>枚</option></select>'; }
+/* シーンの長さは小数点以下1桁まで（0.5分・0.5枚など）。全角の数字や小数点も受け付ける */
+function toLen1(v){
+  var t = String(v == null ? '' : v).replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }).replace(/[．。]/g, '.').replace(/[^\d.]/g, '');
+  var n = parseFloat(t); if(!isFinite(n)) return null;
+  return Math.min(999, Math.max(0, Math.round(n * 10) / 10));
+}
+function len1(v){ var n = toLen1(v); return n == null ? 0 : n; }
+function fmt1(n){ return String(Math.round(n * 10) / 10); }
 function fmtDate(t){ if(!t) return ''; var d = new Date(t); return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0'); }
 function isBlank(v){ return v == null || String(v).trim() === ''; }
 function hasContent(obj){ if(!obj) return false; return Object.keys(obj).some(function(k){ return !isBlank(obj[k]); }); }
@@ -1001,7 +1014,7 @@ function epNo(w, eid){ return (w.epOrder || []).indexOf(eid) + 1; }
 function actOfEp(w, eid){ var s = w.series || {}; for(var i=0;i<ACTS.length;i++){ var a = s[ACTS[i][0]]; if(a && a.eps && a.eps.indexOf(eid) >= 0) return ACTS[i][1]; } return ''; }
 function workMeta(w){
   if(w.kind === 'serial') return KINDS.serial.label + '・全' + (w.epOrder || []).length + '話';
-  return KINDS[w.kind].label + '・' + w.length + '分';
+  return KINDS[w.kind].label + '・' + w.length + U(w);
 }
 
 /* ---------- storage: this device first, then your account (same scheme as 脚本エディタ) ---------- */
@@ -1675,8 +1688,8 @@ function boxInfo(w){
     if(!S.epId) return '';
     ctx = sceneCtx();
   } else return '';
-  var all = ctx.list.reduce(function(a, x){ return a + (toInt(x.min, 0, 999) || 0); }, 0);
-  return '<div class="tab-tools"><span class="tab-info">シーン ' + ctx.list.length + '件' + (all ? '・計 ' + all + '分（尺 ' + ctx.length + '分）' : '') + '</span>' +
+  var all = ctx.list.reduce(function(a, x){ return a + len1(x.min); }, 0), u = U(w);
+  return '<div class="tab-tools"><span class="tab-info">シーン ' + ctx.list.length + '件' + (all ? '・計 ' + fmt1(all) + u + '（尺 ' + ctx.length + u + '）' : '') + '</span>' +
     (ctx.list.length ? '<button type="button" class="btn tab-btn" data-act="copy-boxes">' + ICON.dup + '全シーンをコピー</button>' : '') + '</div>';
 }
 
@@ -1695,7 +1708,7 @@ function renderList(){
   } else {
     rows = '<div class="wl-cols" aria-hidden="true"><div>作品名</div><div>種類</div><div>長さ</div><div style="text-align:right">最終更新</div></div><div class="work-rows">' +
       works.map(function(w){
-        var len = w.kind === 'serial' ? '全' + (w.epOrder||[]).length + '話' : w.length + '分';
+        var len = w.kind === 'serial' ? '全' + (w.epOrder||[]).length + '話' : w.length + U(w);
         return '<div class="work-row"><button type="button" class="work-open" data-act="open-work" data-id="' + w.id + '">' +
           '<span class="wt">' + esc(w.title || '無題の作品') + '</span><span class="kd">' + KINDS[w.kind].label + '</span><span class="ln">' + len + '</span><span class="dt">' + fmtDate(w.updatedAt) + '</span></button>' +
           '<button type="button" class="icon-btn" data-act="dup-work" data-id="' + w.id + '" aria-label="' + esc(w.title || '無題の作品') + 'を複製" title="複製">' + ICON.dup + '</button>' +
@@ -1781,8 +1794,8 @@ function resetPass(){
 /* ---------- basic ---------- */
 function renderBasic(w){
   var lenText = w.kind === 'serial'
-    ? '全' + (w.epOrder||[]).length + '話（基本の1話' + w.baseLength + '分）'
-    : w.length + '分';
+    ? '全' + (w.epOrder||[]).length + '話（基本の1話' + w.baseLength + U(w) + '）'
+    : w.length + U(w);
   var cell = function(f){
     return '<div class="field ' + fwClass(f.w) + '"><label class="fl" for="b-' + f.id + '">' + esc(f.label) + '</label>' +
       fieldInput('W|basic|' + f.id, getPath(w, ['basic', f.id]), f, 'b-' + f.id) + '</div>';
@@ -1799,7 +1812,7 @@ function renderBasic(w){
   });
   var len = w.kind === 'serial'
     ? '<div class="field f-len"><span class="fl">尺</span><div class="readout">' + esc(lenText) + '</div></div>'
-    : '<div class="field f-len"><label class="fl" for="b-len">尺</label><div class="num"><input id="b-len" class="in" type="text" inputmode="numeric" data-change="w-len" value="' + w.length + '"><span>分</span></div></div>';
+    : '<div class="field f-len"><label class="fl" for="b-len">尺</label><div class="num"><input id="b-len" class="in" type="text" inputmode="numeric" data-change="w-len" value="' + w.length + '">' + unitSel('b-unit', w.unit, ' data-change="w-unit"') + '</div></div>';
   var cards = groups.map(function(g){
     var half = g.h && g.h.w === 'half';
     var fields = half ? g.fields.map(function(f){ return Object.assign({}, f, {w:'full', nl:true}); }) : g.fields;
@@ -1878,7 +1891,7 @@ function renderPeople(w){
 
 /* ---------- plot ---------- */
 function plotBlock(root, obj, L, withHook){
-  var r = function(a,b){ return mins(L,a) + '〜' + mins(L,b) + '分'; };
+  var r = function(a,b){ return mins(L,a) + '〜' + mins(L,b) + U(curWork()); };
   function ta(k, cls, label){ return '<textarea id="pl-' + k + '" class="ta fit ' + (cls||'') + '" rows="16" data-bind="' + root + '|plot|' + k + '"' + (label ? ' aria-label="' + label + 'の内容"' : '') + '>' + esc(obj.plot[k]) + '</textarea>'; }
   function point(k, label){ return '<div class="point"><label for="pl-' + k + '">' + ICON.dia + label + '</label><textarea id="pl-' + k + '" class="ta fit2" rows="2" data-bind="' + root + '|plot|' + k + '">' + esc(obj.plot[k]) + '</textarea></div>'; }
   /* 幕の色の帯を、それぞれのカードの見出しにする */
@@ -1911,7 +1924,8 @@ function sidePlot(w, ctx){
 var ACT_PP = {a1:'pp1', a2a:'mp', a2b:'pp2'}, PP_ACT = {pp1:'a1', mp:'a2a', pp2:'a2b'};
 function boxesBlock(w, ctx){
   var list = ctx.list, L = ctx.length, schema = w.schema.card || [];
-  function segSum(k){ return list.reduce(function(a, x){ return a + (x.seg === k ? (toInt(x.min, 0, 999) || 0) : 0); }, 0); }
+  function segSum(k){ return list.reduce(function(a, x){ return a + (x.seg === k ? len1(x.min) : 0); }, 0); }
+  var u = U(w);
   var counts = {}; SEGS.forEach(function(s){ counts[s.k] = 0; });
   list.forEach(function(s){ counts[s.seg] = (counts[s.seg]||0) + 1; });
   if(S.boxFilter !== 'all' && !SEG_BY[S.boxFilter]) S.boxFilter = 'all';
@@ -1926,7 +1940,7 @@ function boxesBlock(w, ctx){
   var body = groups.map(function(seg){
     var cards = list.map(function(sc, idx){ return {sc:sc, n:idx+1}; }).filter(function(x){ return x.sc.seg === seg.k; });
     /* 見出しのかっこ書き：幕は目安の範囲、PP・MPはどの幕に含めるか */
-    var range = seg.point ? (PP_ACT[seg.k] ? '（' + SEG_BY[PP_ACT[seg.k]].label + 'に含む）' : '') : '（' + mins(L, seg.from) + '〜' + mins(L, seg.to) + '分）';
+    var range = seg.point ? (PP_ACT[seg.k] ? '（' + SEG_BY[PP_ACT[seg.k]].label + 'に含む）' : '') : '（' + mins(L, seg.from) + '〜' + mins(L, seg.to) + u + '）';
     var sum = segSum(seg.k);
     var segLen = seg.point ? 0 : mins(L, seg.to) - mins(L, seg.from);
     /* プロットポイントの分数は、ぶら下がっている幕の合計に入れる（PP1→第一幕、MP→第二幕前半、PP2→第二幕後半） */
@@ -1934,10 +1948,10 @@ function boxesBlock(w, ctx){
     /* 件数も分数と同じ範囲で数える（幕の帯はぶら下がっているプロットポイントのシーンも含む） */
     var num = counts[seg.k] + (child ? counts[child] : 0);
     /* PP・MPの帯には件数と分数を出さない（ぶら下がっている幕の帯にまとめて出す） */
-    if(num && !seg.point) tot = '<span>シーン ' + num + '件' + (total ? '・計 ' + total + '分' : '') + (child && counts[child] ? '（' + segName(SEG_BY[child]) + 'を含む）' : '') + '</span>';
+    if(num && !seg.point) tot = '<span>シーン ' + num + '件' + (total ? '・計 ' + fmt1(total) + u : '') + (child && counts[child] ? '（' + segName(SEG_BY[child]) + 'を含む）' : '') + '</span>';
     /* 目安との差：長いときは赤、短いときは黄土色（目安を1つも入れていない段には出さない） */
-    var over = seg.point || !total ? '' : total > segLen ? '<b class="over-pill">' + (total - segLen) + '分長い</b>'
-      : total < segLen ? '<b class="over-pill short">' + (segLen - total) + '分短い</b>' : '';
+    var over = seg.point || !total ? '' : total > segLen ? '<b class="over-pill">' + fmt1(total - segLen) + u + '長い</b>'
+      : total < segLen ? '<b class="over-pill short">' + fmt1(segLen - total) + u + '短い</b>' : '';
     return '<section class="grp" data-seg="' + seg.k + '" aria-label="' + seg.label + '"><div class="grp-h ' + segBand(seg) + '">' + (seg.point ? ICON.dia : '') + '<h2>' + segName(seg) + (range ? '<small>' + range + '</small>' : '') + '</h2>' + tot + over +
       (cards.length ? '<button type="button" class="icon-btn grp-copy" data-act="copy-grp" data-v="' + seg.k + '" aria-label="' + segName(seg) + 'のシーンをコピー" title="' + segName(seg) + 'のシーンをコピー">' + ICON.dup + '</button>' : '') + '</div><div class="cards">' +
       cards.map(function(x){ return cardHTML(x.sc, x.n, schema, w); }).join('') +
@@ -1963,7 +1977,7 @@ function cardHTML(sc, n, schema, w){
       return '<div class="cf"><label for="' + id + '">' + esc(f.label) + '</label><div class="cf-in">' +
         fieldInput('S:' + sc.id + '|values|' + f.id, getPath(sc, ['values', f.id]), f, id) + picks + '</div></div>';
     }).join('') +
-    '<div class="cf"><label for="m-' + sc.id + '">長さ</label><div class="cf-in num-row"><input id="m-' + sc.id + '" class="in min-in" type="text" inputmode="numeric" value="' + esc(sc.min || '') + '" data-bind="S:' + sc.id + '|min" data-change="scene-min" data-id="' + sc.id + '"><span class="sub-l">分</span><span class="spacer"></span>' +
+    '<div class="cf"><label for="m-' + sc.id + '">長さ</label><div class="cf-in num-row"><input id="m-' + sc.id + '" class="in min-in" type="text" inputmode="decimal" value="' + esc(sc.min || '') + '" data-bind="S:' + sc.id + '|min" data-change="scene-min" data-id="' + sc.id + '"><span class="sub-l">' + U(w) + '</span><span class="spacer"></span>' +
     '<button type="button" class="icon-btn card-del" data-act="scene-del" data-id="' + sc.id + '" aria-label="シーン' + n + 'を削除">' + ICON.trash + '</button></div></div>' +
     '</article>';
 }
@@ -1971,10 +1985,10 @@ function cardHTML(sc, n, schema, w){
 /* ---------- series ---------- */
 function renderSeries(w){
   var eps = epsOf(w);
-  var side = '<aside class="side narrow" aria-label="各話の長さ"><div class="side-h">各話の長さ</div><p class="side-note">基本の長さ：' + w.baseLength + '分</p>' +
+  var side = '<aside class="side narrow" aria-label="各話の長さ"><div class="side-h">各話の長さ</div><p class="side-note">基本の長さ：' + w.baseLength + U(w) + '</p>' +
     eps.map(function(ep, i){
       return '<div class="ep-len' + (ep.length !== w.baseLength ? ' changed' : '') + '"><label for="len-' + ep.id + '">第' + (i+1) + '話</label>' +
-        '<input id="len-' + ep.id + '" class="in" type="text" inputmode="numeric" value="' + ep.length + '" data-change="ep-len" data-id="' + ep.id + '"><span>分</span></div>';
+        '<input id="len-' + ep.id + '" class="in" type="text" inputmode="numeric" value="' + ep.length + '" data-change="ep-len" data-id="' + ep.id + '"><span>' + U(w) + '</span></div>';
     }).join('') +
     '<p class="side-note" style="margin-top:8px">色のついた話は、基本の長さから変更しています。</p>' +
     '<button type="button" class="btn" data-act="ep-count">話数・長さを変更</button></aside>';
@@ -1996,14 +2010,14 @@ function renderEpisodes(w){
   var eps = epsOf(w);
   if(!eps.some(function(e){ return e.id === S.epId; })) S.epId = eps.length ? eps[0].id : null;
   var side = '<aside class="side narrow" aria-label="話の一覧">' + eps.map(function(ep, i){
-    return '<button type="button" class="side-item" data-act="pick-ep" data-id="' + ep.id + '"' + (ep.id === S.epId ? ' aria-current="true"' : '') + '>第' + (i+1) + '話<span class="cnt">' + ep.length + '分</span></button>';
+    return '<button type="button" class="side-item" data-act="pick-ep" data-id="' + ep.id + '"' + (ep.id === S.epId ? ' aria-current="true"' : '') + '>第' + (i+1) + '話<span class="cnt">' + ep.length + U(w) + '</span></button>';
   }).join('') + '</aside>';
   var ep = S.episodes[w.id][S.epId];
   var main;
   if(!ep){ main = '<div class="empty"><p>話がありません。「シリーズ構成」で話数を設定してください。</p></div>'; }
   else {
     var act = actOfEp(w, ep.id);
-    main = '<div class="ep-head"><h2>第' + epNo(w, ep.id) + '話</h2><span>' + ep.length + '分' + (act ? '・シリーズの' + act : '') + '</span>' +
+    main = '<div class="ep-head"><h2>第' + epNo(w, ep.id) + '話</h2><span>' + ep.length + U(w) + (act ? '・シリーズの' + act : '') + '</span>' +
       '<div class="seg" role="group" aria-label="第' + epNo(w, ep.id) + '話の表示" style="margin-left:auto">' +
       '<button type="button" data-act="ep-sub" data-v="plot" aria-pressed="' + (S.epSub === 'plot') + '">プロット</button>' +
       '<button type="button" data-act="ep-sub" data-v="boxes" aria-pressed="' + (S.epSub === 'boxes') + '">箱書き</button></div></div>' +
@@ -2016,7 +2030,7 @@ function renderEpisodes(w){
 var W_OPTS = [['S','小（160px）'],['M','中（260px）'],['half','半分'],['fill','残りの幅'],['full','全幅']];
 function renderTemplates(){
   var k = S.tplKind, t = S.tplTab, list = S.templates[k][t], isCard = t === 'card';
-  var fixed = t === 'basic' ? [['タイトル','1行目の先頭。残りの幅に広がります'],['尺','1行目の最後。作品の長さ（分）を入力します。連続ドラマでは話数が自動で入ります']]
+  var fixed = t === 'basic' ? [['タイトル','1行目の先頭。残りの幅に広がります'],['尺','1行目の最後。作品の長さ（分または枚）を入力します。連続ドラマでは話数が自動で入ります']]
     : t === 'person' ? [['名前','1行目の先頭（中の幅）'],['役割','最初に「改行」した行の先頭']] : [];
   var notes = {
     basic:'見出しから次の見出しまでの項目が、1枚のカードにまとまります。幅を「半分」にした見出しのカードが続くと、左右に並びます。最初の見出しより前の項目は、タイトル・尺と同じ行に並びます。幅が「半分」の見出しのカードの中では、項目は縦に1つずつ並びます。カードの中では、「改行」にチェックした項目から新しい行になります。PDFもこの順で出力します。',
@@ -2077,9 +2091,9 @@ function modalHTML(m){
     var kindBtns = KIND_ORDER.map(function(k){ return '<button type="button" data-act="nw-kind" data-v="' + k + '" aria-pressed="' + (m.kind === k) + '"><b>' + KINDS[k].label + '</b><small>' + KINDS[k].hint + '</small></button>'; }).join('');
     var len = m.kind === 'serial'
       ? '<div class="boxed"><div class="inline"><div class="field"><label class="fl" for="nw-eps">話数</label><div class="num"><input id="nw-eps" class="in" type="text" inputmode="numeric" value="' + esc(m.eps) + '"><span>話</span></div></div>' +
-        '<div class="field"><label class="fl" for="nw-base">基本の1話の長さ</label><div class="num"><input id="nw-base" class="in" type="text" inputmode="numeric" value="' + esc(m.base) + '"><span>分</span></div></div></div>' +
+        '<div class="field"><label class="fl" for="nw-base">基本の1話の長さ</label><div class="num"><input id="nw-base" class="in" type="text" inputmode="numeric" value="' + esc(m.base) + '">' + unitSel('nw-unit', m.unit) + '</div></div></div>' +
         '<p class="sub-l">各話の長さは、作品を作ったあとで1話ずつ変更できます。</p></div>'
-      : '<div class="field"><label class="fl" for="nw-len">長さ</label><div class="num"><input id="nw-len" class="in" type="text" inputmode="numeric" value="' + esc(m.len) + '"><span>分</span></div></div>';
+      : '<div class="field"><label class="fl" for="nw-len">長さ</label><div class="num"><input id="nw-len" class="in" type="text" inputmode="numeric" value="' + esc(m.len) + '">' + unitSel('nw-unit', m.unit) + '</div></div>';
     return '<h2 id="m-title">新しい作品を作る</h2>' +
       '<div class="field"><label class="fl" for="nw-title">作品名</label><input id="nw-title" class="in" type="text" placeholder="作品名を入力" value="' + esc(m.title) + '"></div>' +
       '<fieldset style="margin:0;padding:0;border:none" class="field"><legend class="fl" style="margin-bottom:8px">作品の種類</legend><div class="kind-grid">' + kindBtns + '</div></fieldset>' +
@@ -2091,7 +2105,7 @@ function modalHTML(m){
     var w2 = curWork();
     return '<h2 id="m-title">話数・基本の長さを変更</h2>' +
       '<div class="inline"><div class="field"><label class="fl" for="ec-count">話数</label><div class="num"><input id="ec-count" class="in" type="text" inputmode="numeric" value="' + esc(m.count) + '"><span>話</span></div></div>' +
-      '<div class="field"><label class="fl" for="ec-base">基本の1話の長さ</label><div class="num"><input id="ec-base" class="in" type="text" inputmode="numeric" value="' + esc(m.base) + '"><span>分</span></div></div></div>' +
+      '<div class="field"><label class="fl" for="ec-base">基本の1話の長さ</label><div class="num"><input id="ec-base" class="in" type="text" inputmode="numeric" value="' + esc(m.base) + '">' + unitSel('ec-unit', m.unit) + '</div></div></div>' +
       '<p class="sub-l">話数を減らすと、最後の話から削除されます。基本の長さを変えると、基本の長さのままの話だけが新しい長さになります。</p>' +
       (m.warn ? '<p class="err-text">' + esc(m.warn) + '</p>' : '') + (m.err ? '<p class="err-text">' + esc(m.err) + '</p>' : '') +
       '<div class="modal-actions"><button type="button" class="btn" data-act="close-modal">キャンセル</button><button type="button" class="btn ' + (m.warn ? 'danger' : 'primary') + '" data-act="ec-save">' + (m.warn ? '削除して変更' : '変更') + '</button></div>';
@@ -2194,11 +2208,12 @@ function focusSoon(sel){ setTimeout(function(){ var el = document.querySelector(
 function readModal(ids){ var o = {}; ids.forEach(function(id){ var el = document.getElementById(id); if(el) o[id] = el.value; }); return o; }
 
 function createWork(){
-  var m = S.modal, v = readModal(['nw-title','nw-len','nw-eps','nw-base']);
-  m.title = v['nw-title'] || ''; if(v['nw-len'] != null) m.len = v['nw-len']; if(v['nw-eps'] != null) m.eps = v['nw-eps']; if(v['nw-base'] != null) m.base = v['nw-base'];
+  var m = S.modal, v = readModal(['nw-title','nw-len','nw-eps','nw-base','nw-unit']);
+  m.title = v['nw-title'] || ''; if(v['nw-len'] != null) m.len = v['nw-len']; if(v['nw-eps'] != null) m.eps = v['nw-eps']; if(v['nw-base'] != null) m.base = v['nw-base']; if(v['nw-unit'] != null) m.unit = v['nw-unit'];
   var tpl = clone(S.templates[m.kind]);
   var w = {v:1, id:'w-' + uid(), title:m.title.trim() || '無題の作品', kind:m.kind, createdAt:Date.now(), updatedAt:Date.now(),
     schema:tpl, basic:{}, people:[]};
+  if(m.unit === 'page') w.unit = 'page';
   /* ひな形は最新の形なので、古い形を直す処理は不要（済みの印を付けておく） */
   ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16','mig17','mig18','mig19','mig20'].forEach(function(k){ w[k] = true; });
   if(m.kind === 'serial'){
@@ -2213,7 +2228,7 @@ function createWork(){
     S.tab = 'basic';
   } else {
     var L = toInt(m.len, 1, 600);
-    if(!L){ m.err = '長さを分単位の数字で入力してください。'; renderModal(false); return; }
+    if(!L){ m.err = '長さを数字で入力してください。'; renderModal(false); return; }
     w.length = L; w.plot = emptyPlot(false); w.scenes = [];
     S.works[w.id] = w;
     S.tab = 'basic';
@@ -2292,9 +2307,13 @@ document.addEventListener('change', function(e){
     var rest = ctx.list.filter(function(s){ return s !== sc; });
     ctx.owner.scenes = sortScenes(rest.concat([sc]));
     ctx.save(); render(); focusSoon('#seg-' + sc.id);
+  } else if(a === 'w-unit'){
+    /* 単位を替えても、入力済みの数字はそのまま（表示の単位だけが替わる） */
+    var nu = el.value === 'page' ? 'page' : 'min'; if((w.unit || 'min') === nu) return;
+    checkpoint(); if(nu === 'page') w.unit = 'page'; else delete w.unit; saveWorkSoon(w); render(); focusSoon('#b-unit');
   } else if(a === 'w-len'){
     var wl = toInt(el.value, 1, 600);
-    if(!wl){ el.value = w.length; toast('尺は1〜600の数字（分）で入力してください'); return; }
+    if(!wl){ el.value = w.length; toast('尺は1〜600の数字（' + U(w) + '）で入力してください'); return; }
     el.value = wl;
     if(wl === w.length) return;
     checkpoint(); w.length = wl; saveWorkSoon(w);
@@ -2316,7 +2335,7 @@ document.addEventListener('change', function(e){
     saveTemplatesSoon();
   } else if(a === 'scene-min'){
     var cm = sceneCtx(), scm = cm.list.find(function(x){ return x.id === el.dataset.id; }); if(!scm) return;
-    var nm = toInt(el.value, 0, 999); scm.min = nm == null ? '' : String(nm); cm.save(); renderKeep();
+    var nm = toLen1(el.value); scm.min = nm == null ? '' : fmt1(nm); el.value = scm.min; cm.save(); renderKeep();
   } else if(a === 'as-check'){
     S.modal.sel[el.value] = el.checked;
   } else if(a === 'pdf-check'){
@@ -2368,8 +2387,8 @@ document.addEventListener('click', function(e){
     case 'new-work':
       openModal({type:'new', kind:'single', title:'', len:'', eps:10, base:60}); break;
     case 'nw-kind':
-      var vals = readModal(['nw-title','nw-len','nw-eps','nw-base']), m = S.modal;
-      m.title = vals['nw-title'] || ''; if(vals['nw-eps'] != null) m.eps = vals['nw-eps']; if(vals['nw-base'] != null) m.base = vals['nw-base'];
+      var vals = readModal(['nw-title','nw-len','nw-eps','nw-base','nw-unit']), m = S.modal;
+      m.title = vals['nw-title'] || ''; if(vals['nw-eps'] != null) m.eps = vals['nw-eps']; if(vals['nw-base'] != null) m.base = vals['nw-base']; if(vals['nw-unit'] != null) m.unit = vals['nw-unit'];
       m.kind = v; m.err = '';
       m.len = KINDS[v].def == null ? '' : KINDS[v].def;
       renderModal(false); break;
@@ -2418,7 +2437,7 @@ document.addEventListener('click', function(e){
 
     case 'pick-ep': flushAll(); S.epId = id; render(); window.scrollTo(0,0); break;
     case 'ep-sub': S.epSub = v; render(); break;
-    case 'ep-count': openModal({type:'epcount', count:(w.epOrder||[]).length, base:w.baseLength}); break;
+    case 'ep-count': openModal({type:'epcount', count:(w.epOrder||[]).length, base:w.baseLength, unit:w.unit || 'min'}); break;
     case 'ec-save': saveEpCount(w); break;
     case 'assign':
       var sel = {}; ((w.series[v] && w.series[v].eps) || []).forEach(function(x){ sel[x] = true; });
@@ -2694,9 +2713,9 @@ function copyText(title, text){
 }
 
 function saveEpCount(w){
-  var m = S.modal, vals = readModal(['ec-count','ec-base']);
+  var m = S.modal, vals = readModal(['ec-count','ec-base','ec-unit']);
   var n = toInt(vals['ec-count'], 1, 100), base = toInt(vals['ec-base'], 1, 600);
-  m.count = vals['ec-count']; m.base = vals['ec-base'];
+  m.count = vals['ec-count']; m.base = vals['ec-base']; if(vals['ec-unit'] != null) m.unit = vals['ec-unit'];
   if(!n || !base){ m.err = '話数と基本の1話の長さを数字で入力してください。'; m.warn = ''; renderModal(false); return; }
   var cur = w.epOrder.length;
   if(n < cur && !m.confirmed){
@@ -2705,6 +2724,7 @@ function saveEpCount(w){
     m.err = ''; m.confirmed = true; renderModal(false); return;
   }
   checkpoint();
+  if(m.unit === 'page') w.unit = 'page'; else delete w.unit;
   var oldBase = w.baseLength;
   if(base !== oldBase){ epsOf(w).forEach(function(ep){ if(ep.length === oldBase){ ep.length = base; saveEpSoon(w, ep); } }); w.baseLength = base; }
   if(n > cur){ for(var i=cur;i<n;i++){ var ep = newEp(base); S.episodes[w.id][ep.id] = ep; w.epOrder.push(ep.id); saveEpSoon(w, ep); } }
@@ -2773,7 +2793,7 @@ function pdfWriter(doc){
   };
 }
 function pdfPlot(P, obj, L, withHook){
-  var r = function(a,b){ return '（' + mins(L,a) + '〜' + mins(L,b) + '分）'; };
+  var r = function(a,b){ return '（' + mins(L,a) + '〜' + mins(L,b) + U(curWork()) + '）'; };
   P.h2('第一幕' + r(0,.25)); P.para(obj.plot.a1);
   P.h2('◆ プロットポイント1', P.C.point); P.para(obj.plot.pp1);
   P.h2('第二幕前半' + r(.25,.5)); P.para(obj.plot.a2a);
@@ -2788,7 +2808,7 @@ function pdfScenes(P, w, list){
   list.forEach(function(sc, i){
     P.h2('シーン' + (i+1) + '　' + SEG_BY[sc.seg].label);
     (w.schema.card || []).forEach(function(f){ P.field(f.label, getPath(sc, ['values', f.id]), 4); });
-    if(!isBlank(sc.min)) P.field('長さ', sc.min + '分', 4);
+    if(!isBlank(sc.min)) P.field('長さ', sc.min + U(w), 4);
   });
 }
 async function makePdf(){
@@ -2804,7 +2824,7 @@ async function makePdf(){
     function section(t){ P.h1(t, !first); first = false; }
     if(m.sel.basic){
       section('基本設定');
-      var lenStr = w.kind === 'serial' ? '全' + w.epOrder.length + '話（基本の1話' + w.baseLength + '分）' : w.length + '分';
+      var lenStr = w.kind === 'serial' ? '全' + w.epOrder.length + '話（基本の1話' + w.baseLength + U(w) + '）' : w.length + U(w);
       var bsch = w.schema.basic || [], lead = 0;
       while(lead < bsch.length && !isHead(bsch[lead]) && !bsch[lead].nl && bsch[lead].w !== 'full') lead++;
       bsch.forEach(function(f, i){ if(i === lead) P.field('尺', lenStr); if(isHead(f)) P.h2(f.label, P.C.accent); else P.field(f.label, getPath(w, ['basic', f.id])); });
@@ -2826,7 +2846,7 @@ async function makePdf(){
     } else {
       if(m.sel.series){
         section('シリーズ構成');
-        P.note(epsOf(w).map(function(ep, i){ return '第' + (i+1) + '話 ' + ep.length + '分'; }).join('　'));
+        P.note(epsOf(w).map(function(ep, i){ return '第' + (i+1) + '話 ' + ep.length + U(w); }).join('　'));
         ACTS.forEach(function(x){
           var ids = (w.series[x[0]].eps || []).slice().sort(function(a,b){ return epNo(w,a)-epNo(w,b); });
           P.h2(x[1] + (ids.length ? '（' + ids.map(function(id){ return '第' + epNo(w,id) + '話'; }).join('・') + '）' : ''));
@@ -2837,7 +2857,7 @@ async function makePdf(){
       }
       if(m.sel.eps){
         epsOf(w).forEach(function(ep, i){
-          section('第' + (i+1) + '話（' + ep.length + '分）');
+          section('第' + (i+1) + '話（' + ep.length + U(w) + '）');
           P.h2('プロット', P.C.accent); pdfPlot(P, ep, ep.length, true);
           P.space(4); P.h2('箱書き', P.C.accent); pdfScenes(P, w, ep.scenes);
         });

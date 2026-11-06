@@ -2,7 +2,7 @@
    起動時は端末に保存した版をすぐ使い、裏で新しい版を取りに行く（更新は次回の起動から反映）。
    ファイルを更新したら、下の CACHE の番号を1つ増やすと、確実に入れ替わる。
    同じアドレス（github.io）の脚本エディタの保存分を消さないよう、名前が「kousei-」で始まるものだけを扱う。 */
-const CACHE='kousei-v62';
+const CACHE='kousei-v64';
 const FONTS='kousei-fonts';
 const FILES=['./','index.html','firebase-config.js','firebase.js','jspdf.umd.min.js','kp-font.ttf','manifest.webmanifest','icon-180.png','icon-180-dark.png','icon-192.png','icon-512.png','favicon-16.png','favicon-32.png','favicon-48.png'];
 self.addEventListener('install',e=>{ e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting())); });
