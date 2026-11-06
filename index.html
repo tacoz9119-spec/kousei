@@ -542,7 +542,9 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .side .side-top span{color:var(--muted);font-size:12.5px}
 .side .add-dash{width:auto}
 .side.narrow.compact{width:232px}
-@media (max-width: 980px){ .side.narrow.compact{width:auto} }
+.side.narrow.compact.box-side{width:176px}
+.box-side .box-sel{height:35px;font-size:14px;width:auto}
+@media (max-width: 980px){ .side.narrow.compact,.side.narrow.compact.box-side{width:auto} }
 /* 役割：脚本エディタの「柱・ト書き・セリフ」と同じ形のボタン */
 .people-a .f-role .seg{width:auto;align-self:flex-start;height:35px;padding:0;gap:0;background:var(--surface);border:1px solid var(--line2);border-radius:8px;overflow:hidden}
 .people-a .f-role .seg button{min-height:0;height:100%;border-radius:0;padding:0 16px;background:transparent;color:var(--fg);font-weight:400;box-shadow:none}
@@ -648,7 +650,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.04';
+var VERSION = '1.05';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -1829,10 +1831,10 @@ function plotBlock(root, obj, L, withHook){
   /* 幕の色の帯を、それぞれのカードの見出しにする */
   function hd(cls, name, range){ return '<div class="pcol-hd ' + cls + '"><b>' + name + '</b><span>' + range + '</span></div>'; }
   return '<div class="plot-grid pgrid">' +
-    '<section class="col pcol" aria-label="第一幕">' + hd('b1','第一幕', r(0,.25)) + '<div class="pcol-bd">' + ta('a1','grow','第一幕') + point('pp1','プロットポイント1') + '</div></section>' +
+    '<section class="col pcol" aria-label="第一幕">' + hd('b1','第一幕', r(0,.25)) + '<div class="pcol-bd">' + ta('a1','grow','第一幕') + point('pp1','プロットポイント（PP）1') + '</div></section>' +
     '<section class="col pcol" aria-label="第二幕">' + hd('b2','第二幕', r(.25,.75)) + '<div class="pcol-bd"><div class="act2-in">' +
-      '<div class="half"><div class="psub"><b>前半</b><span>' + r(.25,.5) + '</span></div>' + ta('a2a','grow','第二幕前半') + point('mp','ミッドポイント') + '</div>' +
-      '<div class="half"><div class="psub"><b>後半</b><span>' + r(.5,.75) + '</span></div>' + ta('a2b','grow','第二幕後半') + point('pp2','プロットポイント2') + '</div>' +
+      '<div class="half"><div class="psub"><b>前半</b><span>' + r(.25,.5) + '</span></div>' + ta('a2a','grow','第二幕前半') + point('mp','ミッドポイント（MP）') + '</div>' +
+      '<div class="half"><div class="psub"><b>後半</b><span>' + r(.5,.75) + '</span></div>' + ta('a2b','grow','第二幕後半') + point('pp2','プロットポイント（PP）2') + '</div>' +
     '</div></div></section>' +
     '<section class="col pcol" aria-label="第三幕">' + hd('b3','第三幕', r(.75,1)) + '<div class="pcol-bd">' + ta('a3','grow','第三幕') +
       (withHook ? '<div class="hook"><label for="pl-hook">次の話への引き</label><textarea id="pl-hook" class="ta fit2" rows="2" data-bind="' + root + '|plot|hook">' + esc(obj.plot.hook) + '</textarea></div>' : '') +
@@ -1849,7 +1851,7 @@ function sortScenes(list){
 function sidePlot(w, ctx){
   if(S.boxFilter === 'all') return '';
   var seg = SEG_BY[S.boxFilter], root = w.kind === 'serial' ? 'E' : 'W', plot = ctx.owner.plot || {};
-  return '<div class="side-plot"><label class="fl" for="sp-' + seg.k + '">プロット：' + seg.label + '</label>' +
+  return '<div class="side-plot"><label class="fl" for="sp-' + seg.k + '">プロット：' + segName(seg) + '</label>' +
     '<textarea id="sp-' + seg.k + '" class="ta fit2 side-ta" rows="' + (seg.point ? 3 : 8) + '" data-bind="' + root + '|plot|' + seg.k + '">' + esc(plot[seg.k]) + '</textarea>' +
     '<p class="side-plot-note">ここで直した内容は、プロット画面にも反映されます。</p></div>';
 }
@@ -1860,9 +1862,11 @@ function boxesBlock(w, ctx){
   var counts = {}; SEGS.forEach(function(s){ counts[s.k] = 0; });
   list.forEach(function(s){ counts[s.seg] = (counts[s.seg]||0) + 1; });
   if(S.boxFilter !== 'all' && !SEG_BY[S.boxFilter]) S.boxFilter = 'all';
-  var side = '<aside class="side narrow compact" aria-label="段で絞り込む"><div class="side-top"><b>段</b></div>' +
-    '<button type="button" class="side-item" data-act="box-filter" data-v="all"' + (S.boxFilter === 'all' ? ' aria-current="true"' : '') + '><span class="mk"></span>すべて<span class="cnt">' + list.length + '</span></button>' +
-    SEGS.map(function(s){ return '<button type="button" class="side-item" data-act="box-filter" data-v="' + s.k + '"' + (S.boxFilter === s.k ? ' aria-current="true"' : '') + '>' + segMark(s) + (s.side || s.label) + '<span class="cnt">' + counts[s.k] + '</span></button>'; }).join('') +
+  /* 段はプルダウンで選ぶ。項目名は略称（PP1・MP・PP2）にして、パネルの幅を詰める */
+  var side = '<aside class="side narrow compact box-side" aria-label="段で絞り込む"><div class="side-top"><b>段</b></div>' +
+    '<label class="sr" for="box-filter">表示する段</label><select id="box-filter" class="sel box-sel" data-change="box-filter">' +
+    '<option value="all"' + (S.boxFilter === 'all' ? ' selected' : '') + '>すべて（' + list.length + '件）</option>' +
+    SEGS.map(function(s){ return '<option value="' + s.k + '"' + (S.boxFilter === s.k ? ' selected' : '') + '>' + segName(s) + '（' + counts[s.k] + '件）</option>'; }).join('') + '</select>' +
     sidePlot(w, ctx) + '</aside>';
   /* 「すべて」ではシーンのない段の帯も出す（帯ごとに最初のシーンを追加できるように） */
   var groups = S.boxFilter === 'all' ? SEGS : [SEG_BY[S.boxFilter]];
@@ -1930,7 +1934,7 @@ function renderSeries(w){
       '<textarea id="sr-' + k + '-text" class="ta grow" rows="8" aria-label="シリーズの' + label + 'の内容" data-bind="W|series|' + k + '|text">' + esc(getPath(s, [k,'text'])) + '</textarea>' + (extra||'') + '</div></section>';
   }
   function point(k, label){ return '<div class="point"><label for="sr-' + k + '">' + ICON.dia + label + '</label><textarea id="sr-' + k + '" class="ta" rows="2" data-bind="W|series|' + k + '">' + esc(s[k]) + '</textarea></div>'; }
-  var main = '<div class="series-grid pgrid">' + act('a1','第一幕', point('pp1','プロットポイント1')) + act('a2','第二幕', point('mp','ミッドポイント') + point('pp2','プロットポイント2')) + act('a3','第三幕') + '</div>';
+  var main = '<div class="series-grid pgrid">' + act('a1','第一幕', point('pp1','プロットポイント（PP）1')) + act('a2','第二幕', point('mp','ミッドポイント（MP）') + point('pp2','プロットポイント（PP）2')) + act('a3','第三幕') + '</div>';
   return '<main class="page gut"><div class="wrap"><div class="split">' + side + '<div class="side-main">' + main + '</div></div></div></main>';
 }
 
@@ -2221,6 +2225,7 @@ document.addEventListener('change', function(e){
   if(el.id === 'import-file' && el.files && el.files[0]){ importBackup(el.files[0]); el.value = ''; return; }
   var a = el.dataset && el.dataset.change; if(!a) return;
   var w = curWork();
+  if(a === 'box-filter'){ S.boxFilter = el.value; render(); return; }
   if(a === 'scene-seg'){
     var ctx = sceneCtx(), sc = ctx.list.find(function(s){ return s.id === el.dataset.id; }); if(!sc) return;
     checkpoint(); sc.seg = el.value;
