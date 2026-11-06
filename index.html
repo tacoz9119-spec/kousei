@@ -508,14 +508,8 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .bcard-top .link-btn:hover{opacity:1}
 .bcard > .bcard-top:only-child{margin-bottom:0}
 .bcard:has(> .bcard-top:only-child){padding-bottom:0}
-/* 基本設定のタイトル・ジャンル・尺、人物の名前・役割も、見出しを青い帯にした角丸の枠にする */
-.basic-b .bhead .frow,.phead{align-items:stretch}
-.bhead .field,.phead .field{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;gap:0;padding-bottom:14px}
-.bhead .field > .fl,.phead .field > .fl{display:block;background:var(--act1);color:var(--act1-fg);padding:7px 20px;font-size:14px;font-weight:700}
-.bhead .field > :not(.fl),.phead .field > :not(.fl){margin:14px 20px 0;width:calc(100% - 40px);box-sizing:border-box}
+/* 基本設定のタイトル・ジャンル・尺は「概要」の囲みに入れる */
 .basic-b .bhead{margin-bottom:16px}
-.basic-b .bhead .frow,.phead{gap:16px}
-.bhead .field,.phead .field{padding-bottom:18px}
 .bhead .f-len{min-width:140px;flex:0 0 auto}
 .bhead .fw-title{flex-basis:200px}
 .bhead .fw-M{flex-basis:200px}
@@ -551,11 +545,9 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .people-a .f-role .seg button + button{border-left:1px solid var(--line2)}
 .people-a .f-role .seg button[aria-pressed="true"]{background:var(--act2);color:var(--act2-fg);font-weight:700}
 /* ---- 見出しの作り（v1.06）：色の帯をやめ、太字＋左の印＋下の細い線にする。4画面で共通 ---- */
-/* 上段（基本設定のタイトル・ジャンル・尺、人物の名前・役割）は1つの囲みにまとめ、項目名は小さな灰色の文字に */
-.basic-b .bhead .frow,.phead{gap:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 8px 4px}
-.bhead .field,.phead .field{border:none;background:transparent;border-radius:0;padding-bottom:12px}
-.bhead .field > .fl,.phead .field > .fl{background:transparent;color:var(--muted);font-size:12.5px;font-weight:500;padding:10px 20px 0}
-.bhead .field > :not(.fl),.phead .field > :not(.fl){margin-top:6px}
+/* 人物：名前と役割はプロフィールの1行目。役割は右端に寄せ、名前の欄をその分伸ばす */
+.p-top .p-nm{flex:1 1 200px;min-width:0}
+.p-top .f-role{flex:none;margin-left:auto}
 /* 囲みの見出し */
 .bcard{padding-top:4px}
 .bcard > .bcard-h,.bcard-top{background:transparent;color:var(--fg);border-bottom:1px solid var(--line);margin:0 20px 12px;padding:14px 0 6px 12px;position:relative;font-size:15px}
@@ -682,7 +674,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.06';
+var VERSION = '1.07';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -1803,7 +1795,7 @@ function renderBasic(w){
       (g.h ? '<h2 class="bcard-h" id="bh-' + g.h.id + '">' + esc(g.h.label) + '</h2>' : '') +
       (fields.length ? flowRows(fields, cell) : '<p class="sub-l">この見出しには項目がありません。「ひな形を編集」で項目を追加できます。</p>') + '</section>';
   }).join('');
-  return '<main class="page gut basic-b"><div class="wrap"><div class="bhead">' + flowRows(sch.slice(0, headEnd), cell, [title], [len]) + '</div>' +
+  return '<main class="page gut basic-b"><div class="wrap"><div class="bhead"><section class="bcard wide" aria-labelledby="bh-top"><h2 class="bcard-h" id="bh-top">概要</h2>' + flowRows(sch.slice(0, headEnd), cell, [title], [len]) + '</section></div>' +
     (cards ? '<div class="bgrid">' + cards + '</div>' : '') + '</div></main>';
 }
 
@@ -1867,10 +1859,9 @@ function renderPeople(w){
       '</div></div>';
     var pf = visiblePF(w, p);
     /* プロフィールとアークは、主人公と主要人物にだけ出す（指定なしの人物に書いた内容は消さずに残す） */
-    main = '<div class="phead">' + nameCell + roleCell + '</div>' + (hasProfile(p) ?
-      '<section class="bcard" aria-labelledby="pf-h-' + p.id + '"><h2 class="bcard-h" id="pf-h-' + p.id + '">プロフィール</h2>' +
-      (pf.length ? flowRows(pf, cell) : '<p class="sub-l">プロフィールの項目がありません。「ひな形を編集」で追加できます。</p>') + '</section>' + arc
-      : '') + '<div><button type="button" class="link-btn p-del" data-act="delete-person" data-id="' + p.id + '">この人物を削除</button></div>';
+    main = '<section class="bcard" aria-labelledby="pf-h-' + p.id + '"><h2 class="bcard-h" id="pf-h-' + p.id + '">プロフィール</h2>' +
+      '<div class="frow p-top">' + nameCell + roleCell + '</div>' +
+      (hasProfile(p) && pf.length ? flowRows(pf, cell) : '') + '</section>' + (hasProfile(p) ? arc : '') + '<div><button type="button" class="link-btn p-del" data-act="delete-person" data-id="' + p.id + '">この人物を削除</button></div>';
   }
   return '<main class="page gut basic-b people-a"><div class="wrap"><div class="split">' + side + '<div class="side-main">' + main + '</div></div></div></main>';
 }
