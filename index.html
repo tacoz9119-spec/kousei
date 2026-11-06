@@ -32,7 +32,7 @@
   --bg:#F5F6F6; --surface:#FCFCFB; --surface2:#F5F6F6; --sunken:#ECEEEE; --bar:#F5F6F6;
   --fg:#1D2224; --fg2:#3A4244; --muted:#5C6668; --line:#CDD2D3; --line2:#C3C8C9;
   --accent:#1D2224; --accent-strong:#1D2224; --accent-weak:#E6E9E9; --on-accent:#FCFCFB; --mark:#2D5B8C;
-  --act1:#C9D8EA; --act1-fg:#1E4166; --act2:#2D5B8C; --act2-fg:#FFFFFF; --act3:#8FADCF; --act3-fg:#14304F;
+  --act1:#C9D8EA; --act1-fg:#1E4166; --act2:#2D5B8C; --act2-fg:#FFFFFF; --act3:#8FADCF; --act3-fg:#14304F; --mk1:#93B1D4; --mk2:#2D5B8C; --mk3:#5D80AA;
   --point-bg:#F8EFEB; --point-line:#E0BCAF; --point-fg:#8E3420; --point-mark:#B23F27;
   --input-bg:#FCFCFB; --short:#9A5B00; --danger:#B3261E; --danger-weak:#FBE9E7; --overlay:rgba(29,34,36,.5); --shadow:rgba(29,34,36,.16);
   --f-body:'Noto Sans JP','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',system-ui,sans-serif;
@@ -42,7 +42,7 @@
   --bg:#131718; --surface:#1E2325; --surface2:#181D1E; --sunken:#262C2E; --bar:#131718;
   --fg:#E7E4DD; --fg2:#C9CCC8; --muted:#98A2A4; --line:#343C3E; --line2:#3E4749;
   --accent:#E7E4DD; --accent-strong:#E7E4DD; --accent-weak:#2A3133; --on-accent:#131718; --mark:#8DB4E2;
-  --act1:#2A3B52; --act1-fg:#D3E2F4; --act2:#8DB4E2; --act2-fg:#0E1724; --act3:#4B6A90; --act3-fg:#EAF1FA;
+  --act1:#2A3B52; --act1-fg:#D3E2F4; --act2:#8DB4E2; --act2-fg:#0E1724; --act3:#4B6A90; --act3-fg:#EAF1FA; --mk1:#4F6F98; --mk2:#8DB4E2; --mk3:#6F92BD;
   --point-bg:#33241E; --point-line:#6E4A3C; --point-fg:#F0B49C; --point-mark:#E5835F;
   --input-bg:#181D1E; --short:#EDC06A; --danger:#F2B8B5; --danger-weak:#3A1F1E; --overlay:rgba(0,0,0,.6); --shadow:rgba(0,0,0,.5);
   color-scheme:dark; } }
@@ -50,7 +50,7 @@
   --bg:#131718; --surface:#1E2325; --surface2:#181D1E; --sunken:#262C2E; --bar:#131718;
   --fg:#E7E4DD; --fg2:#C9CCC8; --muted:#98A2A4; --line:#343C3E; --line2:#3E4749;
   --accent:#E7E4DD; --accent-strong:#E7E4DD; --accent-weak:#2A3133; --on-accent:#131718; --mark:#8DB4E2;
-  --act1:#2A3B52; --act1-fg:#D3E2F4; --act2:#8DB4E2; --act2-fg:#0E1724; --act3:#4B6A90; --act3-fg:#EAF1FA;
+  --act1:#2A3B52; --act1-fg:#D3E2F4; --act2:#8DB4E2; --act2-fg:#0E1724; --act3:#4B6A90; --act3-fg:#EAF1FA; --mk1:#4F6F98; --mk2:#8DB4E2; --mk3:#6F92BD;
   --point-bg:#33241E; --point-line:#6E4A3C; --point-fg:#F0B49C; --point-mark:#E5835F;
   --input-bg:#181D1E; --short:#EDC06A; --danger:#F2B8B5; --danger-weak:#3A1F1E; --overlay:rgba(0,0,0,.6); --shadow:rgba(0,0,0,.5);
   color-scheme:dark; }
@@ -550,6 +550,38 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .people-a .f-role .seg button{min-height:0;height:100%;border-radius:0;padding:0 16px;background:transparent;color:var(--fg);font-weight:400;box-shadow:none}
 .people-a .f-role .seg button + button{border-left:1px solid var(--line2)}
 .people-a .f-role .seg button[aria-pressed="true"]{background:var(--act2);color:var(--act2-fg);font-weight:700}
+/* ---- 見出しの作り（v1.06）：色の帯をやめ、太字＋左の印＋下の細い線にする。4画面で共通 ---- */
+/* 上段（基本設定のタイトル・ジャンル・尺、人物の名前・役割）は1つの囲みにまとめ、項目名は小さな灰色の文字に */
+.basic-b .bhead .frow,.phead{gap:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 8px 4px}
+.bhead .field,.phead .field{border:none;background:transparent;border-radius:0;padding-bottom:12px}
+.bhead .field > .fl,.phead .field > .fl{background:transparent;color:var(--muted);font-size:12.5px;font-weight:500;padding:10px 20px 0}
+.bhead .field > :not(.fl),.phead .field > :not(.fl){margin-top:6px}
+/* 囲みの見出し */
+.bcard{padding-top:4px}
+.bcard > .bcard-h,.bcard-top{background:transparent;color:var(--fg);border-bottom:1px solid var(--line);margin:0 20px 12px;padding:14px 0 6px 12px;position:relative;font-size:15px}
+.bcard > .bcard-h::before,.bcard-top::before{display:block;content:"";position:absolute;left:0;top:17px;width:4px;height:16px;border-radius:2px;background:var(--mark)}
+.bcard-top{padding-top:10px;min-height:0}
+.bcard-top::before{top:15px}
+.bcard-top .bcard-h{font-size:15px}
+.bcard-top .bcard-h::before{display:none}
+.bcard-top .btn{color:var(--fg)}
+.bcard > .bcard-top:only-child{margin-bottom:12px}
+/* 左パネル（人物・段）の見出し */
+.side .side-top{background:transparent;border-bottom:1px solid var(--line);margin:0 10px 8px;padding:8px 2px}
+/* プロットの幕の見出し：幕の色は左の印で示す */
+.pcol-hd.b1,.pcol-hd.b2,.pcol-hd.b3{background:transparent;color:var(--fg);border-bottom:1px solid var(--line);margin:0 16px;padding:12px 0 8px 12px;position:relative}
+.pcol-hd::before{content:"";position:absolute;left:0;top:14px;width:4px;height:16px;border-radius:2px}
+.pcol-hd.b1::before,.grp-h.b1::before{background:var(--mk1)}
+.pcol-hd.b2::before,.grp-h.b2::before{background:var(--mk2)}
+.pcol-hd.b3::before,.grp-h.b3::before{background:var(--mk3)}
+.pcol-hd span{color:var(--muted);opacity:1}
+/* 箱書きの段の見出し */
+.grp-h.b1,.grp-h.b2,.grp-h.b3,.grp-h.pt{background:transparent;color:var(--fg);border-radius:0;border-bottom:1px solid var(--line);padding:8px 0 8px 14px;position:relative}
+.grp-h.b1::before,.grp-h.b2::before,.grp-h.b3::before,.grp-h.pt::before{content:"";position:absolute;left:0;top:50%;margin-top:-8px;width:4px;height:16px;border-radius:2px}
+.grp-h.pt::before{background:var(--point-mark)}
+.grp-h.pt{color:var(--point-fg)}
+.grp-h.b1 span,.grp-h.b2 span,.grp-h.b3 span,.grp-h.pt span{color:var(--muted);opacity:1}
+.grp-h .grp-copy{color:var(--muted)}
 .hist-modal{max-height:86vh;overflow:auto}
 .hist-modal > *,.hlist li{flex-shrink:0}
 .hhead{font-weight:700;color:var(--fg)!important}
@@ -650,7 +682,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.05';
+var VERSION = '1.06';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -755,6 +787,7 @@ function defaultTemplate(){
   migPerson16(t);
   migPerson18(t);
   migPerson19(t);
+  migBasic20(t.basic);
   return t;
 }
 function migPerson(list){
@@ -868,6 +901,23 @@ function migPerson19(sch){
   var i = l.findIndex(function(f){ return f.label === '年齢'; }); if(i < 0) return;
   l.splice(i + 1, 0, {id:'f19gender', label:'性別', multi:false, rows:1, w:l[i].w || 'S', nl:false});
 }
+/* 基本設定：2行目に舞台・主人公、3行目に作品の核・メモを並べる（4つの見出しが初期の並びのままのときだけ） */
+function migBasic20(list){
+  if(!list) return;
+  var start = list.findIndex(isHead); if(start < 0) return;
+  var head = list.slice(0, start), groups = [], cur = null;
+  list.slice(start).forEach(function(f){ if(isHead(f)){ cur = {h:f, fields:[]}; groups.push(cur); } else cur.fields.push(f); });
+  var names = ['作品の核','舞台','主人公','メモ'], found = names.map(function(n){ return groups.find(function(g){ return g.h.label === n; }); });
+  if(found.some(function(g){ return !g; })) return;
+  var idx = found.map(function(g){ return groups.indexOf(g); });
+  if(!(idx[0] < idx[1] && idx[1] < idx[2] && idx[2] < idx[3])) return;
+  var core = found[0], stage = found[1], hero = found[2], memo = found[3];
+  var rest = groups.filter(function(g){ return found.indexOf(g) < 0; });
+  [stage, hero, core, memo].forEach(function(g){ g.h.w = 'half'; });
+  var out = head;
+  [stage, hero, core, memo].concat(rest).forEach(function(g){ out = out.concat([g.h], g.fields); });
+  list.length = 0; out.forEach(function(f){ list.push(f); });
+}
 /* 基本設定の項目名を、見出しの中で通じる短い名前にする */
 var BASIC_RENAME = {'時代':'天（時代）', '場所（舞台）':'地（場所）', '主人公の目的':'目的', '主人公の障害':'障害'};
 function migBasic11(sch){
@@ -881,7 +931,7 @@ function migMemoRows(sch){
 }
 function migrateTemplates(){
   var t = S.templates, ch = false;
-  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16','mig17','mig18','mig19'].forEach(function(k){ t[k] = true; }); return true; }
+  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16','mig17','mig18','mig19','mig20'].forEach(function(k){ t[k] = true; }); return true; }
   if(t.movie && !t.mig5){ t.single = t.movie; delete t.movie; delete t.other; ch = true; }
   if(!t.mig5){ t.mig5 = true; ch = true; }
   if(!t.single){ t.single = defaultTemplate(); ch = true; }
@@ -904,6 +954,7 @@ function migrateTemplates(){
   if(!t.mig17){ KIND_ORDER.forEach(function(k){ migPerson17(t[k]); }); t.mig17 = true; ch = true; }
   if(!t.mig18){ KIND_ORDER.forEach(function(k){ migPerson18(t[k]); }); t.mig18 = true; ch = true; }
   if(!t.mig19){ KIND_ORDER.forEach(function(k){ migPerson19(t[k]); }); t.mig19 = true; ch = true; }
+  if(!t.mig20){ KIND_ORDER.forEach(function(k){ migBasic20(t[k] && t[k].basic); }); t.mig20 = true; ch = true; }
   return ch;
 }
 function migrateWork(w){
@@ -927,6 +978,7 @@ function migrateWork(w){
   if(!w.mig17){ migPerson17(w.schema); w.mig17 = true; ch = true; }
   if(!w.mig18){ migPerson18(w.schema); w.mig18 = true; ch = true; }
   if(!w.mig19){ migPerson19(w.schema); w.mig19 = true; ch = true; }
+  if(!w.mig20){ migBasic20(w.schema.basic); w.mig20 = true; ch = true; }
   return ch;
 }
 function defaultTemplates(){ var t = {}; KIND_ORDER.forEach(function(k){ t[k] = defaultTemplate(); }); return t; }
@@ -2147,7 +2199,7 @@ function createWork(){
   var w = {v:1, id:'w-' + uid(), title:m.title.trim() || '無題の作品', kind:m.kind, createdAt:Date.now(), updatedAt:Date.now(),
     schema:tpl, basic:{}, people:[]};
   /* ひな形は最新の形なので、古い形を直す処理は不要（済みの印を付けておく） */
-  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16','mig17','mig18','mig19'].forEach(function(k){ w[k] = true; });
+  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16','mig17','mig18','mig19','mig20'].forEach(function(k){ w[k] = true; });
   if(m.kind === 'serial'){
     var n = toInt(m.eps, 1, 100), base = toInt(m.base, 1, 600);
     if(!n || !base){ m.err = '話数と基本の1話の長さを数字で入力してください。'; renderModal(false); return; }
