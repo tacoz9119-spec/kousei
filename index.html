@@ -282,7 +282,7 @@ body{font-size:14px}
 .sub-l{font-size:12px}
 .field{gap:5px}
 .in{height:38px;padding:0 10px;font-size:15px}
-.ta{padding:8px 10px;font-size:15px;line-height:1.6}
+.ta{padding:8px 10px;font-size:15px;line-height:1.5}
 .ta.one{min-height:38px;height:38px;padding:7px 10px;line-height:1.5}
 .ta.long{min-height:62px;height:62px;padding:7px 10px;line-height:1.5}
 .ta.long.l3{min-height:84px;height:84px}
@@ -338,7 +338,7 @@ body{font-size:14px}
 .ta.fit,.ta.fit2{resize:none;overflow:hidden}
 .ta.fit,.ta.fit2:not(.side-ta){padding-top:5px;padding-bottom:5px}
 .box-top p{font-size:13px}
-.grp-h h2{font-size:15px}
+.grp-h h2{font-size:14px}
 .grp-h span{font-size:12px}
 .cards{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
 .card{padding:8px 10px 12px;gap:8px}
@@ -348,11 +348,11 @@ body{font-size:14px}
 .card-h .icon-btn{width:30px;flex:none}
 .card-h .del-gap{margin-left:-2px}
 .card-h .no{margin-right:10px}
-.grip{width:30px;height:32px;margin-left:-6px;border:none;border-radius:6px;background:transparent;color:var(--muted);display:inline-flex;align-items:center;justify-content:center;flex:none;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
+.grip{width:26px;height:32px;margin-left:-6px;border:none;border-radius:6px;background:transparent;color:var(--muted);display:inline-flex;align-items:center;justify-content:center;flex:none;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
 .side.compact{gap:0}
 .side.compact .side-item{min-height:30px;padding:3px 8px;white-space:nowrap;letter-spacing:-.01em}
 .side-plot{margin-top:10px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
-.side-ta{font-size:14px;line-height:1.6;padding:8px 9px;min-height:60px}
+.side-ta{font-size:14px;line-height:1.5;padding:8px 9px;min-height:60px}
 .side-plot-note{margin:10px 4px 2px;font-size:12px;color:var(--muted);line-height:1.5}
 .side-plot .side-plot-note{margin:0 2px}
 .grip:hover{background:var(--sunken);color:var(--fg)}
@@ -469,7 +469,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .side-top{display:flex;align-items:baseline;justify-content:space-between;padding:2px 8px 8px;font-size:13px;color:var(--muted)}
 .side-top b{font-size:14px;color:var(--fg)}
 .people-a .side-item[aria-current]{background:var(--accent-weak)}
-.side-copy{align-self:center;min-height:30px;font-size:12.5px;color:var(--muted);margin-top:2px}
+.side-copy{align-self:center;min-height:28px;font-size:12px;color:var(--muted);margin-top:2px}
 .people-a .side-main{display:flex;flex-direction:column;gap:16px}
 .phead{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-end}
 .phead .p-nm{flex:1 1 260px;min-width:0}
@@ -534,8 +534,8 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .tabs-row{display:flex;flex-wrap:wrap;align-items:center;gap:0 12px}
 .tabs-row .tabs{flex:1 0 auto}
 .tab-tools{margin-left:auto;display:flex;align-items:center;gap:10px;padding-bottom:3px}
-.tab-info{flex:none;font-size:13px;color:var(--fg2);white-space:nowrap;font-variant-numeric:tabular-nums}
-.tab-btn{min-height:30px;padding:0 10px;font-size:12.5px}
+.tab-info{flex:none;font-size:12px;color:var(--fg2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.tab-btn{min-height:28px;padding:0 10px;font-size:12px}
 .tab-btn svg{width:13px;height:13px}
 .grp-h .grp-copy{margin:-8px -8px -8px auto;width:32px;height:32px;color:inherit}
 .grp-h .grp-copy:hover{background:rgba(127,127,127,.18);color:inherit}
@@ -545,10 +545,28 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .people-a .side > :not(.side-top),.side.compact > :not(.side-top){margin-left:10px;margin-right:10px}
 .side .side-top{background:var(--sunken);color:var(--fg);padding:7px 16px;margin:0 0 8px;font-size:14px}
 .side .side-top b{color:inherit}
-.side .side-top span{color:var(--muted);font-size:12.5px}
+.side .side-top span{color:var(--muted);font-size:12px}
 .side .add-dash{width:auto}
 .side.narrow.compact{width:232px}
 .side.narrow.compact.box-side{width:176px}
+/* 資料のカード：12.9インチのiPadの横向きで3列 */
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px;align-items:start}
+.ref-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-width:0;position:relative}
+.ref-head{display:flex;align-items:center;gap:2px;margin:0 12px 0 8px;padding:4px 0;border-bottom:1px solid var(--line);height:43px;box-sizing:border-box}
+.ref-head .rgrip{flex:none;width:26px;height:32px;margin:0;touch-action:none}
+.ref-title{flex:1;min-width:0;height:34px;border:none;background:transparent;font:inherit;font-size:14px;font-weight:700;color:var(--fg);padding:0 6px;border-radius:8px}
+.ref-title::placeholder{color:var(--muted);font-weight:500}
+.ref-title:focus{background:var(--input-bg,var(--sunken));outline:none}
+.ref-head .icon-btn{flex:none}
+.ref-body{padding:12px 16px 16px}
+.ref-body .ref-ta{width:100%;box-sizing:border-box;background:var(--sunken);border-color:transparent;font-size:15px;line-height:1.5;padding:5px 10px;min-height:0}
+.ref-body .ref-ta:focus{background:var(--input-bg);border-color:var(--accent)}
+.ref-add{min-height:300px}
+.ref-card.dragging{opacity:.35}
+.ref-card.drop-before::before,.ref-card.drop-after::after{content:"";position:absolute;top:0;bottom:0;width:3px;border-radius:2px;background:var(--accent)}
+.ref-card.drop-before::before{left:-10px}
+.ref-card.drop-after::after{right:-10px}
+@media (max-width: 760px){ .ref-grid{grid-template-columns:minmax(0,1fr)} }
 .unit-sel{width:auto;height:35px;padding:0 6px;font-size:14px;flex:none}
 .box-side .box-sel{height:35px;font-size:14px;width:auto}
 @media (max-width: 980px){ .side.narrow.compact,.side.narrow.compact.box-side{width:auto} }
@@ -618,10 +636,11 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .pcol{padding:0;gap:0;overflow:hidden;border-radius:14px}
 .pcol-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:7px 16px;font-size:14px}
 .pcol-hd b{font-weight:700}
-.pcol-hd span{font-size:12.5px;opacity:.85;font-variant-numeric:tabular-nums}
+.pcol-hd span{font-size:12px;opacity:.85;font-variant-numeric:tabular-nums}
 .pcol-bd{flex:1;display:flex;flex-direction:column;gap:12px;padding:14px 16px 16px;min-width:0}
 .psub{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
 .psub b{color:var(--fg2);font-weight:700}
+.psub span{font-size:12px}
 .pgrid .ta{background:var(--sunken);border-color:transparent}
 .pgrid .ta:focus{background:var(--input-bg);border-color:var(--accent)}
 .pgrid .point{border:0}
@@ -688,7 +707,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.13';
+var VERSION = '1.16';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -1601,6 +1620,7 @@ function resolve(bind){
   if(head === 'W'){ root = w; save = function(){ saveWorkSoon(w); }; }
   else if(head === 'E'){ var ep = S.episodes[w.id][S.epId]; root = ep; save = function(){ saveEpSoon(w, ep); }; }
   else if(head.indexOf('P:') === 0){ var pid = head.slice(2); root = w.people.find(function(p){ return p.id === pid; }); save = function(){ saveWorkSoon(w); }; }
+  else if(head.indexOf('R:') === 0){ var rid = head.slice(2); root = (w.refs || []).find(function(x){ return x.id === rid; }); save = function(){ saveWorkSoon(w); }; }
   else if(head.indexOf('S:') === 0){ var c = sceneCtx(), sid = head.slice(2); root = c.list.find(function(s){ return s.id === sid; }); save = c.save; }
   else if(head.indexOf('T:') === 0){ var t = head.split(':'); root = S.templates[t[1]][t[2]].find(function(x){ return x.id === t[3]; }); save = saveTemplatesSoon; }
   return {root:root, path:path, save:save};
@@ -1660,8 +1680,8 @@ function flowRows(fields, cell, lead, trail, groupLead){
 }
 function workHeader(w){
   var tabs = w.kind === 'serial'
-    ? [['basic','基本設定'],['people','人物'],['series','シリーズ構成'],['episodes','各話']]
-    : [['basic','基本設定'],['people','人物'],['plot','プロット'],['boxes','箱書き']];
+    ? [['basic','基本'],['people','人物'],['refs','資料'],['series','シリーズ構成'],['episodes','各話']]
+    : [['basic','基本'],['people','人物'],['refs','資料'],['plot','プロット'],['boxes','箱書き']];
   var st = statusInfo();
   return '<header class="topbar"><div class="wrap gut"><div class="topbar-in has-tabs">' +
     '<button type="button" class="back" data-act="go-list">' + ICON.back + '作品一覧</button>' +
@@ -1682,6 +1702,8 @@ function workHeader(w){
 /* 箱書きを表示している間だけ、タブの行の右にシーンの件数と合計を出す */
 function boxInfo(w){
   var ctx;
+  /* 資料：カードの枚数をタブの行の右端に出す（箱書きのシーン件数と同じ位置） */
+  if(S.tab === 'refs') return '<div class="tab-tools"><span class="tab-info">カード ' + (w.refs || []).length + '枚</span></div>';
   if(S.tab === 'boxes' && w.kind !== 'serial') ctx = sceneCtx();
   else if(S.tab === 'episodes' && S.epSub === 'boxes'){
     var eps = epsOf(w); if(!eps.some(function(e){ return e.id === S.epId; })) S.epId = eps.length ? eps[0].id : null;
@@ -1982,6 +2004,29 @@ function cardHTML(sc, n, schema, w){
     '</article>';
 }
 
+/* ---------- 資料 ---------- */
+/* 作品の設定や調べたことを、タイトルと本文のカードにして並べておく（w.refs）。並べ替えはつまみのドラッグか矢印キー */
+function renderRefs(w){
+  var list = w.refs || [];
+  var cards = list.map(function(c, i){
+    var nm = esc(c.title || '無題のカード');
+    return '<section class="ref-card" data-rid="' + c.id + '" aria-label="' + nm + '">' +
+      '<div class="ref-head"><button type="button" class="grip rgrip" data-rid="' + c.id + '" aria-label="' + nm + 'を移動（ドラッグ、または矢印キー）" title="ドラッグして並べ替え">' + ICON.grip + '</button>' +
+      '<input id="rt-' + c.id + '" class="ref-title" type="text" placeholder="タイトル" aria-label="カード' + (i+1) + 'のタイトル" value="' + esc(c.title || '') + '" data-bind="R:' + c.id + '|title">' +
+      '<button type="button" class="icon-btn" data-act="dup-ref" data-id="' + c.id + '" aria-label="' + nm + 'を複製" title="複製">' + ICON.dup + '</button>' +
+      '<button type="button" class="icon-btn" data-act="del-ref" data-id="' + c.id + '" aria-label="' + nm + 'を削除" title="削除">' + ICON.trash + '</button></div>' +
+      '<div class="ref-body"><textarea id="rb-' + c.id + '" class="ta fit ref-ta" rows="10" aria-label="' + nm + 'の内容" data-bind="R:' + c.id + '|text">' + esc(c.text || '') + '</textarea></div></section>';
+  }).join('');
+  return '<main class="page gut"><div class="wrap">' +
+    '<div class="ref-grid">' + cards + '<button type="button" class="add-dash ref-add" data-act="add-ref">' + ICON.plus + 'カードを追加</button></div></div></main>';
+}
+function moveRef(id, dir){
+  var w = curWork(); if(!w || !w.refs) return;
+  var i = w.refs.findIndex(function(x){ return x.id === id; }), j = i + dir;
+  if(i < 0 || j < 0 || j >= w.refs.length) return;
+  checkpoint(); var t = w.refs[i]; w.refs[i] = w.refs[j]; w.refs[j] = t; saveWorkSoon(w); render(); focusSoon('.rgrip[data-rid="' + id + '"]');
+}
+
 /* ---------- series ---------- */
 function renderSeries(w){
   var eps = epsOf(w);
@@ -2138,8 +2183,8 @@ function modalHTML(m){
   if(m.type === 'pdf'){
     var w4 = curWork();
     var opts = w4.kind === 'serial'
-      ? [['basic','基本設定'],['people','人物'],['series','シリーズ構成'],['eps','各話（すべての話のプロットと箱書き）']]
-      : [['basic','基本設定'],['people','人物'],['plot','プロット'],['boxes','箱書き']];
+      ? [['basic','基本設定'],['people','人物'],['refs','資料'],['series','シリーズ構成'],['eps','各話（すべての話のプロットと箱書き）']]
+      : [['basic','基本設定'],['people','人物'],['refs','資料'],['plot','プロット'],['boxes','箱書き']];
     return '<h2 id="m-title">PDF出力</h2><p>PDFに入れる内容を選んでください。A4縦・横書きで出力します。</p>' +
       '<div class="checks">' + opts.map(function(o){ return '<label class="check"><input type="checkbox" data-change="pdf-check" value="' + o[0] + '"' + (m.sel[o[0]] ? ' checked' : '') + (m.busy ? ' disabled' : '') + '><span>' + o[1] + '</span></label>'; }).join('') + '</div>' +
       (m.busy ? '<p role="status">PDFを作成しています…（初回はフォントの読み込みに時間がかかります）</p>' : '') +
@@ -2177,6 +2222,7 @@ function render(){
     html = workHeader(w);
     if(S.tab === 'basic') html += renderBasic(w);
     else if(S.tab === 'people') html += renderPeople(w);
+    else if(S.tab === 'refs') html += renderRefs(w);
     else if(S.tab === 'plot') html += '<main class="page gut"><div class="wrap">' + plotBlock('W', w, w.length, false) + '</div></main>';
     else if(S.tab === 'boxes') html += '<main class="page gut"><div class="wrap">' + boxesBlock(w, sceneCtx()) + '</div></main>';
     else if(S.tab === 'series') html += renderSeries(w);
@@ -2429,6 +2475,15 @@ document.addEventListener('click', function(e){
     case 'add-scene': addScene(v); break;
     case 'scene-up': moveScene(id, -1); break;
     case 'scene-down': moveScene(id, 1); break;
+    case 'add-ref':
+      checkpoint(); w.refs = w.refs || []; var nr = {id:'r-' + uid(), title:'', text:''}; w.refs.push(nr); saveWorkSoon(w); render(); focusSoon('#rt-' + nr.id); break;
+    case 'dup-ref':
+      var ri = (w.refs || []).findIndex(function(x){ return x.id === id; }); if(ri < 0) break;
+      checkpoint(); var cp = {id:'r-' + uid(), title:(w.refs[ri].title || '') + (w.refs[ri].title ? '（複製）' : ''), text:w.refs[ri].text || ''};
+      w.refs.splice(ri + 1, 0, cp); saveWorkSoon(w); render(); focusSoon('#rt-' + cp.id); break;
+    case 'del-ref':
+      checkpoint(); w.refs = (w.refs || []).filter(function(x){ return x.id !== id; }); saveWorkSoon(w); render();
+      toast('カードを削除しました。「元に戻す」で戻せます'); break;
     case 'scene-del':
       var ctx = sceneCtx();
       checkpoint(); ctx.owner.scenes = ctx.list.filter(function(s){ return s.id !== id; }); ctx.save(); render();
@@ -2488,7 +2543,7 @@ document.addEventListener('click', function(e){
       copyText(segName(SEG_BY[v]) + 'のシーン', smartFull(boxesText(w, cg))); break;
     case 'pdf':
       flushAll();
-      var selp = w.kind === 'serial' ? {basic:true, people:true, series:true, eps:true} : {basic:true, people:true, plot:true, boxes:true};
+      var selp = w.kind === 'serial' ? {basic:true, people:true, refs:true, series:true, eps:true} : {basic:true, people:true, refs:true, plot:true, boxes:true};
       openModal({type:'pdf', sel:selp, busy:false, err:''}); break;
     case 'pdf-make': makePdf(); break;
   }
@@ -2500,6 +2555,13 @@ function clearDropMarks(){ document.querySelectorAll('.drop-before,.drop-after,.
 function findDrop(){
   clearDropMarks(); drag.target = null; drag.pos = null; drag.grp = null;
   var el = document.elementFromPoint(drag.x, drag.y); if(!el) return;
+  if(drag.kind === 'ref'){
+    var rc = el.closest('.ref-card');
+    if(!rc || rc === drag.card) return;
+    var rb = rc.getBoundingClientRect();
+    drag.target = rc.dataset.rid; drag.pos = drag.x < rb.left + rb.width / 2 ? 'before' : 'after';
+    rc.classList.add(drag.pos === 'before' ? 'drop-before' : 'drop-after'); return;
+  }
   if(drag.kind === 'person'){
     /* 人物は同じ役割の中でだけ動かせる */
     var pr = el.closest('.p-row');
@@ -2535,6 +2597,16 @@ function endDrag(apply){
   document.body.classList.remove('is-dragging');
   clearDropMarks();
   if(!apply || !d.started || (!d.target && !d.grp)) return;
+  if(d.kind === 'ref'){
+    var wr = curWork(); if(!wr || !wr.refs) return;
+    var mvr = wr.refs.find(function(x){ return x.id === d.id; }), tgr = wr.refs.find(function(x){ return x.id === d.target; });
+    if(!mvr || !tgr) return;
+    var beforeR = wr.refs.map(function(x){ return x.id; }).join(), restR = wr.refs.filter(function(x){ return x !== mvr; });
+    restR.splice(restR.indexOf(tgr) + (d.pos === 'after' ? 1 : 0), 0, mvr);
+    if(restR.map(function(x){ return x.id; }).join() === beforeR) return;
+    checkpoint(); wr.refs = restR; saveWorkSoon(wr); render(); focusSoon('.rgrip[data-rid="' + d.id + '"]');
+    return;
+  }
   if(d.kind === 'person'){
     var w = curWork(); if(!w) return;
     var pl = sortPeople(w.people), mv = pl.find(function(x){ return x.id === d.id; }), tg = pl.find(function(x){ return x.id === d.target; });
@@ -2563,6 +2635,12 @@ document.addEventListener('pointerdown', function(e){
   if(e.target.closest && e.target.closest('.pick')){ e.preventDefault(); return; }
   var h = e.target.closest && e.target.closest('.grip'); if(!h || (e.pointerType === 'mouse' && e.button !== 0)) return;
   e.preventDefault();
+  if(h.dataset.rid){
+    var card = h.closest('.ref-card');
+    drag = {kind:'ref', id:h.dataset.rid, card:card, label:(card.querySelector('.ref-title').value || '無題のカード'), pid:e.pointerId, x:e.clientX, y:e.clientY, sx:e.clientX, sy:e.clientY, started:false};
+    try{ h.setPointerCapture(e.pointerId); }catch(_){}
+    return;
+  }
   if(h.dataset.pid){
     var row = h.closest('.p-row');
     drag = {kind:'person', id:h.dataset.pid, rank:row.dataset.rank, card:row, label:(row.querySelector('[data-pname]') || row).textContent, pid:e.pointerId, x:e.clientX, y:e.clientY, sx:e.clientX, sy:e.clientY, started:false};
@@ -2581,7 +2659,7 @@ document.addEventListener('pointermove', function(e){
     if(drag.card) drag.card.classList.add('dragging');
     document.body.classList.add('is-dragging');
     var g = document.createElement('div'); g.className = 'drag-ghost';
-    g.textContent = drag.kind === 'person' ? drag.label : drag.card ? drag.card.getAttribute('aria-label') : 'シーン';
+    g.textContent = drag.kind === 'person' || drag.kind === 'ref' ? drag.label : drag.card ? drag.card.getAttribute('aria-label') : 'シーン';
     document.body.appendChild(g); drag.ghost = g;
     drag.raf = requestAnimationFrame(dragLoop);
   }
@@ -2593,7 +2671,7 @@ document.addEventListener('pointerup', function(e){ if(drag && e.pointerId === d
 document.addEventListener('pointercancel', function(e){ if(drag && e.pointerId === drag.pid) endDrag(false); });
 document.addEventListener('keydown', function(e){
   var h = e.target.closest && e.target.closest('.grip'); if(!h) return;
-  var mvFn = h.dataset.pid ? function(dir){ movePerson(h.dataset.pid, dir); } : function(dir){ moveScene(h.dataset.id, dir); };
+  var mvFn = h.dataset.rid ? function(dir){ moveRef(h.dataset.rid, dir); } : h.dataset.pid ? function(dir){ movePerson(h.dataset.pid, dir); } : function(dir){ moveScene(h.dataset.id, dir); };
   if(e.key === 'ArrowUp' || e.key === 'ArrowLeft'){ e.preventDefault(); mvFn(-1); }
   else if(e.key === 'ArrowDown' || e.key === 'ArrowRight'){ e.preventDefault(); mvFn(1); }
 });
@@ -2619,6 +2697,11 @@ function searchEntries(w){
     if(!hasProfile(p)) return;
     visiblePF(w, p).forEach(function(f){ if(!f.link || !linkField(w.schema.basic, f.link)) add('人物・' + nm + '・' + f.label, getPath(p, ['values', f.id]), {tab:'people', person:p.id, focus:'#pv-' + f.id}); });
     if(p.arc) (w.schema.arc || []).forEach(function(f){ add('人物・' + nm + '・アーク・' + f.label, getPath(p, ['arc', f.id]), {tab:'people', person:p.id, focus:'#a-' + p.id + '-' + f.id}); });
+  });
+  (w.refs || []).forEach(function(c){
+    var cn = c.title || '無題のカード';
+    add('資料・' + cn + '・タイトル', c.title, {tab:'refs', focus:'#rt-' + c.id});
+    add('資料・' + cn, c.text, {tab:'refs', focus:'#rb-' + c.id});
   });
   if(w.kind !== 'serial'){
     plots(w, 'プロット・', {tab:'plot'});
@@ -2839,6 +2922,11 @@ async function makePdf(){
         visiblePF(w, p).forEach(function(f){ var bf = f.link && linkField(w.schema.basic, f.link); P.field(f.label, bf ? getPath(w, ['basic', bf.id]) : getPath(p, ['values', f.id]), 4); });
         if(p.arc){ P.label('アーク', 4);(w.schema.arc || []).forEach(function(f){ P.field(f.label, getPath(p, ['arc', f.id]), 8); }); }
       });
+    }
+    if(m.sel.refs){
+      section('資料');
+      if(!(w.refs || []).length) P.note('資料のカードはまだありません。');
+      (w.refs || []).forEach(function(c){ P.h2(c.title || '無題のカード'); P.para(c.text); });
     }
     if(w.kind !== 'serial'){
       if(m.sel.plot){ section('プロット'); pdfPlot(P, w, w.length, false); }
