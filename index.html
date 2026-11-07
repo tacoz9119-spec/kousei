@@ -561,7 +561,13 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .ref-body{padding:12px 16px 16px}
 .ref-body .ref-ta{width:100%;box-sizing:border-box;background:var(--sunken);border-color:transparent;font-size:15px;line-height:1.5;padding:5px 10px;min-height:0}
 .ref-body .ref-ta:focus{background:var(--input-bg);border-color:var(--accent)}
-.ref-add{min-height:300px}
+.ref-add{min-height:159px;align-self:stretch}
+.ref-tawrap{position:relative}
+.ref-view{display:none;position:absolute;inset:0;box-sizing:border-box;border:1px solid transparent;padding:5px 10px;font-size:15px;line-height:1.5;white-space:pre-wrap;overflow-wrap:break-word;overflow:hidden;color:var(--fg);pointer-events:none}
+.ref-tawrap.has-link .ref-view{display:block}
+.ref-tawrap.has-link .ref-ta:not(:focus){color:transparent}
+.ref-tawrap.has-link .ref-ta:focus + .ref-view{display:none}
+.ref-view a{pointer-events:auto;color:var(--mk2);text-decoration:underline;text-underline-offset:2px}
 .ref-card.dragging{opacity:.35}
 .ref-card.drop-before::before,.ref-card.drop-after::after{content:"";position:absolute;top:0;bottom:0;width:3px;border-radius:2px;background:var(--accent)}
 .ref-card.drop-before::before{left:-10px}
@@ -707,7 +713,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.16';
+var VERSION = '1.17';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -2015,11 +2021,35 @@ function renderRefs(w){
       '<input id="rt-' + c.id + '" class="ref-title" type="text" placeholder="タイトル" aria-label="カード' + (i+1) + 'のタイトル" value="' + esc(c.title || '') + '" data-bind="R:' + c.id + '|title">' +
       '<button type="button" class="icon-btn" data-act="dup-ref" data-id="' + c.id + '" aria-label="' + nm + 'を複製" title="複製">' + ICON.dup + '</button>' +
       '<button type="button" class="icon-btn" data-act="del-ref" data-id="' + c.id + '" aria-label="' + nm + 'を削除" title="削除">' + ICON.trash + '</button></div>' +
-      '<div class="ref-body"><textarea id="rb-' + c.id + '" class="ta fit ref-ta" rows="10" aria-label="' + nm + 'の内容" data-bind="R:' + c.id + '|text">' + esc(c.text || '') + '</textarea></div></section>';
+      '<div class="ref-body"><div class="ref-tawrap' + (hasUrl(c.text) ? ' has-link' : '') + '"><textarea id="rb-' + c.id + '" class="ta fit ref-ta" rows="3" aria-label="' + nm + 'の内容" data-bind="R:' + c.id + '|text">' + esc(c.text || '') + '</textarea>' +
+      '<div class="ref-view">' + linkify(c.text) + '</div></div></div></section>';
   }).join('');
   return '<main class="page gut"><div class="wrap">' +
     '<div class="ref-grid">' + cards + '<button type="button" class="add-dash ref-add" data-act="add-ref">' + ICON.plus + 'カードを追加</button></div></div></main>';
 }
+/* 資料：本文のURLにリンクを付ける。入力欄の上に同じ文字の層を重ね、編集中は入力欄だけを見せる */
+var URL_RE = /https?:\/\/[^\s<>"'「」『』【】（）、。，]+/g;
+function trimUrl(u){
+  u = u.replace(/[.,;:!?]+$/, '');
+  while(/\)$/.test(u) && (u.match(/\(/g) || []).length < (u.match(/\)/g) || []).length) u = u.slice(0, -1);
+  return u;
+}
+function hasUrl(t){ URL_RE.lastIndex = 0; return URL_RE.test(t || ''); }
+function linkify(t){
+  t = t || ''; var out = '', last = 0, m; URL_RE.lastIndex = 0;
+  while((m = URL_RE.exec(t))){
+    var u = trimUrl(m[0]); if(!u || /^https?:\/\/$/.test(u)) continue;
+    out += esc(t.slice(last, m.index)) + '<a href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + esc(u) + '</a>';
+    last = m.index + u.length; URL_RE.lastIndex = last;
+  }
+  return out + esc(t.slice(last));
+}
+function refView(el){
+  var wrap = el.parentNode, v = el.nextElementSibling;
+  if(!v || !v.classList.contains('ref-view')) return;
+  v.innerHTML = linkify(el.value); wrap.classList.toggle('has-link', hasUrl(el.value));
+}
+document.addEventListener('input', function(e){ if(e.target.classList && e.target.classList.contains('ref-ta')) refView(e.target); });
 function moveRef(id, dir){
   var w = curWork(); if(!w || !w.refs) return;
   var i = w.refs.findIndex(function(x){ return x.id === id; }), j = i + dir;
