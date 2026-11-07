@@ -561,7 +561,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .ref-body{padding:12px 16px 16px}
 .ref-body .ref-ta{width:100%;box-sizing:border-box;background:var(--sunken);border-color:transparent;font-size:15px;line-height:1.5;padding:5px 10px;min-height:0}
 .ref-body .ref-ta:focus{background:var(--input-bg);border-color:var(--accent)}
-.ref-add{min-height:159px;align-self:stretch}
+.ref-add{min-height:114px;align-self:stretch}
 .ref-tawrap{position:relative}
 .ref-view{display:none;position:absolute;inset:0;box-sizing:border-box;border:1px solid transparent;padding:5px 10px;font-size:15px;line-height:1.5;white-space:pre-wrap;overflow-wrap:break-word;overflow:hidden;color:var(--fg);pointer-events:none}
 .ref-tawrap.has-link .ref-view{display:block}
@@ -713,7 +713,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.17';
+var VERSION = '1.18';
 var KINDS = {
   single:{label:'単発作品', def:null, hint:'長さを入力'},
   serial:{label:'連続作品', def:null, hint:'話数を設定'}
@@ -733,7 +733,7 @@ var SEG_BY = {}; SEGS.forEach(function(s){ SEG_BY[s.k]=s; });
 /* 箱書きの本体（帯・コピー・追加ボタン）では略称を使う。左パネル・プロット欄・PDFは正式名のまま */
 function segName(s){ return s.short || s.label; }
 var ACTS = [['a1','第一幕'],['a2','第二幕'],['a3','第三幕']];
-var TPL_TABS = [['basic','基本設定'],['person','人物'],['arc','アーク'],['card','箱書きカード']];
+var TPL_TABS = [['basic','基本'],['person','人物'],['arc','アーク'],['card','箱書きカード']];
 var LOCAL_KEY = 'kousei-v1';
 
 /* ---------- helpers ---------- */
@@ -1901,7 +1901,7 @@ function renderPeople(w){
     var cell = function(f){
       /* 目的・障害は基本設定の同じ項目をそのまま読み書きする */
       var bf = f.link && linkField(w.schema.basic, f.link);
-      return '<div class="field ' + fwClass(f.w) + '"><label class="fl" for="pv-' + f.id + '">' + esc(f.label) + (bf ? '<span class="fl-link">基本設定と連動</span>' : '') + '</label>' +
+      return '<div class="field ' + fwClass(f.w) + '"><label class="fl" for="pv-' + f.id + '">' + esc(f.label) + (bf ? '<span class="fl-link">基本と連動</span>' : '') + '</label>' +
         (bf ? fieldInput('W|basic|' + bf.id, getPath(w, ['basic', bf.id]), f, 'pv-' + f.id) : fieldInput('P:' + p.id + '|values|' + f.id, getPath(p, ['values', f.id]), f, 'pv-' + f.id)) + '</div>';
     };
     var nameCell = '<div class="field p-nm"><label class="fl" for="p-name">名前</label>' + inputFor('P:' + p.id + '|name', p.name, 'line', 'p-name') + '</div>';
@@ -2021,7 +2021,7 @@ function renderRefs(w){
       '<input id="rt-' + c.id + '" class="ref-title" type="text" placeholder="タイトル" aria-label="カード' + (i+1) + 'のタイトル" value="' + esc(c.title || '') + '" data-bind="R:' + c.id + '|title">' +
       '<button type="button" class="icon-btn" data-act="dup-ref" data-id="' + c.id + '" aria-label="' + nm + 'を複製" title="複製">' + ICON.dup + '</button>' +
       '<button type="button" class="icon-btn" data-act="del-ref" data-id="' + c.id + '" aria-label="' + nm + 'を削除" title="削除">' + ICON.trash + '</button></div>' +
-      '<div class="ref-body"><div class="ref-tawrap' + (hasUrl(c.text) ? ' has-link' : '') + '"><textarea id="rb-' + c.id + '" class="ta fit ref-ta" rows="3" aria-label="' + nm + 'の内容" data-bind="R:' + c.id + '|text">' + esc(c.text || '') + '</textarea>' +
+      '<div class="ref-body"><div class="ref-tawrap' + (hasUrl(c.text) ? ' has-link' : '') + '"><textarea id="rb-' + c.id + '" class="ta fit ref-ta" rows="1" aria-label="' + nm + 'の内容" data-bind="R:' + c.id + '|text">' + esc(c.text || '') + '</textarea>' +
       '<div class="ref-view">' + linkify(c.text) + '</div></div></div></section>';
   }).join('');
   return '<main class="page gut"><div class="wrap">' +
@@ -2129,7 +2129,7 @@ function renderTemplates(){
     var wSel = isCard ? '<div class="tag">—</div>'
       : '<div><label class="sr" for="tw-' + f.id + '">幅</label><select id="tw-' + f.id + '" class="sel" data-change="tpl-w" ' + base + '>' +
         W_OPTS.map(function(o){ return '<option value="' + o[0] + '"' + ((f.w || 'fill') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>';
-    var who = t !== 'person' ? '' : f.link ? '<div class="tag">主人公（基本設定と連動）</div>'
+    var who = t !== 'person' ? '' : f.link ? '<div class="tag">主人公（基本と連動）</div>'
       : '<div><label class="sr" for="to-' + f.id + '">表示する人物</label><select id="to-' + f.id + '" class="sel" data-change="tpl-who" ' + base + '>' +
         [['','両方'],['main','主人公'],['major','主要人物']].map(function(o){ return '<option value="' + o[0] + '"' + ((f.who || '') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>';
     var flag = isCard
@@ -2213,8 +2213,8 @@ function modalHTML(m){
   if(m.type === 'pdf'){
     var w4 = curWork();
     var opts = w4.kind === 'serial'
-      ? [['basic','基本設定'],['people','人物'],['refs','資料'],['series','シリーズ構成'],['eps','各話（すべての話のプロットと箱書き）']]
-      : [['basic','基本設定'],['people','人物'],['refs','資料'],['plot','プロット'],['boxes','箱書き']];
+      ? [['basic','基本'],['people','人物'],['refs','資料'],['series','シリーズ構成'],['eps','各話（すべての話のプロットと箱書き）']]
+      : [['basic','基本'],['people','人物'],['refs','資料'],['plot','プロット'],['boxes','箱書き']];
     return '<h2 id="m-title">PDF出力</h2><p>PDFに入れる内容を選んでください。A4縦・横書きで出力します。</p>' +
       '<div class="checks">' + opts.map(function(o){ return '<label class="check"><input type="checkbox" data-change="pdf-check" value="' + o[0] + '"' + (m.sel[o[0]] ? ' checked' : '') + (m.busy ? ' disabled' : '') + '><span>' + o[1] + '</span></label>'; }).join('') + '</div>' +
       (m.busy ? '<p role="status">PDFを作成しています…（初回はフォントの読み込みに時間がかかります）</p>' : '') +
@@ -2718,9 +2718,9 @@ function searchEntries(w){
   function plots(obj, prefix, go){
     Object.keys(PLOT_NAMES).forEach(function(k){ if(obj.plot && k in obj.plot) add(prefix + PLOT_NAMES[k], obj.plot[k], withFocus(go, '#pl-' + k)); });
   }
-  add('基本設定・タイトル', w.title, {tab:'basic', focus:'#b-title'});
+  add('基本・タイトル', w.title, {tab:'basic', focus:'#b-title'});
   var bh = '';
-  (w.schema.basic || []).forEach(function(f){ if(isHead(f)){ bh = f.label + '・'; return; } add('基本設定・' + bh + f.label, getPath(w, ['basic', f.id]), {tab:'basic', focus:'#b-' + f.id}); });
+  (w.schema.basic || []).forEach(function(f){ if(isHead(f)){ bh = f.label + '・'; return; } add('基本・' + bh + f.label, getPath(w, ['basic', f.id]), {tab:'basic', focus:'#b-' + f.id}); });
   sortPeople(w.people || []).forEach(function(p){
     var nm = p.name || '名前未設定';
     add('人物・' + nm + '・名前', p.name, {tab:'people', person:p.id, focus:'#p-name'});
@@ -2752,8 +2752,9 @@ function normText(t){ try{ return String(t).normalize('NFKC').toLowerCase(); }ca
 function searchResultsHTML(q){
   S.searchHits = [];
   q = String(q || '').trim();
-  if(!q) return '<p class="sub-l">基本設定・人物・プロット・箱書きに書いた文字を検索します。</p>';
-  var w = curWork(); if(!w) return '';
+  var w = curWork();
+  if(!q) return '<p class="sub-l">' + (w && w.kind === 'serial' ? '基本・人物・資料・シリーズ構成・各話' : '基本・人物・資料・プロット・箱書き') + 'に書いた文字を検索します。</p>';
+  if(!w) return '';
   var nq = normText(q), hits = [];
   searchEntries(w).forEach(function(e){ var at = normText(e.text).indexOf(nq); if(at >= 0) hits.push({e:e, at:at, len:q.length}); });
   S.searchHits = hits;
@@ -2884,6 +2885,31 @@ function pdfWriter(doc){
     });
     return out;
   }
+  /* wrap と同じ折り返しで、URLの部分を区別した行を作る */
+  function linkLines(text, size, maxW){
+    var out = [];
+    String(text).replace(/\r\n?/g, '\n').split('\n').forEach(function(p){
+      if(p === ''){ out.push([]); return; }
+      var chars = Array.from(p), mark = chars.map(function(){ return null; }), at = [], k = 0, m;
+      chars.forEach(function(c, i){ at[k] = i; k += c.length; }); at[k] = chars.length;
+      URL_RE.lastIndex = 0;
+      while((m = URL_RE.exec(p))){
+        var u = trimUrl(m[0]); if(!u || /^https?:\/\/$/.test(u)) continue;
+        for(var j = at[m.index]; j < at[m.index + u.length]; j++) mark[j] = u;
+        URL_RE.lastIndex = m.index + u.length;
+      }
+      var line = [], wsum = 0;
+      for(var i=0;i<chars.length;i++){
+        var ch = chars[i], wch = cw(ch, size);
+        if(wsum + wch > maxW && line.length && NOHEAD.indexOf(ch) < 0){ out.push(line); line = []; wsum = 0; }
+        var last = line[line.length - 1];
+        if(last && last.url === mark[i]) last.t += ch; else line.push({t:ch, url:mark[i]});
+        wsum += wch;
+      }
+      out.push(line);
+    });
+    return out;
+  }
   function lh(size){ return size * 0.3528 * 1.7; }
   function need(h){ if(y + h > PH - MB){ doc.addPage(); y = MT; } }
   function text(str, o){
@@ -2899,6 +2925,27 @@ function pdfWriter(doc){
     h1: function(t, newPage){ if(newPage && y > MT){ doc.addPage(); y = MT; } need(lh(15) + 14); y += 4; text(t, {size:15, color:C.accent, after:1}); doc.setDrawColor(C.line[0], C.line[1], C.line[2]); doc.setLineWidth(0.3); doc.line(ML, y, PW - ML, y); y += 5; },
     h2: function(t, col){ need(lh(12) + 8); y += 2; text(t, {size:12, color:col || C.fg, after:1.5}); },
     field: function(label, value, indent){ need(lh(9) + lh(10.5)); text(label, {size:9, color:C.muted, indent:indent||0}); text(isBlank(value) ? '（未記入）' : value, {size:10.5, color:isBlank(value) ? C.muted : C.fg, indent:indent||0, after:3.5}); },
+    /* 資料：URLを青い下線付きの文字にし、押すとページが開くリンクを付ける */
+    linkPara: function(value){
+      if(isBlank(value) || !hasUrl(value)) return this.para(value);
+      var size = 10.5, h = lh(size), em = size * 0.3528;
+      doc.setFontSize(size);
+      linkLines(value, size, CW).forEach(function(line){
+        need(h); var x = ML;
+        line.forEach(function(r){
+          var w = 0; Array.from(r.t).forEach(function(c){ w += cw(c, size); });
+          var col = r.url ? C.accent : C.fg; doc.setTextColor(col[0], col[1], col[2]);
+          doc.text(r.t, x, y, {baseline:'top'});
+          if(r.url){
+            doc.setDrawColor(col[0], col[1], col[2]); doc.setLineWidth(0.2); doc.line(x, y + em * 0.95, x + w, y + em * 0.95);
+            doc.link(x, y - em * 0.1, w, em * 1.25, {url:r.url});
+          }
+          x += w;
+        });
+        y += h;
+      });
+      y += 4;
+    },
     para: function(value, indent){ text(isBlank(value) ? '（未記入）' : value, {size:10.5, color:isBlank(value) ? C.muted : C.fg, indent:indent||0, after:4}); },
     label: function(t, indent){ need(lh(9.5) + lh(10.5)); text(t, {size:9.5, color:C.fg2, indent:indent||0, after:1}); },
     space: function(n){ y += n; },
@@ -2936,7 +2983,7 @@ async function makePdf(){
     P.title(w.title || '無題の作品', workMeta(w) + '　出力日 ' + fmtDate(Date.now()));
     function section(t){ P.h1(t, !first); first = false; }
     if(m.sel.basic){
-      section('基本設定');
+      section('基本');
       var lenStr = w.kind === 'serial' ? '全' + w.epOrder.length + '話（基本の1話' + w.baseLength + U(w) + '）' : w.length + U(w);
       var bsch = w.schema.basic || [], lead = 0;
       while(lead < bsch.length && !isHead(bsch[lead]) && !bsch[lead].nl && bsch[lead].w !== 'full') lead++;
@@ -2956,7 +3003,7 @@ async function makePdf(){
     if(m.sel.refs){
       section('資料');
       if(!(w.refs || []).length) P.note('資料のカードはまだありません。');
-      (w.refs || []).forEach(function(c){ P.h2(c.title || '無題のカード'); P.para(c.text); });
+      (w.refs || []).forEach(function(c){ P.h2(c.title || '無題のカード'); P.linkPara(c.text); });
     }
     if(w.kind !== 'serial'){
       if(m.sel.plot){ section('プロット'); pdfPlot(P, w, w.length, false); }
