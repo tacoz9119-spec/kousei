@@ -371,6 +371,23 @@ body{font-size:14px}
 .p-row.drop-before::before{top:-2px}
 .p-row.drop-after::after{bottom:-2px}
 .card.drop-after::after{right:-8px}
+.card.chdiv{grid-column:1 / -1;flex-direction:row;align-items:center;gap:10px;background:transparent;border:none;border-bottom:2px solid var(--line2);border-radius:0;padding:6px 0 8px;min-height:0}
+.cards .card.chdiv{border-radius:0}
+.chdiv .grip{flex:none}
+.chdiv .ch-no{flex:none;font-size:15px;font-weight:700;color:var(--fg)}
+.chdiv .ch-title{flex:1 1 200px;min-width:0;height:32px;font-size:15px;font-weight:600}
+.chdiv .ch-nonum{flex:none;font-size:12px;color:var(--muted)}
+.chdiv .ch-sum{flex:none;font-size:12px;color:var(--muted);white-space:nowrap}
+.card.chdiv.drop-before::before,.card.chdiv.drop-after::after{left:0;right:0;width:auto;height:3px;top:auto;bottom:auto}
+.card.chdiv.drop-before::before{top:-6px}
+.card.chdiv.drop-after::after{bottom:-6px}
+.ch-cont{grid-column:1 / -1;font-size:12px;color:var(--muted);padding:0 0 2px}
+.ch-add{min-height:44px}
+.add-row{grid-column:1 / -1;display:flex;gap:12px}
+.cards .add-row .add-dash{width:auto;min-height:48px}
+.cards .add-row .card-add{flex:1 1 0;min-width:0}
+.cards .add-row .ch-add{flex:0 0 auto;padding:0 20px;white-space:nowrap}
+.ch-toggle{margin-top:10px;font-size:13px}
 .grp.drop-into .cards{outline:2px dashed var(--accent);outline-offset:4px;border-radius:12px}
 .drag-ghost{position:fixed;z-index:70;pointer-events:none;transform:translate(14px,14px);padding:6px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--accent);color:var(--accent-strong);font-size:13px;font-weight:700;box-shadow:0 8px 20px var(--shadow);white-space:nowrap}
 body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
@@ -719,7 +736,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.20';
+var VERSION = '1.21';
 var KINDS = {
   single:{label:'単発脚本', def:null, hint:'長さを入力'},
   serial:{label:'連続脚本', def:null, hint:'話数を設定'},
@@ -1524,7 +1541,7 @@ function workText(w, eps){
   var out = [];
   function add(v){ if(typeof v === 'string' && v.trim()) out.push(v.trim()); }
   function vals(o){ if(o) Object.keys(o).forEach(function(k){ add(o[k]); }); }
-  function scenes(list){ (list || []).forEach(function(sc){ vals(sc.values); add(sc.min); }); }
+  function scenes(list){ (list || []).forEach(function(sc){ if(isCh(sc)){ add(sc.title); return; } vals(sc.values); add(sc.min); }); }
   add(w.title); vals(w.basic); vals(w.plot); scenes(w.scenes);
   (w.people || []).forEach(function(p){ add(p.name); vals(p.values); vals(p.arc); });
   if(w.series) ACTS.forEach(function(a){ var x = w.series[a[0]]; if(x) add(x.text); }), ['pp1','mp','pp2'].forEach(function(k){ add(w.series[k]); });
@@ -1781,9 +1798,9 @@ function boxInfo(w){
     if(!S.epId) return '';
     ctx = sceneCtx();
   } else return '';
-  var all = ctx.list.reduce(function(a, x){ return a + len1(x.min); }, 0), u = U(w);
-  return '<div class="tab-tools"><span class="tab-info">シーン ' + ctx.list.length + '件' + (all ? '・計 ' + fmt1(all) + u + '（' + lenWord(w) + ' ' + ctx.length + u + '）' : '') + '</span>' +
-    (ctx.list.length ? '<button type="button" class="btn tab-btn" data-act="copy-boxes">' + ICON.dup + '全シーンをコピー</button>' : '') + '</div>';
+  var scs = scOnly(ctx.list), all = scs.reduce(function(a, x){ return a + len1(x.min); }, 0), u = U(w);
+  return '<div class="tab-tools"><span class="tab-info">シーン ' + scs.length + '件' + (all ? '・計 ' + fmt1(all) + u + '（' + lenWord(w) + ' ' + ctx.length + u + '）' : '') + '</span>' +
+    (scs.length ? '<button type="button" class="btn tab-btn" data-act="copy-boxes">' + ICON.dup + '全シーンをコピー</button>' : '') + '</div>';
 }
 
 /* ---------- list ---------- */
@@ -2008,6 +2025,33 @@ function segMark(seg){ return seg.point ? '<span class="mk">' + ICON.dia + '</sp
 function sortScenes(list){
   return list.map(function(s,i){ return {s:s,i:i}; }).sort(function(a,b){ return (SEG_INDEX[a.s.seg]-SEG_INDEX[b.s.seg]) || (a.i-b.i); }).map(function(x){ return x.s; });
 }
+/* ---------- 章の区切り（小説だけ） ----------
+   区切りはシーンと同じ並び（w.scenes）に {ch:true} の項目として入れる。次の区切りまでのシーンがその章に入る。
+   章は第一幕・第二幕・第三幕のどれか1つに収める（幕が替わると章も切れる）。
+   「使わない」（w.useCh が false）のときは、区切りを残したまま表示しない */
+function isCh(x){ return !!x && x.ch === true; }
+function scOnly(list){ return (list || []).filter(function(x){ return !isCh(x); }); }
+function chOn(w){ return isNovel(w) && !!w.useCh; }
+var ACT_OF = {a1:1, pp1:1, a2a:2, mp:2, a2b:2, pp2:2, a3:3};
+function kanjiNum(n){
+  var d = ['','一','二','三','四','五','六','七','八','九'];
+  if(n < 10) return d[n];
+  if(n < 100){ var t = Math.floor(n / 10), o = n % 10; return (t > 1 ? d[t] : '') + '十' + d[o]; }
+  var h = Math.floor(n / 100), r = n % 100; return (h > 1 ? d[h] : '') + '百' + (r ? kanjiNum(r) : '');
+}
+/* 区切りごとの番号・合計と、段の始まりで続いている章を求める */
+function chInfo(list){
+  var info = {}, open = {}, cur = null, act = 0, no = 0;
+  sortScenes(list).forEach(function(x){
+    var a = ACT_OF[x.seg];
+    if(a !== act){ act = a; cur = null; }
+    if(!(x.seg in open)) open[x.seg] = cur;
+    if(isCh(x)){ cur = x.id; info[x.id] = {no:x.nonum ? 0 : ++no, count:0, sum:0}; return; }
+    if(cur){ info[cur].count++; info[cur].sum += len1(x.min); }
+  });
+  return {ch:info, open:open};
+}
+function chLabel(x, i){ return x.nonum ? (x.title || '番号なしの区切り') : '第' + kanjiNum(i.no) + '章' + (x.title ? '　' + x.title : ''); }
 function sidePlot(w, ctx){
   if(S.boxFilter === 'all') return '';
   var seg = SEG_BY[S.boxFilter], root = w.kind === 'serial' ? 'E' : 'W', plot = ctx.owner.plot || {};
@@ -2017,7 +2061,8 @@ function sidePlot(w, ctx){
 }
 var ACT_PP = {a1:'pp1', a2a:'mp', a2b:'pp2'}, PP_ACT = {pp1:'a1', mp:'a2a', pp2:'a2b'};
 function boxesBlock(w, ctx){
-  var list = ctx.list, L = ctx.length, schema = w.schema.card || [];
+  var all = ctx.list, list = scOnly(all), L = ctx.length, schema = w.schema.card || [], useCh = chOn(w), ci = useCh ? chInfo(all) : null;
+  var numOf = {}; list.forEach(function(sc, i){ numOf[sc.id] = i + 1; });
   function segSum(k){ return list.reduce(function(a, x){ return a + (x.seg === k ? len1(x.min) : 0); }, 0); }
   var u = U(w);
   var counts = {}; SEGS.forEach(function(s){ counts[s.k] = 0; });
@@ -2028,11 +2073,15 @@ function boxesBlock(w, ctx){
     '<label class="sr" for="box-filter">表示する段</label><select id="box-filter" class="sel box-sel" data-change="box-filter">' +
     '<option value="all"' + (S.boxFilter === 'all' ? ' selected' : '') + '>すべて（' + list.length + '件）</option>' +
     SEGS.map(function(s){ return '<option value="' + s.k + '"' + (S.boxFilter === s.k ? ' selected' : '') + '>' + segName(s) + '（' + counts[s.k] + '件）</option>'; }).join('') + '</select>' +
+    (isNovel(w) ? '<label class="chk ch-toggle"><input type="checkbox" data-change="use-ch"' + (useCh ? ' checked' : '') + '>章の区切りを使う</label>' : '') +
     sidePlot(w, ctx) + '</aside>';
   /* 「すべて」ではシーンのない段の帯も出す（帯ごとに最初のシーンを追加できるように） */
   var groups = S.boxFilter === 'all' ? SEGS : [SEG_BY[S.boxFilter]];
   var body = groups.map(function(seg){
-    var cards = list.map(function(sc, idx){ return {sc:sc, n:idx+1}; }).filter(function(x){ return x.sc.seg === seg.k; });
+    var cards = list.filter(function(sc){ return sc.seg === seg.k; });
+    /* 章を使うときは、区切りもカードと同じ並びに入れて表示する */
+    var items = useCh ? all.filter(function(x){ return x.seg === seg.k; }) : cards;
+    var cont = useCh && ci.open[seg.k] && items.length && !isCh(items[0]) ? all.find(function(x){ return x.id === ci.open[seg.k]; }) : null;
     /* 見出しのかっこ書き：幕は目安の範囲、PP・MPはどの幕に含めるか */
     var range = seg.point ? (PP_ACT[seg.k] ? '（' + SEG_BY[PP_ACT[seg.k]].label + 'に含む）' : '') : '（' + mins(L, seg.from) + '〜' + mins(L, seg.to) + u + '）';
     var sum = segSum(seg.k);
@@ -2048,11 +2097,26 @@ function boxesBlock(w, ctx){
       : total < segLen ? '<b class="over-pill short">' + fmt1(segLen - total) + u + '短い</b>' : '';
     return '<section class="grp" data-seg="' + seg.k + '" aria-label="' + seg.label + '"><div class="grp-h ' + segBand(seg) + '">' + (seg.point ? ICON.dia : '') + '<h2>' + segName(seg) + (range ? '<small>' + range + '</small>' : '') + '</h2>' + tot + over +
       (cards.length ? '<button type="button" class="icon-btn grp-copy" data-act="copy-grp" data-v="' + seg.k + '" aria-label="' + segName(seg) + 'のシーンをコピー" title="' + segName(seg) + 'のシーンをコピー">' + ICON.dup + '</button>' : '') + '</div><div class="cards">' +
-      cards.map(function(x){ return cardHTML(x.sc, x.n, schema, w); }).join('') +
-      '<button type="button" class="add-dash card-add' + (cards.length ? '' : ' first') + '" data-act="add-scene" data-v="' + seg.k + '">' + ICON.plus + segName(seg) + 'にシーンを追加</button>' +
+      (cont ? '<div class="ch-cont">' + esc(chLabel(cont, ci.ch[cont.id])) + 'のつづき</div>' : '') +
+      items.map(function(x){ return isCh(x) ? chHTML(x, ci.ch[x.id], w) : cardHTML(x, numOf[x.id], schema, w); }).join('') +
+      /* シーンのない段では、2つの追加ボタンを1行に並べる */
+      (useCh && !items.length ? '<div class="add-row">' : '') +
+      '<button type="button" class="add-dash card-add' + (items.length ? '' : ' first') + '" data-act="add-scene" data-v="' + seg.k + '">' + ICON.plus + segName(seg) + 'にシーンを追加</button>' +
+      (useCh ? '<button type="button" class="add-dash ch-add" data-act="add-ch" data-v="' + seg.k + '">' + ICON.plus + '章の区切りを追加</button>' : '') +
+      (useCh && !items.length ? '</div>' : '') +
       '</div></section>';
   }).join('');
   return '<div class="split">' + side + '<div class="side-main">' + body + '</div></div>';
+}
+function chHTML(x, i, w){
+  var name = x.nonum ? '' : '第' + kanjiNum(i.no) + '章', lab = chLabel(x, i), u = U(w);
+  return '<div class="card chdiv" id="card-' + x.id + '" data-id="' + x.id + '" role="group" aria-label="章の区切り（' + esc(lab) + '）">' +
+    '<button type="button" class="grip" data-id="' + x.id + '" aria-label="' + esc(lab) + 'の区切りを移動（ドラッグ、または上下の矢印キー）" title="ドラッグして移動">' + ICON.grip + '</button>' +
+    (name ? '<b class="ch-no">' + name + '</b>' : '') +
+    '<label class="sr" for="ct-' + x.id + '">' + esc(name || '区切り') + 'の題名</label><input id="ct-' + x.id + '" class="in ch-title" type="text" placeholder="' + (x.nonum ? '題名（プロローグなど）' : '題名（なくてもかまいません）') + '" value="' + esc(x.title || '') + '" data-bind="S:' + x.id + '|title">' +
+    '<label class="chk ch-nonum"><input type="checkbox" data-change="ch-nonum" data-id="' + x.id + '"' + (x.nonum ? ' checked' : '') + '>番号を振らない</label>' +
+    '<span class="ch-sum">' + (i.count ? 'シーン ' + i.count + '件' + (i.sum ? '・計 ' + fmt1(i.sum) + u : '') : 'シーンなし') + '</span>' +
+    '<button type="button" class="icon-btn" data-act="ch-del" data-id="' + x.id + '" aria-label="' + esc(lab) + 'の区切りを削除" title="区切りを削除（シーンは残ります）">' + ICON.trash + '</button></div>';
 }
 function cardHTML(sc, n, schema, w){
   var opts = SEGS.map(function(s){ return '<option value="' + s.k + '"' + (s.k === sc.seg ? ' selected' : '') + '>' + (s.short || s.label) + '</option>'; }).join('');
@@ -2385,13 +2449,20 @@ function newEp(len){ return {id:'e-' + uid(), length:len, plot:emptyPlot(true), 
 
 function addScene(seg){
   var w = curWork(), ctx = sceneCtx();
-  if(!seg){ seg = ctx.list.length ? ctx.list[ctx.list.length-1].seg : 'a1'; }
+  if(!seg){ var lastSc = scOnly(ctx.list).pop(); seg = lastSc ? lastSc.seg : 'a1'; }
   var sc = {id:'s' + uid(), seg:seg, values:{}};
   checkpoint();
   ctx.owner.scenes = sortScenes(ctx.list.concat([sc]));
   ctx.save(); render();
   var first = (w.schema.card || [])[0];
   focusSoon(first ? '#s-' + sc.id + '-' + first.id : '#card-' + sc.id);
+}
+function addCh(seg){
+  var ctx = sceneCtx(), x = {id:'c' + uid(), ch:true, seg:seg, title:'', nonum:false};
+  checkpoint();
+  ctx.owner.scenes = sortScenes(ctx.list.concat([x]));
+  ctx.save(); render(); focusSoon('#ct-' + x.id);
+  toast('区切りを段の最後に置きました。つまみをドラッグして位置を決めてください', 4000);
 }
 function movePerson(id, dir){
   var w = curWork(); if(!w) return;
@@ -2402,6 +2473,8 @@ function movePerson(id, dir){
 }
 function moveScene(id, dir){
   var ctx = sceneCtx(), list = ctx.list.slice(), i = list.findIndex(function(s){ return s.id === id; }), j = i + dir;
+  /* 章を表示していないときは、隠れている区切りを飛ばして隣のシーンと入れ替える */
+  if(!chOn(curWork())) while(j >= 0 && j < list.length && isCh(list[j])) j += dir;
   if(i < 0 || j < 0 || j >= list.length || list[j].seg !== list[i].seg) return;
   checkpoint();
   var t = list[i]; list[i] = list[j]; list[j] = t;
@@ -2445,6 +2518,11 @@ document.addEventListener('change', function(e){
   var a = el.dataset && el.dataset.change; if(!a) return;
   var w = curWork();
   if(a === 'box-filter'){ S.boxFilter = el.value; render(); return; }
+  if(a === 'use-ch'){ checkpoint(); w.useCh = el.checked; saveWorkSoon(w); render(); focusSoon('.ch-toggle input'); return; }
+  if(a === 'ch-nonum'){
+    var cc = sceneCtx(), cx = cc.list.find(function(x){ return x.id === el.dataset.id; }); if(!cx) return;
+    checkpoint(); cx.nonum = el.checked; cc.save(); render(); focusSoon('#card-' + cx.id + ' .ch-nonum input'); return;
+  }
   if(a === 'scene-seg'){
     var ctx = sceneCtx(), sc = ctx.list.find(function(s){ return s.id === el.dataset.id; }); if(!sc) return;
     checkpoint(); sc.seg = el.value;
@@ -2583,6 +2661,12 @@ document.addEventListener('click', function(e){
     case 'del-ref':
       checkpoint(); w.refs = (w.refs || []).filter(function(x){ return x.id !== id; }); saveWorkSoon(w); render();
       toast('カードを削除しました。「元に戻す」で戻せます'); break;
+    case 'add-ch': addCh(v); break;
+    case 'ch-del':
+      var cctx = sceneCtx();
+      checkpoint(); cctx.owner.scenes = cctx.list.filter(function(s){ return s.id !== id; }); cctx.save(); render();
+      toast('区切りを削除しました。シーンはそのまま残ります');
+      break;
     case 'scene-del':
       var ctx = sceneCtx();
       checkpoint(); ctx.owner.scenes = ctx.list.filter(function(s){ return s.id !== id; }); ctx.save(); render();
@@ -2636,9 +2720,9 @@ document.addEventListener('click', function(e){
       var csc = sceneCtx().list.filter(function(x){ return x.id === id; });
       if(csc.length) copyText('シーン', smartFull(boxesText(w, csc)));
       break;
-    case 'copy-boxes': copyText('箱書き', smartFull(boxesText(w, sceneCtx().list))); break;
+    case 'copy-boxes': copyText('箱書き', smartFull(boxesText(w, scOnly(sceneCtx().list)))); break;
     case 'copy-grp':
-      var cg = sceneCtx().list.filter(function(x){ return x.seg === v; });
+      var cg = scOnly(sceneCtx().list).filter(function(x){ return x.seg === v; });
       copyText(segName(SEG_BY[v]) + 'のシーン', smartFull(boxesText(w, cg))); break;
     case 'pdf':
       flushAll();
@@ -2672,7 +2756,7 @@ function findDrop(){
   var tc = el.closest('.card');
   if(tc && tc !== drag.card){
     var r = tc.getBoundingClientRect();
-    drag.target = tc.dataset.id; drag.pos = drag.x < r.left + r.width / 2 ? 'before' : 'after';
+    drag.target = tc.dataset.id; drag.pos = tc.classList.contains('chdiv') ? (drag.y < r.top + r.height / 2 ? 'before' : 'after') : drag.x < r.left + r.width / 2 ? 'before' : 'after';
     tc.classList.add(drag.pos === 'before' ? 'drop-before' : 'drop-after'); return;
   }
   if(tc === drag.card) return;
@@ -2782,7 +2866,7 @@ function searchEntries(w){
   function add(where, text, go){ if(!isBlank(text)) out.push({where:where, text:String(text), go:go}); }
   function withFocus(go, f){ var g = {}; Object.keys(go).forEach(function(k){ g[k] = go[k]; }); g.focus = f; return g; }
   function scenes(list, prefix, go){
-    list.forEach(function(sc, i){ (w.schema.card || []).forEach(function(f){ add(prefix + 'シーン' + (i+1) + '・' + f.label, getPath(sc, ['values', f.id]), withFocus(go, '#s-' + sc.id + '-' + f.id)); }); });
+    scOnly(list).forEach(function(sc, i){ (w.schema.card || []).forEach(function(f){ add(prefix + 'シーン' + (i+1) + '・' + f.label, getPath(sc, ['values', f.id]), withFocus(go, '#s-' + sc.id + '-' + f.id)); }); });
   }
   function plots(obj, prefix, go){
     Object.keys(PLOT_NAMES).forEach(function(k){ if(obj.plot && k in obj.plot) add(prefix + PLOT_NAMES[k], obj.plot[k], withFocus(go, '#pl-' + k)); });
@@ -3034,6 +3118,7 @@ function pdfPlot(P, obj, L, withHook){
   if(withHook){ P.h2('次の話への引き'); P.para(obj.plot.hook); }
 }
 function pdfScenes(P, w, list){
+  list = scOnly(list);
   if(!list.length){ P.note('シーンはまだありません。'); return; }
   list.forEach(function(sc, i){
     P.h2('シーン' + (i+1) + '　' + SEG_BY[sc.seg].label);
