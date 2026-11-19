@@ -736,7 +736,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.21';
+var VERSION = '1.22';
 var KINDS = {
   single:{label:'単発脚本', def:null, hint:'長さを入力'},
   serial:{label:'連続脚本', def:null, hint:'話数を設定'},
@@ -871,6 +871,7 @@ function defaultTemplate(){
   migPerson19(t);
   migBasic20(t.basic);
   migCard21(t);
+  migCard22(t);
   return t;
 }
 function migPerson(list){
@@ -1002,6 +1003,15 @@ function migCard21(sch, w){
   var known = [scene, body, who].filter(Boolean), rest = l.filter(function(f){ return known.indexOf(f) < 0; });
   l.length = 0; known.concat(rest).forEach(function(f){ l.push(f); });
 }
+/* 箱書きのカード：「登場人物」を「人物」に改め、並びを「場面・人物・内容」にする（中身はそのまま） */
+function migCard22(sch){
+  var l = sch && sch.card; if(!l) return;
+  var who = l.find(function(f){ return !isHead(f) && f.label === '登場人物'; }); if(who) who.label = '人物';
+  who = l.find(function(f){ return !isHead(f) && f.label === '人物'; });
+  var scene = l.find(function(f){ return f.label === '場面'; }), body = l.find(function(f){ return f.label === '内容'; });
+  var known = [scene, who, body].filter(Boolean), rest = l.filter(function(f){ return known.indexOf(f) < 0; });
+  l.length = 0; known.concat(rest).forEach(function(f){ l.push(f); });
+}
 function migScenes21(w){
   var mv = w && w.cardMove21; if(!mv) return false;
   var ch = false;
@@ -1050,7 +1060,7 @@ function migMemoRows(sch){
 }
 function migrateTemplates(){
   var t = S.templates, ch = false;
-  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16','mig17','mig18','mig19','mig20','mig21'].forEach(function(k){ t[k] = true; }); return true; }
+  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16','mig17','mig18','mig19','mig20','mig21','mig22'].forEach(function(k){ t[k] = true; }); return true; }
   if(t.movie && !t.mig5){ t.single = t.movie; delete t.movie; delete t.other; ch = true; }
   if(!t.mig5){ t.mig5 = true; ch = true; }
   if(!t.single){ t.single = defaultTemplate(); ch = true; }
@@ -1077,6 +1087,7 @@ function migrateTemplates(){
   if(!t.mig19){ KIND_ORDER.forEach(function(k){ migPerson19(t[k]); }); t.mig19 = true; ch = true; }
   if(!t.mig20){ KIND_ORDER.forEach(function(k){ migBasic20(t[k] && t[k].basic); }); t.mig20 = true; ch = true; }
   if(!t.mig21){ KIND_ORDER.forEach(function(k){ migCard21(t[k]); }); t.mig21 = true; ch = true; }
+  if(!t.mig22){ KIND_ORDER.forEach(function(k){ migCard22(t[k]); }); t.mig22 = true; ch = true; }
   return ch;
 }
 function migrateWork(w){
@@ -1102,6 +1113,7 @@ function migrateWork(w){
   if(!w.mig19){ migPerson19(w.schema); w.mig19 = true; ch = true; }
   if(!w.mig20){ migBasic20(w.schema.basic); w.mig20 = true; ch = true; }
   if(!w.mig21){ migCard21(w.schema, w); w.mig21 = true; ch = true; }
+  if(!w.mig22){ migCard22(w.schema); w.mig22 = true; ch = true; }
   if(migScenes21(w)) ch = true;
   return ch;
 }
@@ -2298,7 +2310,7 @@ function modalHTML(m){
       ? '<div class="boxed"><div class="inline"><div class="field"><label class="fl" for="nw-eps">話数</label><div class="num"><input id="nw-eps" class="in" type="text" inputmode="numeric" value="' + esc(m.eps) + '"><span>話</span></div></div>' +
         '<div class="field"><label class="fl" for="nw-base">基本の1話の長さ</label><div class="num"><input id="nw-base" class="in" type="text" inputmode="numeric" value="' + esc(m.base) + '">' + unitSel('nw-unit', m.unit, '', m.kind) + '</div></div></div>' +
         '<p class="sub-l">各話の長さは、作品を作ったあとで1話ずつ変更できます。</p></div>'
-      : '<div class="field"><label class="fl" for="nw-len">長さ</label><div class="num"><input id="nw-len" class="in' + (m.kind === 'novel' && m.unit !== 'sheet' ? ' wide-num' : '') + '" type="text" inputmode="numeric" value="' + esc(m.len) + '">' + unitSel('nw-unit', m.unit, '', m.kind) + '</div></div>';
+      : '<div class="field"><label class="fl" for="nw-len">長さ</label><div class="num"><input id="nw-len" class="in wide-num" type="text" inputmode="numeric" value="' + esc(m.len) + '">' + unitSel('nw-unit', m.unit, '', m.kind) + '</div></div>';
     var venue = '<div class="field"><label class="fl" for="nw-venue">掲載先・応募先</label><input id="nw-venue" class="in" type="text" placeholder="空欄のままでもかまいません" value="' + esc(m.venue || '') + '"></div>';
     return '<h2 id="m-title">新しい作品を作る</h2>' +
       '<div class="field"><label class="fl" for="nw-title">作品名</label><input id="nw-title" class="in" type="text" placeholder="作品名を入力" value="' + esc(m.title) + '"></div>' +
@@ -2423,7 +2435,7 @@ function createWork(){
   if(unitList(m.kind).indexOf(m.unit) > 0 || m.kind === 'novel') w.unit = unitList(m.kind).indexOf(m.unit) >= 0 ? m.unit : unitList(m.kind)[0];
   if(!isBlank(m.venue)) w.venue = String(m.venue).trim();
   /* ひな形は最新の形なので、古い形を直す処理は不要（済みの印を付けておく） */
-  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16','mig17','mig18','mig19','mig20','mig21'].forEach(function(k){ w[k] = true; });
+  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16','mig17','mig18','mig19','mig20','mig21','mig22'].forEach(function(k){ w[k] = true; });
   if(m.kind === 'serial'){
     var n = toInt(m.eps, 1, 100), base = toInt(m.base, 1, 600);
     if(!n || !base){ m.err = '話数と基本の1話の長さを数字で入力してください。'; renderModal(false); return; }
