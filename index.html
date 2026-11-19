@@ -524,6 +524,10 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 /* 尺は中身の幅だけ取り、右端に寄せる */
 .bhead .f-len{min-width:0;flex:0 0 auto;margin-left:auto}
 .bhead .fw-title{flex-basis:200px}
+.bhead .fw-venue{flex:1 1 180px;min-width:0}
+.in.wide-num{width:110px}
+.work-open .wtc{display:flex;flex-direction:column;gap:2px;min-width:0}
+.work-open .vn{color:var(--muted);font-size:13px;overflow-wrap:anywhere}
 .bhead .fw-M{flex-basis:200px}
 .basic-b #b-title{height:35px}
 .people-a #p-name{height:35px}
@@ -668,6 +672,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .cf .in{height:26px;font-size:13px;padding:0 6px}
 .cf .ta,.cf .ta.auto{font-size:13px;padding:2px 6px;min-height:0;height:calc(var(--rows,1) * 1.5em + 6.5px)}
 .cf .in.min-in{width:56px;height:26px}
+.cf .in.min-in.min-wide{width:76px}
 .cf label[for^="m-"]{padding-top:3px}
 .num-row .spacer{flex:1}
 .card-del{width:30px;height:28px;margin-right:-2px}
@@ -686,6 +691,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
   .wl-cols{display:none}
   .work-open{grid-template-columns:minmax(0,1fr) auto;padding-left:16px}
   .work-open .kd,.work-open .ln{font-size:13px;color:var(--muted)}
+  .work-open .kd{align-self:start;padding-top:4px}
   .work-open .dt{grid-column:1 / -1;text-align:left}
   .kind-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .tpl-cols{display:none}
@@ -713,12 +719,13 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.18';
+var VERSION = '1.20';
 var KINDS = {
-  single:{label:'単発作品', def:null, hint:'長さを入力'},
-  serial:{label:'連続作品', def:null, hint:'話数を設定'}
+  single:{label:'単発脚本', def:null, hint:'長さを入力'},
+  serial:{label:'連続脚本', def:null, hint:'話数を設定'},
+  novel:{label:'小説', def:null, hint:'長さを入力'}
 };
-var KIND_ORDER = ['single','serial'];
+var KIND_ORDER = ['single','serial','novel'];
 var SEGS = [
   {k:'a1', label:'第一幕', from:0, to:.25},
   {k:'pp1', label:'プロットポイント1', short:'PP1', side:'プロットポイント(PP)1', point:true},
@@ -742,16 +749,32 @@ function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(
 function clone(o){ return JSON.parse(JSON.stringify(o)); }
 function fld(label, multi){ return {id:'f'+uid(), label:label, multi:!!multi}; }
 function mins(L, r){ return Math.round(L * r); }
-/* 長さの単位：作品ごとに「分」か「枚」（w.unit）。数字はそのままで、表示の単位だけが替わる */
-function U(w){ return w && w.unit === 'page' ? '枚' : '分'; }
-function unitSel(id, unit, extra){ return '<label class="sr" for="' + id + '">単位</label><select id="' + id + '" class="sel unit-sel"' + (extra || '') + '><option value="min"' + (unit !== 'page' ? ' selected' : '') + '>分</option><option value="page"' + (unit === 'page' ? ' selected' : '') + '>枚</option></select>'; }
-/* シーンの長さは小数点以下1桁まで（0.5分・0.5枚など）。全角の数字や小数点も受け付ける */
-function toLen1(v){
-  var t = String(v == null ? '' : v).replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }).replace(/[．。]/g, '.').replace(/[^\d.]/g, '');
-  var n = parseFloat(t); if(!isFinite(n)) return null;
-  return Math.min(999, Math.max(0, Math.round(n * 10) / 10));
+/* 長さの単位：脚本は「分」か「枚」、小説は「字」か「枚（原稿用紙）」。作品ごとに選ぶ（w.unit）。
+   単位を替えても数字はそのままで、表示の単位だけが替わる。字数は整数で入力する */
+var UNITS = {min:{label:'分', max:600}, page:{label:'枚', max:600}, char:{label:'字', max:2000000, int:true}, sheet:{label:'枚', max:5000}};
+function isNovel(w){ return !!w && w.kind === 'novel'; }
+function unitList(kind){ return kind === 'novel' ? ['char','sheet'] : ['min','page']; }
+function unitOf(w){ var l = unitList(w && w.kind); return w && l.indexOf(w.unit) >= 0 ? w.unit : l[0]; }
+function U(w){ return UNITS[unitOf(w)].label; }
+function lenMax(w){ return UNITS[unitOf(w)].max; }
+/* 作品の長さを表す語：脚本は「尺」、小説は「長さ」 */
+function lenWord(w){ return isNovel(w) ? '長さ' : '尺'; }
+function unitSel(id, unit, extra, kind){
+  var l = unitList(kind), cur = l.indexOf(unit) >= 0 ? unit : l[0];
+  return '<label class="sr" for="' + id + '">単位</label><select id="' + id + '" class="sel unit-sel"' + (extra || '') + '>' +
+    l.map(function(u){ return '<option value="' + u + '"' + (u === cur ? ' selected' : '') + (u === 'sheet' ? ' title="原稿用紙の枚数"' : '') + '>' + UNITS[u].label + '</option>'; }).join('') + '</select>';
 }
-function len1(v){ var n = toLen1(v); return n == null ? 0 : n; }
+/* シーンの長さは小数点以下1桁まで（0.5分・0.5枚など）。字数のときは整数。全角の数字や小数点も受け付ける */
+function numOf(v){
+  var t = String(v == null ? '' : v).replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }).replace(/[．。]/g, '.').replace(/[^\d.]/g, '');
+  var n = parseFloat(t); return isFinite(n) ? Math.max(0, n) : null;
+}
+function toLen1(v, w){
+  var n = numOf(v); if(n == null) return null;
+  if(w && UNITS[unitOf(w)].int) return Math.min(9999999, Math.round(n));
+  return Math.min(w && unitOf(w) === 'sheet' ? 9999 : 999, Math.round(n * 10) / 10);
+}
+function len1(v){ var n = numOf(v); return n == null ? 0 : n; }
 function fmt1(n){ return String(Math.round(n * 10) / 10); }
 function fmtDate(t){ if(!t) return ''; var d = new Date(t); return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0'); }
 function isBlank(v){ return v == null || String(v).trim() === ''; }
@@ -830,6 +853,7 @@ function defaultTemplate(){
   migPerson18(t);
   migPerson19(t);
   migBasic20(t.basic);
+  migCard21(t);
   return t;
 }
 function migPerson(list){
@@ -943,6 +967,42 @@ function migPerson19(sch){
   var i = l.findIndex(function(f){ return f.label === '年齢'; }); if(i < 0) return;
   l.splice(i + 1, 0, {id:'f19gender', label:'性別', multi:false, rows:1, w:l[i].w || 'S', nl:false});
 }
+/* 箱書きのカード：欄を「場面・内容・登場人物」にする（脚本・小説で共通）。
+   「出来事」を「内容」に改め（同じ欄なので中身はそのまま）、「セリフ」の欄はなくして中身を「内容」へ移す。
+   シーンの中身を移すのは migScenes21。話ごとのシーンは読み込んだあとに移すので、移し先を作品に記録しておく */
+function migCard21(sch, w){
+  var l = sch && sch.card; if(!l) return;
+  var body = l.find(function(f){ return !isHead(f) && f.label === '内容'; }) || l.find(function(f){ return !isHead(f) && f.label === '出来事'; });
+  if(body){ body.label = '内容'; body.multi = true; }
+  else { body = {id:'f21body', label:'内容', multi:true, rows:1, w:'full', nl:false}; l.push(body); }
+  var serif = l.find(function(f){ return !isHead(f) && f.label === 'セリフ'; });
+  if(serif){
+    l.splice(l.indexOf(serif), 1);
+    if(w){ w.cardMove21 = {from:serif.id, to:body.id}; }
+  }
+  /* 並び：場面 → 内容 → 登場人物 → そのほかの欄 */
+  var scene = l.find(function(f){ return f.label === '場面'; }), who = l.find(function(f){ return f.label === '登場人物'; });
+  var known = [scene, body, who].filter(Boolean), rest = l.filter(function(f){ return known.indexOf(f) < 0; });
+  l.length = 0; known.concat(rest).forEach(function(f){ l.push(f); });
+}
+function migScenes21(w){
+  var mv = w && w.cardMove21; if(!mv) return false;
+  var ch = false;
+  function fix(list){
+    var moved = false;
+    (list || []).forEach(function(sc){
+      var v = sc.values; if(!v || !(mv.from in v)) return;
+      var t = String(v[mv.from] || '').trim(); delete v[mv.from]; moved = true;
+      if(!t) return;
+      v[mv.to] = (String(v[mv.to] || '').trim() ? String(v[mv.to]).replace(/\s+$/, '') + '\n' : '') + 'セリフ：' + t;
+    });
+    return moved;
+  }
+  if(fix(w.scenes)) ch = true;
+  var eps = S.episodes && S.episodes[w.id];
+  if(eps) Object.keys(eps).forEach(function(eid){ if(fix(eps[eid] && eps[eid].scenes)){ markEp(w, eid); ch = true; } });
+  return ch;
+}
 /* 基本設定：2行目に舞台・主人公、3行目に作品の核・メモを並べる（4つの見出しが初期の並びのままのときだけ） */
 function migBasic20(list){
   if(!list) return;
@@ -973,11 +1033,13 @@ function migMemoRows(sch){
 }
 function migrateTemplates(){
   var t = S.templates, ch = false;
-  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16','mig17','mig18','mig19','mig20'].forEach(function(k){ t[k] = true; }); return true; }
+  if(!t){ t = S.templates = defaultTemplates(); ['mig2','mig3','mig4','mig5','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16','mig17','mig18','mig19','mig20','mig21'].forEach(function(k){ t[k] = true; }); return true; }
   if(t.movie && !t.mig5){ t.single = t.movie; delete t.movie; delete t.other; ch = true; }
   if(!t.mig5){ t.mig5 = true; ch = true; }
   if(!t.single){ t.single = defaultTemplate(); ch = true; }
   if(!t.serial){ t.serial = defaultTemplate(); ch = true; }
+  /* 小説のひな形は、最初は単発脚本のひな形と同じ内容から始める */
+  if(!t.novel){ t.novel = clone(t.single); ch = true; }
   if(!t.mig4){ KIND_ORDER.forEach(function(k){ migRef(t[k].basic); }); t.mig4 = true; ch = true; }
   if(!t.mig7){ KIND_ORDER.forEach(function(k){ migEra(t[k].basic, null); }); t.mig7 = true; ch = true; }
   if(!t.mig6){ KIND_ORDER.forEach(function(k){ migRef(t[k].basic); migMemo(t[k].basic); }); t.mig6 = true; ch = true; }
@@ -997,6 +1059,7 @@ function migrateTemplates(){
   if(!t.mig18){ KIND_ORDER.forEach(function(k){ migPerson18(t[k]); }); t.mig18 = true; ch = true; }
   if(!t.mig19){ KIND_ORDER.forEach(function(k){ migPerson19(t[k]); }); t.mig19 = true; ch = true; }
   if(!t.mig20){ KIND_ORDER.forEach(function(k){ migBasic20(t[k] && t[k].basic); }); t.mig20 = true; ch = true; }
+  if(!t.mig21){ KIND_ORDER.forEach(function(k){ migCard21(t[k]); }); t.mig21 = true; ch = true; }
   return ch;
 }
 function migrateWork(w){
@@ -1021,6 +1084,8 @@ function migrateWork(w){
   if(!w.mig18){ migPerson18(w.schema); w.mig18 = true; ch = true; }
   if(!w.mig19){ migPerson19(w.schema); w.mig19 = true; ch = true; }
   if(!w.mig20){ migBasic20(w.schema.basic); w.mig20 = true; ch = true; }
+  if(!w.mig21){ migCard21(w.schema, w); w.mig21 = true; ch = true; }
+  if(migScenes21(w)) ch = true;
   return ch;
 }
 function defaultTemplates(){ var t = {}; KIND_ORDER.forEach(function(k){ t[k] = defaultTemplate(); }); return t; }
@@ -1564,7 +1629,7 @@ async function histRestore(k){
     migrateWork(w);
     checkpoint();
     S.works[x.doc] = w;
-    if(w.kind === 'serial'){ S.episodes[x.doc] = sn.e || {}; Object.keys(S.episodes[x.doc]).forEach(function(eid){ markEp(w, eid); }); }
+    if(w.kind === 'serial'){ S.episodes[x.doc] = sn.e || {}; Object.keys(S.episodes[x.doc]).forEach(function(eid){ markEp(w, eid); }); migScenes21(w); }
     saveWorkSoon(w); histMark(x.doc);
     S.view = 'work'; S.workId = x.doc; render(); window.scrollTo(0, 0);
     toast(when + 'の版に戻しました。戻す前の状態も「以前の版」に残しています', 5000);
@@ -1573,7 +1638,7 @@ async function histRestore(k){
     var nw = sn.w, nid = 'w-' + uid(); nw.id = nid; delete nw.rev; nw.updatedAt = Date.now();
     migrateWork(nw);
     S.works[nid] = nw;
-    if(nw.kind === 'serial'){ S.episodes[nid] = sn.e || {}; Object.keys(S.episodes[nid]).forEach(function(eid){ markEp(nw, eid); }); }
+    if(nw.kind === 'serial'){ S.episodes[nid] = sn.e || {}; Object.keys(S.episodes[nid]).forEach(function(eid){ markEp(nw, eid); }); migScenes21(nw); }
     saveWorkSoon(nw); histMark(nid);
     S.view = 'work'; S.workId = nid; S.tab = 'basic'; histReset(); render(); window.scrollTo(0, 0);
     toast('削除された作品を、' + when + 'の版で作り直しました', 5000);
@@ -1717,7 +1782,7 @@ function boxInfo(w){
     ctx = sceneCtx();
   } else return '';
   var all = ctx.list.reduce(function(a, x){ return a + len1(x.min); }, 0), u = U(w);
-  return '<div class="tab-tools"><span class="tab-info">シーン ' + ctx.list.length + '件' + (all ? '・計 ' + fmt1(all) + u + '（尺 ' + ctx.length + u + '）' : '') + '</span>' +
+  return '<div class="tab-tools"><span class="tab-info">シーン ' + ctx.list.length + '件' + (all ? '・計 ' + fmt1(all) + u + '（' + lenWord(w) + ' ' + ctx.length + u + '）' : '') + '</span>' +
     (ctx.list.length ? '<button type="button" class="btn tab-btn" data-act="copy-boxes">' + ICON.dup + '全シーンをコピー</button>' : '') + '</div>';
 }
 
@@ -1738,7 +1803,7 @@ function renderList(){
       works.map(function(w){
         var len = w.kind === 'serial' ? '全' + (w.epOrder||[]).length + '話' : w.length + U(w);
         return '<div class="work-row"><button type="button" class="work-open" data-act="open-work" data-id="' + w.id + '">' +
-          '<span class="wt">' + esc(w.title || '無題の作品') + '</span><span class="kd">' + KINDS[w.kind].label + '</span><span class="ln">' + len + '</span><span class="dt">' + fmtDate(w.updatedAt) + '</span></button>' +
+          '<span class="wtc"><span class="wt">' + esc(w.title || '無題の作品') + '</span>' + (isBlank(w.venue) ? '' : '<span class="vn">' + esc(w.venue) + '</span>') + '</span><span class="kd">' + KINDS[w.kind].label + '</span><span class="ln">' + len + '</span><span class="dt">' + fmtDate(w.updatedAt) + '</span></button>' +
           '<button type="button" class="icon-btn" data-act="dup-work" data-id="' + w.id + '" aria-label="' + esc(w.title || '無題の作品') + 'を複製" title="複製">' + ICON.dup + '</button>' +
           '<button type="button" class="icon-btn del-far" data-act="delete-work" data-id="' + w.id + '" aria-label="' + esc(w.title || '無題の作品') + 'を削除">' + ICON.trash + '</button></div>';
       }).join('') + '</div>';
@@ -1840,7 +1905,8 @@ function renderBasic(w){
   });
   var len = w.kind === 'serial'
     ? '<div class="field f-len"><span class="fl">尺</span><div class="readout">' + esc(lenText) + '</div></div>'
-    : '<div class="field f-len"><label class="fl" for="b-len">尺</label><div class="num"><input id="b-len" class="in" type="text" inputmode="numeric" data-change="w-len" value="' + w.length + '">' + unitSel('b-unit', w.unit, ' data-change="w-unit"') + '</div></div>';
+    : '<div class="field f-len"><label class="fl" for="b-len">' + lenWord(w) + '</label><div class="num"><input id="b-len" class="in' + (unitOf(w) === 'char' ? ' wide-num' : '') + '" type="text" inputmode="numeric" data-change="w-len" value="' + w.length + '">' + unitSel('b-unit', w.unit, ' data-change="w-unit"', w.kind) + '</div></div>';
+  var venue = '<div class="field fw-venue"><label class="fl" for="b-venue">掲載先・応募先</label>' + inputFor('W|venue', w.venue || '', 'line', 'b-venue') + '</div>';
   var cards = groups.map(function(g){
     var half = g.h && g.h.w === 'half';
     var fields = half ? g.fields.map(function(f){ return Object.assign({}, f, {w:'full', nl:true}); }) : g.fields;
@@ -1848,7 +1914,7 @@ function renderBasic(w){
       (g.h ? '<h2 class="bcard-h" id="bh-' + g.h.id + '">' + esc(g.h.label) + '</h2>' : '') +
       (fields.length ? flowRows(fields, cell) : '<p class="sub-l">この見出しには項目がありません。「ひな形を編集」で項目を追加できます。</p>') + '</section>';
   }).join('');
-  return '<main class="page gut basic-b"><div class="wrap"><div class="bhead"><section class="bcard wide" aria-labelledby="bh-top"><h2 class="bcard-h" id="bh-top">概要</h2>' + flowRows(sch.slice(0, headEnd), cell, [title], [len]) + '</section></div>' +
+  return '<main class="page gut basic-b"><div class="wrap"><div class="bhead"><section class="bcard wide" aria-labelledby="bh-top"><h2 class="bcard-h" id="bh-top">概要</h2>' + flowRows(sch.slice(0, headEnd), cell, [title, venue], [len]) + '</section></div>' +
     (cards ? '<div class="bgrid">' + cards + '</div>' : '') + '</div></main>';
 }
 
@@ -2005,7 +2071,7 @@ function cardHTML(sc, n, schema, w){
       return '<div class="cf"><label for="' + id + '">' + esc(f.label) + '</label><div class="cf-in">' +
         fieldInput('S:' + sc.id + '|values|' + f.id, getPath(sc, ['values', f.id]), f, id) + picks + '</div></div>';
     }).join('') +
-    '<div class="cf"><label for="m-' + sc.id + '">長さ</label><div class="cf-in num-row"><input id="m-' + sc.id + '" class="in min-in" type="text" inputmode="decimal" value="' + esc(sc.min || '') + '" data-bind="S:' + sc.id + '|min" data-change="scene-min" data-id="' + sc.id + '"><span class="sub-l">' + U(w) + '</span><span class="spacer"></span>' +
+    '<div class="cf"><label for="m-' + sc.id + '">長さ</label><div class="cf-in num-row"><input id="m-' + sc.id + '" class="in min-in' + (unitOf(w) === 'char' ? ' min-wide' : '') + '" type="text" inputmode="' + (unitOf(w) === 'char' ? 'numeric' : 'decimal') + '" value="' + esc(sc.min || '') + '" data-bind="S:' + sc.id + '|min" data-change="scene-min" data-id="' + sc.id + '"><span class="sub-l">' + U(w) + '</span><span class="spacer"></span>' +
     '<button type="button" class="icon-btn card-del" data-act="scene-del" data-id="' + sc.id + '" aria-label="シーン' + n + 'を削除">' + ICON.trash + '</button></div></div>' +
     '</article>';
 }
@@ -2105,7 +2171,7 @@ function renderEpisodes(w){
 var W_OPTS = [['S','小（160px）'],['M','中（260px）'],['half','半分'],['fill','残りの幅'],['full','全幅']];
 function renderTemplates(){
   var k = S.tplKind, t = S.tplTab, list = S.templates[k][t], isCard = t === 'card';
-  var fixed = t === 'basic' ? [['タイトル','1行目の先頭。残りの幅に広がります'],['尺','1行目の最後。作品の長さ（分または枚）を入力します。連続ドラマでは話数が自動で入ります']]
+  var fixed = t === 'basic' ? [['タイトル','1行目の先頭。残りの幅に広がります'],['掲載先・応募先','1行目のタイトルの次に入ります'],['尺（小説では長さ）','1行目の最後。作品の長さ（脚本は分または枚、小説は字数または原稿用紙の枚数）を入力します。連続脚本では話数が自動で入ります']]
     : t === 'person' ? [['名前','1行目の先頭（中の幅）'],['役割','最初に「改行」した行の先頭']] : [];
   var notes = {
     basic:'見出しから次の見出しまでの項目が、1枚のカードにまとまります。幅を「半分」にした見出しのカードが続くと、左右に並びます。最初の見出しより前の項目は、タイトル・尺と同じ行に並びます。幅が「半分」の見出しのカードの中では、項目は縦に1つずつ並びます。カードの中では、「改行」にチェックした項目から新しい行になります。PDFもこの順で出力します。',
@@ -2166,13 +2232,14 @@ function modalHTML(m){
     var kindBtns = KIND_ORDER.map(function(k){ return '<button type="button" data-act="nw-kind" data-v="' + k + '" aria-pressed="' + (m.kind === k) + '"><b>' + KINDS[k].label + '</b><small>' + KINDS[k].hint + '</small></button>'; }).join('');
     var len = m.kind === 'serial'
       ? '<div class="boxed"><div class="inline"><div class="field"><label class="fl" for="nw-eps">話数</label><div class="num"><input id="nw-eps" class="in" type="text" inputmode="numeric" value="' + esc(m.eps) + '"><span>話</span></div></div>' +
-        '<div class="field"><label class="fl" for="nw-base">基本の1話の長さ</label><div class="num"><input id="nw-base" class="in" type="text" inputmode="numeric" value="' + esc(m.base) + '">' + unitSel('nw-unit', m.unit) + '</div></div></div>' +
+        '<div class="field"><label class="fl" for="nw-base">基本の1話の長さ</label><div class="num"><input id="nw-base" class="in" type="text" inputmode="numeric" value="' + esc(m.base) + '">' + unitSel('nw-unit', m.unit, '', m.kind) + '</div></div></div>' +
         '<p class="sub-l">各話の長さは、作品を作ったあとで1話ずつ変更できます。</p></div>'
-      : '<div class="field"><label class="fl" for="nw-len">長さ</label><div class="num"><input id="nw-len" class="in" type="text" inputmode="numeric" value="' + esc(m.len) + '">' + unitSel('nw-unit', m.unit) + '</div></div>';
+      : '<div class="field"><label class="fl" for="nw-len">長さ</label><div class="num"><input id="nw-len" class="in' + (m.kind === 'novel' && m.unit !== 'sheet' ? ' wide-num' : '') + '" type="text" inputmode="numeric" value="' + esc(m.len) + '">' + unitSel('nw-unit', m.unit, '', m.kind) + '</div></div>';
+    var venue = '<div class="field"><label class="fl" for="nw-venue">掲載先・応募先</label><input id="nw-venue" class="in" type="text" placeholder="空欄のままでもかまいません" value="' + esc(m.venue || '') + '"></div>';
     return '<h2 id="m-title">新しい作品を作る</h2>' +
       '<div class="field"><label class="fl" for="nw-title">作品名</label><input id="nw-title" class="in" type="text" placeholder="作品名を入力" value="' + esc(m.title) + '"></div>' +
       '<fieldset style="margin:0;padding:0;border:none" class="field"><legend class="fl" style="margin-bottom:8px">作品の種類</legend><div class="kind-grid">' + kindBtns + '</div></fieldset>' +
-      len + (m.err ? '<p class="err-text">' + esc(m.err) + '</p>' : '') +
+      len + venue + (m.err ? '<p class="err-text">' + esc(m.err) + '</p>' : '') +
       '<p class="sub-l">記入欄は「' + KINDS[m.kind].label + '」のひな形から作られます。</p>' +
       '<div class="modal-actions"><button type="button" class="btn" data-act="close-modal">キャンセル</button><button type="button" class="btn primary" data-act="nw-create">作成</button></div>';
   }
@@ -2284,14 +2351,15 @@ function focusSoon(sel){ setTimeout(function(){ var el = document.querySelector(
 function readModal(ids){ var o = {}; ids.forEach(function(id){ var el = document.getElementById(id); if(el) o[id] = el.value; }); return o; }
 
 function createWork(){
-  var m = S.modal, v = readModal(['nw-title','nw-len','nw-eps','nw-base','nw-unit']);
-  m.title = v['nw-title'] || ''; if(v['nw-len'] != null) m.len = v['nw-len']; if(v['nw-eps'] != null) m.eps = v['nw-eps']; if(v['nw-base'] != null) m.base = v['nw-base']; if(v['nw-unit'] != null) m.unit = v['nw-unit'];
+  var m = S.modal, v = readModal(['nw-title','nw-len','nw-eps','nw-base','nw-unit','nw-venue']);
+  m.title = v['nw-title'] || ''; if(v['nw-len'] != null) m.len = v['nw-len']; if(v['nw-eps'] != null) m.eps = v['nw-eps']; if(v['nw-base'] != null) m.base = v['nw-base']; if(v['nw-unit'] != null) m.unit = v['nw-unit']; if(v['nw-venue'] != null) m.venue = v['nw-venue'];
   var tpl = clone(S.templates[m.kind]);
   var w = {v:1, id:'w-' + uid(), title:m.title.trim() || '無題の作品', kind:m.kind, createdAt:Date.now(), updatedAt:Date.now(),
     schema:tpl, basic:{}, people:[]};
-  if(m.unit === 'page') w.unit = 'page';
+  if(unitList(m.kind).indexOf(m.unit) > 0 || m.kind === 'novel') w.unit = unitList(m.kind).indexOf(m.unit) >= 0 ? m.unit : unitList(m.kind)[0];
+  if(!isBlank(m.venue)) w.venue = String(m.venue).trim();
   /* ひな形は最新の形なので、古い形を直す処理は不要（済みの印を付けておく） */
-  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16','mig17','mig18','mig19','mig20'].forEach(function(k){ w[k] = true; });
+  ['mig2','mig3','mig4','mig6','mig7','mig8','mig9','mig10','mig11','mig12','mig13','mig14','mig15','mig16','mig17','mig18','mig19','mig20','mig21'].forEach(function(k){ w[k] = true; });
   if(m.kind === 'serial'){
     var n = toInt(m.eps, 1, 100), base = toInt(m.base, 1, 600);
     if(!n || !base){ m.err = '話数と基本の1話の長さを数字で入力してください。'; renderModal(false); return; }
@@ -2303,7 +2371,7 @@ function createWork(){
     epsOf(w).forEach(function(ep){ saveEpSoon(w, ep); });
     S.tab = 'basic';
   } else {
-    var L = toInt(m.len, 1, 600);
+    var L = toInt(m.len, 1, lenMax(w));
     if(!L){ m.err = '長さを数字で入力してください。'; renderModal(false); return; }
     w.length = L; w.plot = emptyPlot(false); w.scenes = [];
     S.works[w.id] = w;
@@ -2362,7 +2430,7 @@ function importBackup(file){
         var eps = w.episodes; delete w.episodes;
         S.works[w.id] = w;
         delete w.rev; delete w.dev; migrateWork(w);
-        if(w.kind === 'serial'){ S.episodes[w.id] = {}; (eps || []).forEach(function(ep){ S.episodes[w.id][ep.id] = ep; markEp(w, ep.id); }); }
+        if(w.kind === 'serial'){ S.episodes[w.id] = {}; (eps || []).forEach(function(ep){ S.episodes[w.id][ep.id] = ep; markEp(w, ep.id); }); migScenes21(w); }
         saveWorkQuiet(w);
       });
       closeModal(); render(); toast('バックアップを読み込みました');
@@ -2385,11 +2453,11 @@ document.addEventListener('change', function(e){
     ctx.save(); render(); focusSoon('#seg-' + sc.id);
   } else if(a === 'w-unit'){
     /* 単位を替えても、入力済みの数字はそのまま（表示の単位だけが替わる） */
-    var nu = el.value === 'page' ? 'page' : 'min'; if((w.unit || 'min') === nu) return;
-    checkpoint(); if(nu === 'page') w.unit = 'page'; else delete w.unit; saveWorkSoon(w); render(); focusSoon('#b-unit');
+    var ul = unitList(w.kind), nu = ul.indexOf(el.value) >= 0 ? el.value : ul[0]; if(unitOf(w) === nu) return;
+    checkpoint(); if(nu === 'min') delete w.unit; else w.unit = nu; saveWorkSoon(w); render(); focusSoon('#b-unit');
   } else if(a === 'w-len'){
-    var wl = toInt(el.value, 1, 600);
-    if(!wl){ el.value = w.length; toast('尺は1〜600の数字（' + U(w) + '）で入力してください'); return; }
+    var wl = toInt(el.value, 1, lenMax(w));
+    if(!wl){ el.value = w.length; toast(lenWord(w) + 'は1〜' + lenMax(w) + 'の数字（' + U(w) + '）で入力してください'); return; }
     el.value = wl;
     if(wl === w.length) return;
     checkpoint(); w.length = wl; saveWorkSoon(w);
@@ -2411,7 +2479,7 @@ document.addEventListener('change', function(e){
     saveTemplatesSoon();
   } else if(a === 'scene-min'){
     var cm = sceneCtx(), scm = cm.list.find(function(x){ return x.id === el.dataset.id; }); if(!scm) return;
-    var nm = toLen1(el.value); scm.min = nm == null ? '' : fmt1(nm); el.value = scm.min; cm.save(); renderKeep();
+    var nm = toLen1(el.value, w); scm.min = nm == null ? '' : fmt1(nm); el.value = scm.min; cm.save(); renderKeep();
   } else if(a === 'as-check'){
     S.modal.sel[el.value] = el.checked;
   } else if(a === 'pdf-check'){
@@ -2463,9 +2531,10 @@ document.addEventListener('click', function(e){
     case 'new-work':
       openModal({type:'new', kind:'single', title:'', len:'', eps:10, base:60}); break;
     case 'nw-kind':
-      var vals = readModal(['nw-title','nw-len','nw-eps','nw-base','nw-unit']), m = S.modal;
-      m.title = vals['nw-title'] || ''; if(vals['nw-eps'] != null) m.eps = vals['nw-eps']; if(vals['nw-base'] != null) m.base = vals['nw-base']; if(vals['nw-unit'] != null) m.unit = vals['nw-unit'];
+      var vals = readModal(['nw-title','nw-len','nw-eps','nw-base','nw-unit','nw-venue']), m = S.modal;
+      m.title = vals['nw-title'] || ''; if(vals['nw-eps'] != null) m.eps = vals['nw-eps']; if(vals['nw-base'] != null) m.base = vals['nw-base']; if(vals['nw-unit'] != null) m.unit = vals['nw-unit']; if(vals['nw-venue'] != null) m.venue = vals['nw-venue'];
       m.kind = v; m.err = '';
+      if(unitList(v).indexOf(m.unit) < 0) m.unit = unitList(v)[0];
       m.len = KINDS[v].def == null ? '' : KINDS[v].def;
       renderModal(false); break;
     case 'nw-create': createWork(); break;
@@ -2719,6 +2788,7 @@ function searchEntries(w){
     Object.keys(PLOT_NAMES).forEach(function(k){ if(obj.plot && k in obj.plot) add(prefix + PLOT_NAMES[k], obj.plot[k], withFocus(go, '#pl-' + k)); });
   }
   add('基本・タイトル', w.title, {tab:'basic', focus:'#b-title'});
+  add('基本・掲載先・応募先', w.venue, {tab:'basic', focus:'#b-venue'});
   var bh = '';
   (w.schema.basic || []).forEach(function(f){ if(isHead(f)){ bh = f.label + '・'; return; } add('基本・' + bh + f.label, getPath(w, ['basic', f.id]), {tab:'basic', focus:'#b-' + f.id}); });
   sortPeople(w.people || []).forEach(function(p){
@@ -2987,8 +3057,9 @@ async function makePdf(){
       var lenStr = w.kind === 'serial' ? '全' + w.epOrder.length + '話（基本の1話' + w.baseLength + U(w) + '）' : w.length + U(w);
       var bsch = w.schema.basic || [], lead = 0;
       while(lead < bsch.length && !isHead(bsch[lead]) && !bsch[lead].nl && bsch[lead].w !== 'full') lead++;
-      bsch.forEach(function(f, i){ if(i === lead) P.field('尺', lenStr); if(isHead(f)) P.h2(f.label, P.C.accent); else P.field(f.label, getPath(w, ['basic', f.id])); });
-      if(lead >= bsch.length) P.field('尺', lenStr);
+      if(!isBlank(w.venue)) P.field('掲載先・応募先', w.venue);
+      bsch.forEach(function(f, i){ if(i === lead) P.field(lenWord(w), lenStr); if(isHead(f)) P.h2(f.label, P.C.accent); else P.field(f.label, getPath(w, ['basic', f.id])); });
+      if(lead >= bsch.length) P.field(lenWord(w), lenStr);
     }
     if(m.sel.people){
       section('人物');
