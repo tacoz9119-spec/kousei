@@ -683,7 +683,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .foot{margin-top:28px}
 /* 箱書きの箱をコンパクトに：文字13px、枠との間隔を縮め、項目名の欄を狭くする */
 .card{padding:6px 8px 8px;gap:5px}
-.cf{grid-template-columns:50px minmax(0,1fr);gap:6px}
+.cf{grid-template-columns:calc(var(--lwn,4) * 12px) minmax(0,1fr);gap:10px}
 .cf label{font-size:12px;padding-top:3px;white-space:nowrap}
 /* 箱の入力欄は26px（文字13px・行の高さ1.5倍・上下の余白2px） */
 .cf .in{height:26px;font-size:13px;padding:0 6px}
@@ -736,7 +736,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.22';
+var VERSION = '1.23';
 var KINDS = {
   single:{label:'単発脚本', def:null, hint:'長さを入力'},
   serial:{label:'連続脚本', def:null, hint:'話数を設定'},
@@ -2133,7 +2133,9 @@ function chHTML(x, i, w){
 function cardHTML(sc, n, schema, w){
   var opts = SEGS.map(function(s){ return '<option value="' + s.k + '"' + (s.k === sc.seg ? ' selected' : '') + '>' + (s.short || s.label) + '</option>'; }).join('');
   var names = sortPeople(w.people || []).map(function(p){ return p.name; }).filter(function(x){ return !isBlank(x); });
-  return '<article class="card" id="card-' + sc.id + '" data-id="' + sc.id + '" aria-label="シーン' + n + '"><div class="card-h">' +
+  /* 項目名の欄の幅は、いちばん長い項目名の文字数に合わせる（「長さ」の2文字が最小） */
+  var lwn = schema.reduce(function(a, f){ return Math.max(a, Array.from(f.label || '').length); }, 2);
+  return '<article class="card" id="card-' + sc.id + '" data-id="' + sc.id + '" aria-label="シーン' + n + '" style="--lwn:' + lwn + '"><div class="card-h">' +
     '<button type="button" class="grip" data-id="' + sc.id + '" aria-label="シーン' + n + 'を移動（ドラッグ、または上下の矢印キー）" title="ドラッグして移動">' + ICON.grip + '</button>' +
     '<span class="no">シーン' + n + '</span>' +
     '<label class="sr" for="seg-' + sc.id + '">シーン' + n + 'の段</label><select id="seg-' + sc.id + '" class="sel" data-change="scene-seg" data-id="' + sc.id + '">' + opts + '</select>' +
