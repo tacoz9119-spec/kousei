@@ -740,7 +740,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.29';
+var VERSION = '1.30';
 var KINDS = {
   single:{label:'単発脚本', def:null, hint:'長さを入力'},
   serial:{label:'連続脚本', def:null, hint:'話数を設定'},
@@ -1832,7 +1832,7 @@ function boxInfo(w){
   } else return '';
   var scs = scOnly(ctx.list), all = scs.reduce(function(a, x){ return a + len1(x.min); }, 0), u = U(w);
   return '<div class="tab-tools"><span class="tab-info">シーン ' + scs.length + '件' + (all ? '・計 ' + fmt1(all) + u + '（' + lenWord(w) + ' ' + ctx.length + u + '）' : '') + '</span>' +
-    (scs.length ? '<button type="button" class="btn tab-btn" data-act="copy-boxes">' + ICON.dup + '全シーンをコピー</button>' : '') + '</div>';
+    (scs.length ? '<button type="button" class="icon-btn copy-all" data-act="copy-boxes" aria-label="全シーンをコピー" title="全シーンをコピー">' + ICON.dup + '</button>' : '') + '</div>';
 }
 
 /* ---------- list ---------- */
