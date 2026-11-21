@@ -552,8 +552,9 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .people-a .f-role .seg button{min-height:32px}
 /* 狭い画面でタブの右の道具が次の行へ折り返したとき、タブの下線とのあいだに8pxあける（折り返さないときは変わらない） */
 .tabs-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding-bottom:4px}
-/* トップ画面の上部の帯は、Tebikae・Hongaki・Bunpitu と同じ高さ64px（区切りの線を除く）にする */
-.topbar-in.list-top{min-height:64px;box-sizing:border-box}
+/* 1行だけの上部の帯（トップ画面・ひな形の編集）は Tebikae と同じ高さにする：区切りの線を含めて、マウス操作では55px、指で操作する端末（iPad など）では65px */
+.topbar-in.list-top{min-height:54px;box-sizing:border-box}
+@media (pointer:coarse){.topbar-in.list-top{min-height:64px}}
 /* タブは高さ30px（文字と下線を近づける）にし、下線と区切りの線のあいだを4pxあける */
 .tabs-row .tabs{flex:1 0 auto}
 .tab-tools{margin-left:auto;display:flex;align-items:center;gap:10px}
@@ -742,7 +743,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.32';
+var VERSION = '1.33';
 var KINDS = {
   single:{label:'単発脚本', def:null, hint:'長さを入力'},
   serial:{label:'連続脚本', def:null, hint:'話数を設定'},
@@ -2314,7 +2315,7 @@ function renderTemplates(){
       '<button type="button" class="icon-btn" data-act="tpl-del" ' + base + ' aria-label="' + esc(f.label) + 'を削除">' + ICON.trash + '</button></div>';
   }).join('');
   var st = statusInfo();
-  return '<header class="topbar"><div class="wrap gut"><div class="topbar-in">' +
+  return '<header class="topbar"><div class="wrap gut"><div class="topbar-in list-top">' +
     '<button type="button" class="back" data-act="go-list">' + ICON.back + '作品一覧</button><h1 class="wtitle" style="font-family:var(--f-body);font-size:17px;font-weight:700">ひな形の編集</h1><span class="spacer"></span>' +
     '<span class="status' + (st.err ? ' err' : '') + '" id="status" role="status">' + esc(st.text) + '</span></div></div></header>' +
     '<main class="page gut"><div class="wrap">' +
