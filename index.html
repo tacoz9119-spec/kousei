@@ -269,11 +269,13 @@ body{font-size:14px}
 .meta{font-size:13px}
 .status{font-size:12px}
 .tab{min-height:36px;padding:0 16px;font-size:14px;border-bottom-width:2px}
-.btn{min-height:34px;padding:0 14px;border-radius:7px;font-size:13px;gap:6px}
+/* ボタンの大きさは Hongaki・Bunpitu とそろえて高さ30px */
+.btn{min-height:30px;padding:0 14px;border-radius:6px;font-size:13px;gap:6px}
+label.btn{box-sizing:border-box}
 .btn svg{width:13px;height:13px}
-.back{min-height:34px;font-size:14px}
+.back{min-height:30px;font-size:14px}
 .back svg{width:16px;height:16px}
-.icon-btn{width:34px;height:34px;border-radius:7px}
+.icon-btn{width:30px;height:30px;border-radius:6px}
 .icon-btn svg{width:16px;height:16px}
 #btn-undo svg,#btn-redo svg{width:18px;height:18px}
 .seg{padding:3px;gap:2px;border-radius:9px}
@@ -551,7 +553,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .tab-info{flex:none;font-size:12px;color:var(--fg2);white-space:nowrap;font-variant-numeric:tabular-nums}
 .tab-btn{min-height:28px;padding:0 10px;font-size:12px}
 .tab-btn svg{width:13px;height:13px}
-.grp-h .grp-copy{margin:-8px -8px -8px auto;width:32px;height:32px;color:inherit}
+.grp-h .grp-copy{margin:-8px -8px -8px auto;width:30px;height:30px;color:inherit}
 .grp-h .grp-copy:hover{background:rgba(127,127,127,.18);color:inherit}
 .grp-h .over-pill + .grp-copy{margin-left:4px}
 /* 人物・箱書きの左パネル：見出しを灰色の帯にする（選ぶための一覧なので、書き込むカードの青と分ける） */
@@ -733,7 +735,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.25';
+var VERSION = '1.26';
 var KINDS = {
   single:{label:'単発脚本', def:null, hint:'長さを入力'},
   serial:{label:'連続脚本', def:null, hint:'話数を設定'},
