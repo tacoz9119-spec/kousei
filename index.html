@@ -550,7 +550,8 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .basic-b .bhead .readout,.bhead .num .in{height:35px}
 .people-a .f-role .seg{height:35px}
 .people-a .f-role .seg button{min-height:32px}
-.tabs-row{display:flex;flex-wrap:wrap;align-items:center;gap:0 12px}
+/* 狭い画面でタブの右の道具が次の行へ折り返したとき、タブの下線とのあいだに8pxあける（折り返さないときは変わらない） */
+.tabs-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
 .tabs-row .tabs{flex:1 0 auto}
 .tab-tools{margin-left:auto;display:flex;align-items:center;gap:10px;padding-bottom:3px}
 .tab-info{flex:none;font-size:12px;color:var(--fg2);white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -738,7 +739,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.27';
+var VERSION = '1.28';
 var KINDS = {
   single:{label:'単発脚本', def:null, hint:'長さを入力'},
   serial:{label:'連続脚本', def:null, hint:'話数を設定'},
