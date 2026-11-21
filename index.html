@@ -272,6 +272,9 @@ body{font-size:14px}
 /* ボタンの大きさは Hongaki・Bunpitu とそろえて高さ30px */
 .btn{min-height:30px;padding:0 14px;border-radius:6px;font-size:13px;gap:6px}
 label.btn{box-sizing:border-box}
+/* Noto Sans JP は文字が行の中心より下に描かれ、iPad では約1px下に寄って見えるため、文字を1px上げる（アイコンは中心のまま） */
+.btn,.back,.card-menu button{padding-top:0;padding-bottom:2px}
+.btn svg,.back svg,.card-menu button svg{position:relative;top:1px}
 .btn svg{width:13px;height:13px}
 .back{min-height:30px;font-size:14px}
 .back svg{width:16px;height:16px}
@@ -524,7 +527,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .bcard-h::before{display:none}
 .bcard-top{margin:0 0 14px;padding:4px 20px;min-height:36px;box-sizing:border-box}
 /* 見出しのバー（高さ36px）に収まるよう、アークのバーのボタンは小さめにする */
-.bcard-top .btn{min-height:28px;padding:0 10px;font-size:12px;gap:4px}
+.bcard-top .btn{min-height:28px;padding:0 10px 2px;font-size:12px;gap:4px}
 .bcard-top .btn svg{width:14px;height:14px}
 .bcard-top .bcard-h{padding:0;color:inherit}
 .bcard-top .link-btn{color:inherit;opacity:.8}
@@ -551,7 +554,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .tabs-row .tabs{flex:1 0 auto}
 .tab-tools{margin-left:auto;display:flex;align-items:center;gap:10px;padding-bottom:3px}
 .tab-info{flex:none;font-size:12px;color:var(--fg2);white-space:nowrap;font-variant-numeric:tabular-nums}
-.tab-btn{min-height:28px;padding:0 10px;font-size:12px}
+.tab-btn{min-height:28px;padding:0 10px 2px;font-size:12px}
 .tab-btn svg{width:13px;height:13px}
 .grp-h .grp-copy{margin:-8px -8px -8px auto;width:30px;height:30px;color:inherit}
 .grp-h .grp-copy:hover{background:rgba(127,127,127,.18);color:inherit}
@@ -646,7 +649,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .card-h .in.hd-min.min-wide{width:58px}
 .card-h .no{margin-right:4px}
 .card-menu{position:fixed;z-index:80;min-width:180px;padding:4px;background:var(--surface);border:1px solid var(--line2);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);display:flex;flex-direction:column}
-.card-menu button{display:flex;align-items:center;gap:8px;min-height:40px;padding:0 12px;border:none;border-radius:6px;background:transparent;color:var(--fg);font-size:14px;text-align:left;cursor:pointer}
+.card-menu button{display:flex;align-items:center;gap:8px;min-height:40px;padding:0 12px 2px;border:none;border-radius:6px;background:transparent;color:var(--fg);font-size:14px;text-align:left;cursor:pointer}
 .card-menu button:hover,.card-menu button:focus-visible{background:var(--sunken)}
 .card-menu button.danger{color:var(--danger,#b3261e)}
 .card-h .hd-unit{flex:none;font-size:12px;color:var(--muted);margin-left:3px}
@@ -735,7 +738,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.26';
+var VERSION = '1.27';
 var KINDS = {
   single:{label:'単発脚本', def:null, hint:'長さを入力'},
   serial:{label:'連続脚本', def:null, hint:'話数を設定'},
@@ -2181,8 +2184,8 @@ function renderRefs(w){
     return '<section class="ref-card" data-rid="' + c.id + '" aria-label="' + nm + '">' +
       '<div class="ref-head"><button type="button" class="grip rgrip" data-rid="' + c.id + '" aria-label="' + nm + 'を移動（ドラッグ、または矢印キー）" title="ドラッグして並べ替え">' + ICON.grip + '</button>' +
       '<input id="rt-' + c.id + '" class="ref-title" type="text" placeholder="タイトル" aria-label="カード' + (i+1) + 'のタイトル" value="' + esc(c.title || '') + '" data-bind="R:' + c.id + '|title">' +
-      '<button type="button" class="icon-btn" data-act="dup-ref" data-id="' + c.id + '" aria-label="' + nm + 'を複製" title="複製">' + ICON.dup + '</button>' +
-      '<button type="button" class="icon-btn" data-act="del-ref" data-id="' + c.id + '" aria-label="' + nm + 'を削除" title="削除">' + ICON.trash + '</button></div>' +
+      /* 複製と削除は「…」のメニューにまとめる（箱書きのカードと同じ） */
+      '<button type="button" class="icon-btn card-more" data-act="ref-menu" data-id="' + c.id + '" aria-haspopup="menu" aria-expanded="false" aria-label="' + nm + 'のメニュー（複製・削除）" title="複製・削除">' + ICON.more + '</button></div>' +
       '<div class="ref-body"><div class="ref-tawrap' + (hasUrl(c.text) ? ' has-link' : '') + '"><textarea id="rb-' + c.id + '" class="ta fit ref-ta" rows="1" aria-label="' + nm + 'の内容" data-bind="R:' + c.id + '|text">' + esc(c.text || '') + '</textarea>' +
       '<div class="ref-view">' + linkify(c.text) + '</div></div></div></section>';
   }).join('');
@@ -2748,7 +2751,7 @@ document.addEventListener('click', function(e){
       break;
 
     case 'copy-people': copyText('人物の一覧', peopleText(w)); break;
-    case 'card-menu':
+    case 'card-menu': case 'ref-menu':
       if(cardMenu && cardMenu.id === id) closeCardMenu(); else openCardMenu(el);
       break;
     case 'copy-scene':
@@ -2777,10 +2780,13 @@ function closeCardMenu(refocus){
   if(b){ b.setAttribute('aria-expanded', 'false'); if(refocus) b.focus(); }
 }
 function openCardMenu(btn){
-  var id = btn.dataset.id; closeCardMenu();
+  var id = btn.dataset.id, isRef = btn.dataset.act === 'ref-menu'; closeCardMenu();
   var el = document.createElement('div'); el.className = 'card-menu'; el.setAttribute('role', 'menu');
-  el.innerHTML = '<button type="button" role="menuitem" data-act="copy-scene" data-id="' + id + '">' + ICON.dup + 'このシーンをコピー</button>' +
-    '<button type="button" role="menuitem" class="danger" data-act="scene-del" data-id="' + id + '">' + ICON.trash + 'このシーンを削除</button>';
+  el.innerHTML = isRef
+    ? '<button type="button" role="menuitem" data-act="dup-ref" data-id="' + id + '">' + ICON.dup + 'この資料を複製</button>' +
+      '<button type="button" role="menuitem" class="danger" data-act="del-ref" data-id="' + id + '">' + ICON.trash + 'この資料を削除</button>'
+    : '<button type="button" role="menuitem" data-act="copy-scene" data-id="' + id + '">' + ICON.dup + 'このシーンをコピー</button>' +
+      '<button type="button" role="menuitem" class="danger" data-act="scene-del" data-id="' + id + '">' + ICON.trash + 'このシーンを削除</button>';
   document.body.appendChild(el);
   var r = btn.getBoundingClientRect(), mw = el.offsetWidth, mh = el.offsetHeight;
   el.style.left = Math.max(8, Math.min(r.right - mw, window.innerWidth - mw - 8)) + 'px';
