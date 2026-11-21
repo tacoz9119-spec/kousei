@@ -357,20 +357,12 @@ body{font-size:14px}
 .side-plot .side-plot-note{margin:0 2px}
 .grip:hover{background:var(--sunken);color:var(--fg)}
 .card{position:relative}
-.card.dragging{opacity:.35}
-.card.drop-before::before,.card.drop-after::after{content:"";position:absolute;top:6px;bottom:6px;width:3px;border-radius:2px;background:var(--accent)}
-.card.drop-before::before{left:-8px}
 /* 人物の一覧：左のつまみで並べ替え */
 .p-row{display:flex;align-items:center;gap:0;position:relative}
 .p-row .side-item{flex:1;min-width:0}
 .pgrip,.pgrip-sp{flex:none;width:22px;height:32px;margin:0 2px 0 -4px}
 .pgrip{touch-action:none}
 .pgrip svg{width:14px;height:14px}
-.p-row.dragging{opacity:.35}
-.p-row.drop-before::before,.p-row.drop-after::after{content:"";position:absolute;left:22px;right:0;height:3px;border-radius:2px;background:var(--accent)}
-.p-row.drop-before::before{top:-2px}
-.p-row.drop-after::after{bottom:-2px}
-.card.drop-after::after{right:-8px}
 .card.chdiv{grid-column:1 / -1;flex-direction:row;align-items:center;gap:10px;background:transparent;border:none;border-bottom:2px solid var(--line2);border-radius:0;padding:6px 0 8px;min-height:0}
 .cards .card.chdiv{border-radius:0}
 .chdiv .grip{flex:none}
@@ -378,9 +370,6 @@ body{font-size:14px}
 .chdiv .ch-title{flex:1 1 200px;min-width:0;height:32px;font-size:15px;font-weight:600}
 .chdiv .ch-nonum{flex:none;font-size:12px;color:var(--muted)}
 .chdiv .ch-sum{flex:none;font-size:12px;color:var(--muted);white-space:nowrap}
-.card.chdiv.drop-before::before,.card.chdiv.drop-after::after{left:0;right:0;width:auto;height:3px;top:auto;bottom:auto}
-.card.chdiv.drop-before::before{top:-6px}
-.card.chdiv.drop-after::after{bottom:-6px}
 .ch-cont{grid-column:1 / -1;font-size:12px;color:var(--muted);padding:0 0 2px}
 .ch-add{min-height:44px}
 .add-row{grid-column:1 / -1;display:flex;gap:12px}
@@ -388,7 +377,11 @@ body{font-size:14px}
 .cards .add-row .card-add{flex:1 1 0;min-width:0}
 .cards .add-row .ch-add{flex:0 0 auto;padding:0 20px;white-space:nowrap}
 .ch-toggle{margin-top:10px;font-size:13px}
-.grp.drop-into .cards{outline:2px dashed var(--accent);outline-offset:4px;border-radius:12px}
+.drag-ph{box-sizing:border-box;border:2px dashed var(--line2);border-radius:14px;background:transparent}
+.drag-ph.ph-ch{grid-column:1 / -1;border-radius:8px}
+.drag-ph.ph-row{border-radius:8px;flex:none}
+.drag-src{position:fixed !important;left:-10000px !important;top:0 !important;visibility:hidden}
+.drag-lift{position:fixed !important;z-index:70;pointer-events:none;background:var(--surface);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.18)}
 .drag-ghost{position:fixed;z-index:70;pointer-events:none;transform:translate(14px,14px);padding:6px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--accent);color:var(--accent-strong);font-size:13px;font-weight:700;box-shadow:0 8px 20px var(--shadow);white-space:nowrap}
 body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .cf{grid-template-columns:64px minmax(0,1fr);gap:8px}
@@ -589,10 +582,6 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .ref-tawrap.has-link .ref-ta:not(:focus){color:transparent}
 .ref-tawrap.has-link .ref-ta:focus + .ref-view{display:none}
 .ref-view a{pointer-events:auto;color:var(--mk2);text-decoration:underline;text-underline-offset:2px}
-.ref-card.dragging{opacity:.35}
-.ref-card.drop-before::before,.ref-card.drop-after::after{content:"";position:absolute;top:0;bottom:0;width:3px;border-radius:2px;background:var(--accent)}
-.ref-card.drop-before::before{left:-10px}
-.ref-card.drop-after::after{right:-10px}
 @media (max-width: 760px){ .ref-grid{grid-template-columns:minmax(0,1fr)} }
 .unit-sel{width:auto;height:35px;padding:0 6px;font-size:14px;flex:none}
 .box-side .box-sel{height:35px;font-size:14px;width:auto}
@@ -736,7 +725,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.23';
+var VERSION = '1.24';
 var KINDS = {
   single:{label:'単発脚本', def:null, hint:'長さを入力'},
   serial:{label:'連続脚本', def:null, hint:'話数を設定'},
@@ -2747,35 +2736,68 @@ document.addEventListener('click', function(e){
 });
 
 /* ---------- drag to reorder scenes ---------- */
+/* ---------- ドラッグでの並べ替え ----------
+   つまみをつかむと、元の場所に同じ大きさの空き（.drag-ph）を置く。指の下のカード・行に合わせて空きを DOM の中で動かし、
+   ほかのカードは動く前後の位置の差を transform で 0.16 秒かけて見せる（FLIP）。離すと空きの位置に入る。
+   カード（シーン・章の区切り・調べたこと）は元のカードを画面の外へ外し、名札（.drag-ghost）が指についてくる。
+   人物の行は、つかんだ行そのものが指について上下に動く */
 var drag = null;
-function clearDropMarks(){ document.querySelectorAll('.drop-before,.drop-after,.drop-into').forEach(function(n){ n.classList.remove('drop-before','drop-after','drop-into'); }); }
+function flipNodes(){
+  var sel = drag.kind === 'person' ? '.side > .p-row, .side > .drag-ph, .side > .add-dash, .side > .side-copy'
+    : drag.kind === 'ref' ? '.ref-grid > *' : '.grp-h, .cards > *';
+  return [].slice.call(document.querySelectorAll(sel)).filter(function(n){ return n !== drag.card; });
+}
+function flipMove(mutate){
+  var nodes = flipNodes(), first = nodes.map(function(n){ return n.getBoundingClientRect(); });
+  mutate();
+  nodes.forEach(function(n){ n.style.transition = 'none'; n.style.transform = ''; });
+  var last = nodes.map(function(n){ return n.getBoundingClientRect(); });
+  nodes.forEach(function(n, i){
+    var dx = first[i].left - last[i].left, dy = first[i].top - last[i].top;
+    if(Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) n.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+  });
+  void document.body.offsetWidth;
+  nodes.forEach(function(n){ if(n.style.transform){ n.style.transition = 'transform .16s ease'; n.style.transform = ''; } else n.style.transition = ''; });
+  clearTimeout(drag.flipT);
+  drag.flipT = setTimeout(function(){ nodes.forEach(function(n){ n.style.transition = ''; }); }, 220);
+}
+/* 空きの前後にある項目（元のカードは数えない） */
+function phSibling(d, dir, match){
+  var n = d.ph;
+  while((n = dir < 0 ? n.previousElementSibling : n.nextElementSibling)){ if(n !== d.card && match(n)) return n; }
+  return null;
+}
+function phMatch(d){
+  if(d.kind === 'person') return function(n){ return n.classList.contains('p-row') && n.dataset.rank === d.rank; };
+  if(d.kind === 'ref') return function(n){ return n.classList.contains('ref-card'); };
+  return function(n){ return n.classList.contains('card'); };
+}
+function placePh(ref, before){
+  var m = phMatch(drag);
+  if(before ? phSibling(drag, 1, m) === ref : phSibling(drag, -1, m) === ref) return;
+  flipMove(function(){ ref.parentNode.insertBefore(drag.ph, before ? ref : ref.nextSibling); });
+}
 function findDrop(){
-  clearDropMarks(); drag.target = null; drag.pos = null; drag.grp = null;
-  var el = document.elementFromPoint(drag.x, drag.y); if(!el) return;
+  var el = document.elementFromPoint(drag.x, drag.y); if(!el || el.closest('.drag-ph')) return;
   if(drag.kind === 'ref'){
-    var rc = el.closest('.ref-card');
-    if(!rc || rc === drag.card) return;
-    var rb = rc.getBoundingClientRect();
-    drag.target = rc.dataset.rid; drag.pos = drag.x < rb.left + rb.width / 2 ? 'before' : 'after';
-    rc.classList.add(drag.pos === 'before' ? 'drop-before' : 'drop-after'); return;
+    var rc = el.closest('.ref-card'); if(!rc || rc === drag.card) return;
+    var rb = rc.getBoundingClientRect(); placePh(rc, drag.x < rb.left + rb.width / 2); return;
   }
   if(drag.kind === 'person'){
     /* 人物は同じ役割の中でだけ動かせる */
-    var pr = el.closest('.p-row');
-    if(!pr || pr === drag.card || pr.dataset.rank !== drag.rank) return;
-    var rr = pr.getBoundingClientRect();
-    drag.target = pr.dataset.pid; drag.pos = drag.y < rr.top + rr.height / 2 ? 'before' : 'after';
-    pr.classList.add(drag.pos === 'before' ? 'drop-before' : 'drop-after'); return;
+    var pr = el.closest('.p-row'); if(!pr || pr === drag.card || pr.dataset.rank !== drag.rank) return;
+    var rr = pr.getBoundingClientRect(); placePh(pr, drag.y < rr.top + rr.height / 2); return;
   }
   var tc = el.closest('.card');
   if(tc && tc !== drag.card){
     var r = tc.getBoundingClientRect();
-    drag.target = tc.dataset.id; drag.pos = tc.classList.contains('chdiv') ? (drag.y < r.top + r.height / 2 ? 'before' : 'after') : drag.x < r.left + r.width / 2 ? 'before' : 'after';
-    tc.classList.add(drag.pos === 'before' ? 'drop-before' : 'drop-after'); return;
+    placePh(tc, tc.classList.contains('chdiv') ? drag.y < r.top + r.height / 2 : drag.x < r.left + r.width / 2); return;
   }
-  if(tc === drag.card) return;
-  var g = el.closest('.grp');
-  if(g){ drag.grp = g.dataset.seg; g.classList.add('drop-into'); }
+  /* カードの上でなければ、指の下の段の中に空きを入れる（カードがあればその最後、なければ先頭） */
+  var g = el.closest('.grp'), box = g && g.querySelector('.cards'); if(!box || drag.ph.parentNode === box) return;
+  var items = [].filter.call(box.children, function(c){ return c.classList.contains('card') && c !== drag.card; });
+  var anchor = items.length ? items[items.length - 1].nextSibling : box.querySelector('.ch-cont') ? box.querySelector('.ch-cont').nextSibling : box.firstChild;
+  flipMove(function(){ box.insertBefore(drag.ph, anchor); });
 }
 function dragLoop(){
   if(!drag || !drag.started) return;
@@ -2785,14 +2807,42 @@ function dragLoop(){
   if(v){ window.scrollBy(0, v); findDrop(); }
   drag.raf = requestAnimationFrame(dragLoop);
 }
+function startDrag(){
+  var d = drag, c = d.card; d.started = true;
+  document.body.classList.add('is-dragging');
+  var r = c.getBoundingClientRect(), ph = document.createElement('div');
+  ph.className = 'drag-ph' + (d.kind === 'person' ? ' ph-row' : c.classList.contains('chdiv') ? ' ph-ch' : '');
+  ph.style.height = r.height + 'px'; ph.setAttribute('aria-hidden', 'true');
+  c.parentNode.insertBefore(ph, c); d.ph = ph;
+  c.style.width = r.width + 'px';
+  if(d.kind === 'person'){
+    /* つかんだ行が指について上下に動く */
+    d.offY = d.sy - r.top; c.style.left = r.left + 'px'; c.style.top = (d.y - d.offY) + 'px'; c.classList.add('drag-lift');
+  } else {
+    c.classList.add('drag-src');
+    var g = document.createElement('div'); g.className = 'drag-ghost';
+    g.textContent = d.kind === 'ref' ? d.label : c.getAttribute('aria-label') || 'シーン';
+    document.body.appendChild(g); d.ghost = g;
+  }
+  d.raf = requestAnimationFrame(dragLoop);
+}
 function endDrag(apply){
   if(!drag) return;
-  var d = drag; drag = null;
-  cancelAnimationFrame(d.raf);
+  var d = drag;
+  cancelAnimationFrame(d.raf); clearTimeout(d.flipT);
+  if(d.started){
+    /* 離したときの空きの位置から、入る先（target・pos、または段 grp）を求める */
+    var m = phMatch(d), prev = phSibling(d, -1, m), next = prev ? null : phSibling(d, 1, m);
+    if(prev){ d.target = d.kind === 'person' ? prev.dataset.pid : d.kind === 'ref' ? prev.dataset.rid : prev.dataset.id; d.pos = 'after'; }
+    else if(next){ d.target = d.kind === 'person' ? next.dataset.pid : d.kind === 'ref' ? next.dataset.rid : next.dataset.id; d.pos = 'before'; }
+    else if(d.kind === 'scene'){ var pg = d.ph.closest('.grp'); d.grp = pg ? pg.dataset.seg : null; }
+    flipNodes().forEach(function(n){ n.style.transition = ''; n.style.transform = ''; });
+    d.ph.remove();
+    d.card.classList.remove('drag-src', 'drag-lift'); d.card.style.width = d.card.style.left = d.card.style.top = '';
+  }
+  drag = null;
   if(d.ghost) d.ghost.remove();
-  if(d.card) d.card.classList.remove('dragging');
   document.body.classList.remove('is-dragging');
-  clearDropMarks();
   if(!apply || !d.started || (!d.target && !d.grp)) return;
   if(d.kind === 'ref'){
     var wr = curWork(); if(!wr || !wr.refs) return;
@@ -2832,19 +2882,17 @@ document.addEventListener('pointerdown', function(e){
   if(e.target.closest && e.target.closest('.pick')){ e.preventDefault(); return; }
   var h = e.target.closest && e.target.closest('.grip'); if(!h || (e.pointerType === 'mouse' && e.button !== 0)) return;
   e.preventDefault();
+  var base = {pid:e.pointerId, x:e.clientX, y:e.clientY, sx:e.clientX, sy:e.clientY, started:false};
   if(h.dataset.rid){
     var card = h.closest('.ref-card');
-    drag = {kind:'ref', id:h.dataset.rid, card:card, label:(card.querySelector('.ref-title').value || '無題のカード'), pid:e.pointerId, x:e.clientX, y:e.clientY, sx:e.clientX, sy:e.clientY, started:false};
-    try{ h.setPointerCapture(e.pointerId); }catch(_){}
-    return;
-  }
-  if(h.dataset.pid){
+    drag = Object.assign(base, {kind:'ref', id:h.dataset.rid, card:card, label:(card.querySelector('.ref-title').value || '無題のカード')});
+  } else if(h.dataset.pid){
     var row = h.closest('.p-row');
-    drag = {kind:'person', id:h.dataset.pid, rank:row.dataset.rank, card:row, label:(row.querySelector('[data-pname]') || row).textContent, pid:e.pointerId, x:e.clientX, y:e.clientY, sx:e.clientX, sy:e.clientY, started:false};
-    try{ h.setPointerCapture(e.pointerId); }catch(_){}
-    return;
+    drag = Object.assign(base, {kind:'person', id:h.dataset.pid, rank:row.dataset.rank, card:row});
+  } else {
+    var sc = document.getElementById('card-' + h.dataset.id); if(!sc) return;
+    drag = Object.assign(base, {kind:'scene', id:h.dataset.id, card:sc});
   }
-  drag = {id:h.dataset.id, card:document.getElementById('card-' + h.dataset.id), pid:e.pointerId, x:e.clientX, y:e.clientY, sx:e.clientX, sy:e.clientY, started:false};
   try{ h.setPointerCapture(e.pointerId); }catch(_){}
 });
 document.addEventListener('pointermove', function(e){
@@ -2852,16 +2900,11 @@ document.addEventListener('pointermove', function(e){
   drag.x = e.clientX; drag.y = e.clientY;
   if(!drag.started){
     if(Math.abs(drag.x - drag.sx) + Math.abs(drag.y - drag.sy) < 6) return;
-    drag.started = true;
-    if(drag.card) drag.card.classList.add('dragging');
-    document.body.classList.add('is-dragging');
-    var g = document.createElement('div'); g.className = 'drag-ghost';
-    g.textContent = drag.kind === 'person' || drag.kind === 'ref' ? drag.label : drag.card ? drag.card.getAttribute('aria-label') : 'シーン';
-    document.body.appendChild(g); drag.ghost = g;
-    drag.raf = requestAnimationFrame(dragLoop);
+    startDrag();
   }
   e.preventDefault();
-  drag.ghost.style.left = drag.x + 'px'; drag.ghost.style.top = drag.y + 'px';
+  if(drag.ghost){ drag.ghost.style.left = drag.x + 'px'; drag.ghost.style.top = drag.y + 'px'; }
+  if(drag.kind === 'person') drag.card.style.top = (drag.y - drag.offY) + 'px';
   findDrop();
 });
 document.addEventListener('pointerup', function(e){ if(drag && e.pointerId === drag.pid) endDrag(true); });
