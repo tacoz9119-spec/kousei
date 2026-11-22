@@ -683,7 +683,8 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .pgrid .point .ta:focus,.pgrid .hook .ta:focus{background:var(--input-bg)}
 @media (max-width: 760px){ .bgrid{grid-template-columns:minmax(0,1fr)} .bcard.wide{grid-column:auto}
   .arc-flow{flex-direction:column;align-items:stretch} .arc-flow > .field{flex:none} .arc-ar{width:auto;padding:0;transform:rotate(90deg)} }
-.list-tools{margin-top:40px;padding-top:22px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px 40px;align-items:start}
+/* 一覧と下の欄を分ける線は、上下とも22px あける */
+.list-tools{margin-top:22px;padding-top:22px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px 40px;align-items:start}
 .list-tools .panel{background:none;border:0;border-radius:0;padding:0;margin:0;gap:10px}
 .list-tools h2{font-size:13px;font-weight:700;color:var(--fg2)}
 .list-tools p{font-size:13px}
@@ -745,7 +746,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.35';
+var VERSION = '1.36';
 var KINDS = {
   single:{label:'単発脚本', def:null, hint:'長さを入力'},
   serial:{label:'連続脚本', def:null, hint:'話数を設定'},
