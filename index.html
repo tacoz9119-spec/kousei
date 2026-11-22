@@ -440,8 +440,10 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .cf .in.min-in{width:64px;height:32px;text-align:right;font-variant-numeric:tabular-nums}
 .over{color:var(--danger);font-weight:500;margin-left:4px}
 .grp-h span+span::before{content:"・"}
-/* 一覧の行：コピーのアイコンを、日付と削除のアイコンのちょうど中央に置く（両側とも行の間隔4px＋3px＝7px） */
-.dup-mid,.del-far{margin-left:3px}
+/* 一覧の行：コピーのアイコンの絵を、日付の文字の右端と削除のアイコンの絵の左端のちょうど中央に置く。
+   ボタンの枠（30px）の中には絵のまわりの余白があるため、枠どうしの間隔ではなく、見えている絵どうしの間隔（両側とも約19.5px）でそろえる。日付と削除の位置は変えない */
+.dup-mid{margin-left:7.5px}
+.del-far{margin-left:-1.5px}
 .tpl-cols,.tpl-row{grid-template-columns:64px minmax(0,1fr) 128px 84px 96px 34px}
 .tpl-cols.tpl-p,.tpl-row.tpl-p{grid-template-columns:64px minmax(110px,1fr) 112px 70px 66px 104px 34px;gap:8px}
 .tpl-span{grid-column:3 / -1}
@@ -747,7 +749,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.37';
+var VERSION = '1.38';
 var KINDS = {
   single:{label:'単発脚本', def:null, hint:'長さを入力'},
   serial:{label:'連続脚本', def:null, hint:'話数を設定'},
