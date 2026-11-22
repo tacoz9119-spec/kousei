@@ -440,7 +440,8 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .cf .in.min-in{width:64px;height:32px;text-align:right;font-variant-numeric:tabular-nums}
 .over{color:var(--danger);font-weight:500;margin-left:4px}
 .grp-h span+span::before{content:"・"}
-.del-far{margin-left:6px}
+/* 一覧の行：コピーのアイコンを、日付と削除のアイコンのちょうど中央に置く（両側とも行の間隔4px＋3px＝7px） */
+.dup-mid,.del-far{margin-left:3px}
 .tpl-cols,.tpl-row{grid-template-columns:64px minmax(0,1fr) 128px 84px 96px 34px}
 .tpl-cols.tpl-p,.tpl-row.tpl-p{grid-template-columns:64px minmax(110px,1fr) 112px 70px 66px 104px 34px;gap:8px}
 .tpl-span{grid-column:3 / -1}
@@ -746,7 +747,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.36';
+var VERSION = '1.37';
 var KINDS = {
   single:{label:'単発脚本', def:null, hint:'長さを入力'},
   serial:{label:'連続脚本', def:null, hint:'話数を設定'},
@@ -1859,7 +1860,7 @@ function renderList(){
         var len = w.kind === 'serial' ? '全' + (w.epOrder||[]).length + '話' : w.length + U(w);
         return '<div class="work-row"><button type="button" class="work-open" data-act="open-work" data-id="' + w.id + '">' +
           '<span class="wtc"><span class="wt">' + esc(w.title || '無題の作品') + '</span>' + (isBlank(w.venue) ? '' : '<span class="vn">' + esc(w.venue) + '</span>') + '</span><span class="kd">' + KINDS[w.kind].label + '</span><span class="ln">' + len + '</span><span class="dt">' + fmtDate(w.updatedAt) + '</span></button>' +
-          '<button type="button" class="icon-btn" data-act="dup-work" data-id="' + w.id + '" aria-label="' + esc(w.title || '無題の作品') + 'を複製" title="複製">' + ICON.dup + '</button>' +
+          '<button type="button" class="icon-btn dup-mid" data-act="dup-work" data-id="' + w.id + '" aria-label="' + esc(w.title || '無題の作品') + 'を複製" title="複製">' + ICON.dup + '</button>' +
           '<button type="button" class="icon-btn del-far" data-act="delete-work" data-id="' + w.id + '" aria-label="' + esc(w.title || '無題の作品') + 'を削除">' + ICON.trash + '</button></div>';
       }).join('') + '</div>';
   }
