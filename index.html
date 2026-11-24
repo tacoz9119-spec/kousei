@@ -729,6 +729,13 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
   .tpl-row .mv{grid-column:1 / -1}
   .modal{padding:22px 18px}
 }
+/* iPhoneのSafariは、文字が16px未満の入力欄をタップすると画面を拡大し、そのまま戻らない。
+   iPhone（指で操作し、画面の幅か高さが小さい端末）でだけ、入力欄の文字を16pxにする。iPadとMacは今のまま */
+@media (pointer:coarse) and (max-width:700px),(pointer:coarse) and (max-height:500px){
+  input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=button]),textarea,select{font-size:16px!important}
+  .card-h .in.hd-min{width:46px}
+  .card-h .in.hd-min.min-wide{width:66px}
+}
 .sync-form{display:flex;flex-wrap:wrap;align-items:center;gap:10px;flex-basis:100%}
 .sync-form .in{width:260px;max-width:100%}
 .sync-who{font-size:14px;color:var(--fg2);flex-basis:100%}
@@ -749,7 +756,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.38';
+var VERSION = '1.39';
 var KINDS = {
   single:{label:'単発脚本', def:null, hint:'長さを入力'},
   serial:{label:'連続脚本', def:null, hint:'話数を設定'},
