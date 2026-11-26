@@ -729,14 +729,73 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
   .tpl-row .mv{grid-column:1 / -1}
   .modal{padding:22px 18px}
 }
+/* ===== 大きさの統一（1.41） =====
+   高さ：押すもの・入力欄・選択欄は36px。文字：題名18px（太字）・ふつうの文字15px・項目名と補足12px。
+   角の丸み：外側の枠14px・枠の中の枠と浮かぶ枠10px・入力欄など8px・ボタン6px。
+   例外（理由があるもの）：箱書きのカードの中、トップ画面の作品の行（日付だけそろえる）、アプリ名、2行ある種類の選択、カードと同じ大きさの追加の枠、枠の見えない部品、◆の記号。
+   :root を付けて、それまでの指定より優先させる */
+:root .btn,:root .back,:root .tab,:root .link-btn,:root .card-menu button,:root .chk,:root .check,
+:root .side-item,:root .side.compact .side-item,:root .add-dash:not(.card-add):not(.ch-add):not(.ref-add),:root .bcard-top .btn{min-height:36px}
+:root .icon-btn:not(.card *){width:36px;height:36px}
+:root .grp-h .grp-copy{width:36px;height:36px;margin:-11px -8px -11px auto}
+:root .chdiv .icon-btn{width:36px;height:36px}
+/* 切り替え（1.42）：Hongaki の左パネルと同じ形。枠線で囲み、ボタンどうしは区切り線でつなぐ。選んだものは墨色 */
+:root .seg,:root .people-a .seg,:root .people-a .f-role .seg{display:inline-flex;flex-wrap:nowrap;align-items:stretch;height:36px;box-sizing:border-box;padding:0;gap:0;border:1px solid var(--line2);border-radius:6px;overflow:hidden;background:var(--surface)}
+:root .seg button,:root .people-a .seg button,:root .people-a .f-role .seg button{min-height:0;height:100%;margin:0;padding:0 16px;border:0;border-left:1px solid var(--line2);border-radius:0;background:var(--surface);color:var(--fg);font-weight:400;box-shadow:none}
+:root .seg button:first-child,:root .people-a .f-role .seg button:first-child{border-left:0}
+:root .seg button[aria-pressed="true"],:root .people-a .seg button[aria-pressed="true"],:root .people-a .f-role .seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);font-weight:400}
+/* トップ画面の作品の一覧（1.42）：Hongaki の原稿の一覧と同じ形。1つの枠の中に行を区切り線で並べ、1段目に作品名、2段目に掲載先、3段目に「種類・長さ・最終更新」 */
+:root .work-rows{gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+:root .work-row{border:0;border-radius:0;background:transparent;padding:0 4px 0 0;gap:0}
+:root .work-row + .work-row{border-top:1px solid var(--line)}
+:root .work-open{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:56px;padding:10px 14px;font-size:15px}
+:root .work-open .wtc{display:flex;flex-direction:column;gap:2px;flex:none;min-width:0;max-width:100%}
+:root .work-open .wt{font-size:17px;font-weight:500}
+:root .work-open .vn,:root .work-open .wm{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+:root .work-row .icon-btn{margin:0}
+:root .empty{border-radius:14px}
+/* iPhone などの狭い幅：ボタンが36px・15pxになった分、上部の帯が2段にならないよう、間隔とボタンの左右の余白を詰める */
+@media (max-width:480px){
+  :root .topbar-in{column-gap:8px}
+  :root .list-top .spacer{display:none}
+  :root .list-top .status{margin-left:auto}
+  :root .topbar-in .btn{padding-left:12px;padding-right:12px}
+}
+:root .in:not(.card *),:root .sel:not(.card *),:root .readout,:root .ta.one:not(.card *),:root .ref-title,:root .chdiv .ch-title,
+:root .basic-b #b-title,:root .people-a #p-name,:root .bhead .num .in,:root .basic-b .bhead .readout,:root .unit-sel,:root .box-side .box-sel,
+:root .ep-len .in,:root .in.sm,:root .f-role .seg,:root .people-a .f-role .seg{height:36px;min-height:0}
+:root .ta.one:not(.card *){padding:5.75px 10px}
+:root .ta.auto:not(.card *){height:calc(var(--rows,1) * 1.5em + 13.5px);padding:5.75px 10px}
+:root .ref-head{padding:3px 0}
+/* 文字：題名 */
+:root .wtitle,:root .modal h2,:root .ep-head h2{font-size:18px;font-weight:700}
+/* 文字：ふつうの文字（15px） */
+:root .btn,:root .back,:root .tab,:root .seg button,:root .side-item,:root .add-dash,:root .card-menu button,:root .chk,:root .check span,
+:root .link-btn,:root .linkish,:root .bcard-top .btn,:root .kind-grid b,
+:root .bcard-h,:root .bcard-top .bcard-h,:root .grp-h h2,:root .pcol-hd b,:root .psub b,:root .side-h,:root .side-top b,:root .backup h2,:root .point label,:root .hook label,
+:root .sub-l,:root .tpl-note,:root .backup p,:root .modal p,:root .empty p,:root .toast,:root .chips .none,:root .tpl-row.fixed > div:not(.tag),
+:root .in:not(.card *),:root .ta:not(.card *),:root .sel:not(.card *),:root .readout,:root .ref-title,:root .chdiv .ch-title,:root .ch-no,
+:root .ep-len label,:root .ep-len span,:root .num span,:root .num-cell span{font-size:15px}
+:root .ref-title,:root .chdiv .ch-title{font-weight:700}
+:root .half .point label{font-size:15px!important}
+/* 文字：項目名と補足（12px） */
+:root .fl,:root .meta,:root .status,:root .tab-info,:root .foot,:root .side-note,:root .cnt,:root .ch-sum,:root .tpl-cols,:root .tag,:root .wl-cols,
+:root .kind-grid small,:root .side-top span,:root .side .side-top span,:root .pcol-hd span,:root .psub span,:root .grp-h span,:root .grp-h h2 small,:root .check small,:root .ep-head span{font-size:12px}
+/* アイコン：文字のボタンのアイコンは文字と同じ15px。元に戻す・やり直すは見た目の大きさをほかのアイコンにそろえる。メニューの削除は16px */
+:root .btn svg,:root .bcard-top .btn svg,:root .tab-btn svg{width:15px;height:15px}
+:root #btn-undo svg,:root #btn-redo svg{width:15px;height:15px}
+:root .card-menu svg{width:16px;height:16px}
+/* 角の丸み：左の一覧の枠もパネルと同じ14px */
+:root .side{border-radius:14px}
 /* iPhoneのSafariは、文字が16px未満の入力欄をタップすると画面を拡大し、そのまま戻らない。
    iPhone（指で操作し、画面の幅か高さが小さい端末）でだけ、入力欄の文字を16pxにする。iPadとMacは今のまま */
 @media (pointer:coarse) and (max-width:700px),(pointer:coarse) and (max-height:500px){
   input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=button]),textarea,select{font-size:16px!important}
   .card-h .in.hd-min{width:46px}
   .card-h .in.hd-min.min-wide{width:66px}
-  /* 文字が16pxになる分、1行の記入欄が35pxを超えないよう上下の余白を詰める（箱書きのカードは別の指定） */
-  .ta.auto{padding-top:4.5px;padding-bottom:4.5px;height:calc(var(--rows,1) * 1.5em + 11px)}
+  /* 文字が16pxになる分、1行の記入欄が36pxを超えないよう上下の余白を詰める（箱書きのカードは別の指定） */
+  :root .ta.auto:not(.card *){padding-top:5px;padding-bottom:5px;height:calc(var(--rows,1) * 1.5em + 12px)}
+  :root .ta.one:not(.card *){padding-top:5px;padding-bottom:5px}
 }
 .sync-form{display:flex;flex-wrap:wrap;align-items:center;gap:10px;flex-basis:100%}
 .sync-form .in{width:260px;max-width:100%}
@@ -758,7 +817,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.40';
+var VERSION = '1.42';
 var KINDS = {
   single:{label:'単発脚本', def:null, hint:'長さを入力'},
   serial:{label:'連続脚本', def:null, hint:'話数を設定'},
@@ -1866,11 +1925,11 @@ function renderList(){
   } else if(works.length === 0){
     rows = '<div class="empty"><p>この種類の作品はまだありません。</p></div>';
   } else {
-    rows = '<div class="wl-cols" aria-hidden="true"><div>作品名</div><div>種類</div><div>長さ</div><div style="text-align:right">最終更新</div></div><div class="work-rows">' +
+    rows = '<div class="work-rows">' +
       works.map(function(w){
         var len = w.kind === 'serial' ? '全' + (w.epOrder||[]).length + '話' : w.length + U(w);
         return '<div class="work-row"><button type="button" class="work-open" data-act="open-work" data-id="' + w.id + '">' +
-          '<span class="wtc"><span class="wt">' + esc(w.title || '無題の作品') + '</span>' + (isBlank(w.venue) ? '' : '<span class="vn">' + esc(w.venue) + '</span>') + '</span><span class="kd">' + KINDS[w.kind].label + '</span><span class="ln">' + len + '</span><span class="dt">' + fmtDate(w.updatedAt) + '</span></button>' +
+          '<span class="wtc"><span class="wt">' + esc(w.title || '無題の作品') + '</span>' + (isBlank(w.venue) ? '' : '<span class="vn">' + esc(w.venue) + '</span>') + '</span><span class="wm">' + KINDS[w.kind].label + '・' + len + '・' + fmtDate(w.updatedAt) + '</span></button>' +
           '<button type="button" class="icon-btn dup-mid" data-act="dup-work" data-id="' + w.id + '" aria-label="' + esc(w.title || '無題の作品') + 'を複製" title="複製">' + ICON.dup + '</button>' +
           '<button type="button" class="icon-btn del-far" data-act="delete-work" data-id="' + w.id + '" aria-label="' + esc(w.title || '無題の作品') + 'を削除">' + ICON.trash + '</button></div>';
       }).join('') + '</div>';
@@ -2331,7 +2390,7 @@ function renderTemplates(){
   }).join('');
   var st = statusInfo();
   return '<header class="topbar"><div class="wrap gut"><div class="topbar-in list-top">' +
-    '<button type="button" class="back" data-act="go-list">' + ICON.back + '作品一覧</button><h1 class="wtitle" style="font-family:var(--f-body);font-size:17px;font-weight:700">ひな形の編集</h1><span class="spacer"></span>' +
+    '<button type="button" class="back" data-act="go-list">' + ICON.back + '作品一覧</button><h1 class="wtitle" style="font-family:var(--f-body)">ひな形の編集</h1><span class="spacer"></span>' +
     '<span class="status' + (st.err ? ' err' : '') + '" id="status" role="status">' + esc(st.text) + '</span></div></div></header>' +
     '<main class="page gut"><div class="wrap">' +
     '<div class="seg" role="group" aria-label="ひな形の種類">' + KIND_ORDER.map(function(x){ return '<button type="button" data-act="tpl-kind" data-v="' + x + '" aria-pressed="' + (x === k) + '">' + KINDS[x].label + '</button>'; }).join('') + '</div>' +
