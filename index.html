@@ -273,9 +273,8 @@ body{font-size:14px}
 /* ボタンの大きさは Hongaki・Bunpitu とそろえて高さ30px */
 .btn{min-height:30px;padding:0 14px;border-radius:6px;font-size:13px;gap:6px}
 label.btn{box-sizing:border-box}
-/* Noto Sans JP は文字が行の中心より下に描かれ、iPad では約1px下に寄って見えるため、文字を1px上げる（アイコンは中心のまま） */
-.btn,.back,.card-menu button{padding-top:0;padding-bottom:2px}
-.btn svg,.back svg,.card-menu button svg{position:relative;top:1px}
+/* 文字の上下の位置は調整しない（1.43）。1.38〜1.42 は文字を1px上げていたが、Noto Sans JP はもともと真ん中より少し上に描かれるため、上げると上に寄りすぎた */
+.btn,.back,.card-menu button{padding-top:0;padding-bottom:0}
 .btn svg{width:13px;height:13px}
 .back{min-height:30px;font-size:14px}
 .back svg{width:16px;height:16px}
@@ -729,60 +728,62 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
   .tpl-row .mv{grid-column:1 / -1}
   .modal{padding:22px 18px}
 }
-/* ===== 大きさの統一（1.41） =====
-   高さ：押すもの・入力欄・選択欄は36px。文字：題名18px（太字）・ふつうの文字15px・項目名と補足12px。
+/* ===== 大きさの統一（1.41。1.43で値を見直し） =====
+   高さ：押すもの・入力欄・選択欄は32px。文字：題名18px（太字）・ふつうの文字14px・項目名と補足と説明文12px。
    角の丸み：外側の枠14px・枠の中の枠と浮かぶ枠10px・入力欄など8px・ボタン6px。
    例外（理由があるもの）：箱書きのカードの中、トップ画面の作品の行（日付だけそろえる）、アプリ名、2行ある種類の選択、カードと同じ大きさの追加の枠、枠の見えない部品、◆の記号。
    :root を付けて、それまでの指定より優先させる */
+:root .btn,:root .bcard-top .btn{padding-left:12px;padding-right:12px}
+:root .side-item{padding-top:4px;padding-bottom:4px}
 :root .btn,:root .back,:root .tab,:root .link-btn,:root .card-menu button,:root .chk,:root .check,
-:root .side-item,:root .side.compact .side-item,:root .add-dash:not(.card-add):not(.ch-add):not(.ref-add),:root .bcard-top .btn{min-height:36px}
-:root .icon-btn:not(.card *){width:36px;height:36px}
-:root .grp-h .grp-copy{width:36px;height:36px;margin:-11px -8px -11px auto}
-:root .chdiv .icon-btn{width:36px;height:36px}
+:root .side-item,:root .side.compact .side-item,:root .add-dash:not(.card-add):not(.ch-add):not(.ref-add),:root .bcard-top .btn{min-height:32px}
+:root .icon-btn:not(.card *){width:32px;height:32px}
+:root .grp-h .grp-copy{width:32px;height:32px;margin:-9px -8px -9px auto}
+:root .chdiv .icon-btn{width:32px;height:32px}
 /* 切り替え（1.42）：Hongaki の左パネルと同じ形。枠線で囲み、ボタンどうしは区切り線でつなぐ。選んだものは墨色 */
-:root .seg,:root .people-a .seg,:root .people-a .f-role .seg{display:inline-flex;flex-wrap:nowrap;align-items:stretch;height:36px;box-sizing:border-box;padding:0;gap:0;border:1px solid var(--line2);border-radius:6px;overflow:hidden;background:var(--surface)}
-:root .seg button,:root .people-a .seg button,:root .people-a .f-role .seg button{min-height:0;height:100%;margin:0;padding:0 16px;border:0;border-left:1px solid var(--line2);border-radius:0;background:var(--surface);color:var(--fg);font-weight:400;box-shadow:none}
+:root .seg,:root .people-a .seg,:root .people-a .f-role .seg{display:inline-flex;flex-wrap:nowrap;align-items:stretch;height:32px;box-sizing:border-box;padding:0;gap:0;border:1px solid var(--line2);border-radius:6px;overflow:hidden;background:var(--surface)}
+:root .seg button,:root .people-a .seg button,:root .people-a .f-role .seg button{min-height:0;height:100%;margin:0;padding:0 13px;border:0;border-left:1px solid var(--line2);border-radius:0;background:var(--surface);color:var(--fg);font-weight:400;box-shadow:none}
 :root .seg button:first-child,:root .people-a .f-role .seg button:first-child{border-left:0}
 :root .seg button[aria-pressed="true"],:root .people-a .seg button[aria-pressed="true"],:root .people-a .f-role .seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);font-weight:400}
 /* トップ画面の作品の一覧（1.42）：Hongaki の原稿の一覧と同じ形。1つの枠の中に行を区切り線で並べ、1段目に作品名、2段目に掲載先、3段目に「種類・長さ・最終更新」 */
 :root .work-rows{gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
 :root .work-row{border:0;border-radius:0;background:transparent;padding:0 4px 0 0;gap:0}
 :root .work-row + .work-row{border-top:1px solid var(--line)}
-:root .work-open{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:56px;padding:10px 14px;font-size:15px}
+:root .work-open{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:56px;padding:10px 14px;font-size:14px}
 :root .work-open .wtc{display:flex;flex-direction:column;gap:2px;flex:none;min-width:0;max-width:100%}
 :root .work-open .wt{font-size:17px;font-weight:500}
 :root .work-open .vn,:root .work-open .wm{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 :root .work-row .icon-btn{margin:0}
 :root .empty{border-radius:14px}
-/* iPhone などの狭い幅：ボタンが36px・15pxになった分、上部の帯が2段にならないよう、間隔とボタンの左右の余白を詰める */
+/* iPhone などの狭い幅：ボタンが大きくなった分、上部の帯が2段にならないよう、間隔とボタンの左右の余白を詰める */
 @media (max-width:480px){
   :root .topbar-in{column-gap:8px}
   :root .list-top .spacer{display:none}
   :root .list-top .status{margin-left:auto}
-  :root .topbar-in .btn{padding-left:12px;padding-right:12px}
 }
 :root .in:not(.card *),:root .sel:not(.card *),:root .readout,:root .ta.one:not(.card *),:root .ref-title,:root .chdiv .ch-title,
 :root .basic-b #b-title,:root .people-a #p-name,:root .bhead .num .in,:root .basic-b .bhead .readout,:root .unit-sel,:root .box-side .box-sel,
-:root .ep-len .in,:root .in.sm,:root .f-role .seg,:root .people-a .f-role .seg{height:36px;min-height:0}
-:root .ta.one:not(.card *){padding:5.75px 10px}
-:root .ta.auto:not(.card *){height:calc(var(--rows,1) * 1.5em + 13.5px);padding:5.75px 10px}
-:root .ref-head{padding:3px 0}
+:root .ep-len .in,:root .in.sm,:root .f-role .seg,:root .people-a .f-role .seg{height:32px;min-height:0}
+:root .ta.one:not(.card *){padding:4.5px 10px}
+:root .ta.auto:not(.card *){height:calc(var(--rows,1) * 1.5em + 11px);padding:4.5px 10px}
+:root .ref-head{padding:5px 0}
 /* 文字：題名 */
 :root .wtitle,:root .modal h2,:root .ep-head h2{font-size:18px;font-weight:700}
-/* 文字：ふつうの文字（15px） */
+/* 文字：ふつうの文字（14px） */
 :root .btn,:root .back,:root .tab,:root .seg button,:root .side-item,:root .add-dash,:root .card-menu button,:root .chk,:root .check span,
 :root .link-btn,:root .linkish,:root .bcard-top .btn,:root .kind-grid b,
 :root .bcard-h,:root .bcard-top .bcard-h,:root .grp-h h2,:root .pcol-hd b,:root .psub b,:root .side-h,:root .side-top b,:root .backup h2,:root .point label,:root .hook label,
-:root .sub-l,:root .tpl-note,:root .backup p,:root .modal p,:root .empty p,:root .toast,:root .chips .none,:root .tpl-row.fixed > div:not(.tag),
+:root .tpl-row.fixed > div:not(.tag),
 :root .in:not(.card *),:root .ta:not(.card *),:root .sel:not(.card *),:root .readout,:root .ref-title,:root .chdiv .ch-title,:root .ch-no,
-:root .ep-len label,:root .ep-len span,:root .num span,:root .num-cell span{font-size:15px}
+:root .ep-len label,:root .ep-len span,:root .num span,:root .num-cell span{font-size:14px}
 :root .ref-title,:root .chdiv .ch-title{font-weight:700}
-:root .half .point label{font-size:15px!important}
-/* 文字：項目名と補足（12px） */
+:root .half .point label{font-size:14px!important}
+/* 文字：項目名・補足・説明文（12px） */
+:root .sub-l,:root .tpl-note,:root .backup p,:root .modal p,:root .empty p,:root .toast,:root .chips .none,
 :root .fl,:root .meta,:root .status,:root .tab-info,:root .foot,:root .side-note,:root .cnt,:root .ch-sum,:root .tpl-cols,:root .tag,:root .wl-cols,
 :root .kind-grid small,:root .side-top span,:root .side .side-top span,:root .pcol-hd span,:root .psub span,:root .grp-h span,:root .grp-h h2 small,:root .check small,:root .ep-head span{font-size:12px}
-/* アイコン：文字のボタンのアイコンは文字と同じ15px。元に戻す・やり直すは見た目の大きさをほかのアイコンにそろえる。メニューの削除は16px */
-:root .btn svg,:root .bcard-top .btn svg,:root .tab-btn svg{width:15px;height:15px}
+/* アイコン：文字のボタンのアイコンは文字と同じ14px。元に戻す・やり直すは見た目の大きさをほかのアイコンにそろえる。メニューの削除は16px */
+:root .btn svg,:root .bcard-top .btn svg,:root .tab-btn svg{width:14px;height:14px}
 :root #btn-undo svg,:root #btn-redo svg{width:15px;height:15px}
 :root .card-menu svg{width:16px;height:16px}
 /* 角の丸み：左の一覧の枠もパネルと同じ14px */
@@ -793,9 +794,9 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
   input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=button]),textarea,select{font-size:16px!important}
   .card-h .in.hd-min{width:46px}
   .card-h .in.hd-min.min-wide{width:66px}
-  /* 文字が16pxになる分、1行の記入欄が36pxを超えないよう上下の余白を詰める（箱書きのカードは別の指定） */
-  :root .ta.auto:not(.card *){padding-top:5px;padding-bottom:5px;height:calc(var(--rows,1) * 1.5em + 12px)}
-  :root .ta.one:not(.card *){padding-top:5px;padding-bottom:5px}
+  /* 文字が16pxになる分、1行の記入欄が32pxを超えないよう上下の余白を詰める（箱書きのカードは別の指定） */
+  :root .ta.auto:not(.card *){padding-top:3px;padding-bottom:3px;height:calc(var(--rows,1) * 1.5em + 8px)}
+  :root .ta.one:not(.card *){padding-top:3px;padding-bottom:3px}
 }
 .sync-form{display:flex;flex-wrap:wrap;align-items:center;gap:10px;flex-basis:100%}
 .sync-form .in{width:260px;max-width:100%}
@@ -817,7 +818,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.42';
+var VERSION = '1.43';
 var KINDS = {
   single:{label:'単発脚本', def:null, hint:'長さを入力'},
   serial:{label:'連続脚本', def:null, hint:'話数を設定'},
