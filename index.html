@@ -731,7 +731,8 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 /* ===== 大きさの統一（1.41。1.43で値を見直し） =====
    高さ：押すもの・入力欄・選択欄は32px。文字：題名18px（太字）・ふつうの文字14px・項目名と補足と説明文12px。
    角の丸み：外側の枠14px・枠の中の枠と浮かぶ枠10px・入力欄など8px・ボタン6px。
-   例外（理由があるもの）：箱書きのカードの中、トップ画面の作品の行（日付だけそろえる）、アプリ名、2行ある種類の選択、カードと同じ大きさの追加の枠、枠の見えない部品、◆の記号。
+   文字は1.44で、枠のあるボタン13px・文字のリンク12pxに分けた（シリーズ共通の文字の大きさのルール）。
+   例外（理由があるもの）：箱書きのカードの中、アプリ名、2行ある種類の選択、カードと同じ大きさの追加の枠、枠の見えない部品、◆の記号。
    :root を付けて、それまでの指定より優先させる */
 :root .btn,:root .bcard-top .btn{padding-left:12px;padding-right:12px}
 :root .side-item{padding-top:4px;padding-bottom:4px}
@@ -751,7 +752,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 :root .work-row + .work-row{border-top:1px solid var(--line)}
 :root .work-open{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:56px;padding:10px 14px;font-size:14px}
 :root .work-open .wtc{display:flex;flex-direction:column;gap:2px;flex:none;min-width:0;max-width:100%}
-:root .work-open .wt{font-size:17px;font-weight:500}
+:root .work-open .wt{font-size:14px;font-weight:500}
 :root .work-open .vn,:root .work-open .wm{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 :root .work-row .icon-btn{margin:0}
 :root .empty{border-radius:14px}
@@ -769,15 +770,19 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 :root .ref-head{padding:5px 0}
 /* 文字：題名 */
 :root .wtitle,:root .modal h2,:root .ep-head h2{font-size:18px;font-weight:700}
-/* 文字：ふつうの文字（14px） */
-:root .btn,:root .back,:root .tab,:root .seg button,:root .side-item,:root .add-dash,:root .card-menu button,:root .chk,:root .check span,
-:root .link-btn,:root .linkish,:root .bcard-top .btn,:root .kind-grid b,
+/* 文字：ふつうの文字（14px）。枠のない押すもの・入力欄・見出し */
+:root .back,:root .tab,:root .side-item,:root .card-menu button,:root .chk,:root .check span,:root .btn.side-copy,
 :root .bcard-h,:root .bcard-top .bcard-h,:root .grp-h h2,:root .pcol-hd b,:root .psub b,:root .side-h,:root .side-top b,:root .backup h2,:root .point label,:root .hook label,
 :root .tpl-row.fixed > div:not(.tag),
 :root .in:not(.card *),:root .ta:not(.card *),:root .sel:not(.card *),:root .readout,:root .ref-title,:root .chdiv .ch-title,:root .ch-no,
 :root .ep-len label,:root .ep-len span,:root .num span,:root .num-cell span{font-size:14px}
 :root .ref-title,:root .chdiv .ch-title{font-weight:700}
 :root .half .point label{font-size:14px!important}
+/* 文字：枠のあるボタン（13px。1.44）。文字のボタン、切り替え、点線の追加ボタン、新しい作品の種類の選択。アイコンも文字と同じ大きさ */
+:root .btn:not(.side-copy),:root .bcard-top .btn,:root .seg button,:root .add-dash,:root .kind-grid b{font-size:13px}
+:root .btn:not(.side-copy) svg,:root .bcard-top .btn svg{width:13px;height:13px}
+/* 文字：文字のリンク（12px。1.44） */
+:root .link-btn,:root .linkish{font-size:12px}
 /* 文字：項目名・補足・説明文（12px） */
 :root .sub-l,:root .tpl-note,:root .backup p,:root .modal p,:root .empty p,:root .toast,:root .chips .none,
 :root .fl,:root .meta,:root .status,:root .tab-info,:root .foot,:root .side-note,:root .cnt,:root .ch-sum,:root .tpl-cols,:root .tag,:root .wl-cols,
@@ -818,7 +823,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.43';
+var VERSION = '1.44';
 var KINDS = {
   single:{label:'単発脚本', def:null, hint:'長さを入力'},
   serial:{label:'連続脚本', def:null, hint:'話数を設定'},
