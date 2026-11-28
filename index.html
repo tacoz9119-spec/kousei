@@ -23,6 +23,11 @@
   u(); if(m){ if(m.addEventListener) m.addEventListener('change',u); else if(m.addListener) m.addListener(u); }
 })();
 </script>
+<script>
+/* 配色：設定メニューで「ライト」か「ダーク」を選んでいれば、表示の前に当てる（画面が一瞬ちがう色になるのを防ぐ）。
+   選んでいなければ（端末の設定に合わせる）、何もしない */
+try{ (function(){ var t=localStorage.getItem('kousei-theme'); if(t==='light'||t==='dark') document.documentElement.setAttribute('data-theme',t); })(); }catch(e){}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@600&display=swap">
@@ -793,6 +798,17 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 :root .card-menu svg{width:16px;height:16px}
 /* 角の丸み：左の一覧の枠もパネルと同じ14px */
 :root .side{border-radius:14px}
+/* トップ画面（1.45）：「新規」は「すべて〜小説」の切り替えのすぐ右に置く */
+:root .list-head{justify-content:flex-start;gap:12px}
+/* 設定メニュー（1.45）：Tebikae の設定メニューと同じ寸法（幅600・余白20・角14・部品の間16、見出し14太字、説明12） */
+:root .modal.settings{max-width:600px;padding:20px;gap:16px;border-radius:14px;margin-top:-16px}
+:root .modal.settings:focus{outline:none}
+:root .modal.settings .phead{display:flex;justify-content:space-between;align-items:center;gap:12px}
+:root .modal.settings .pgroup{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+:root .modal.settings h3{margin:0;font-size:14px;font-weight:700;line-height:1.6;color:var(--fg)}
+:root .modal.settings .pbtns{display:flex;flex-wrap:wrap;gap:10px}
+:root .modal.settings .small{margin:0;font-size:12px;line-height:1.6;color:var(--muted)}
+:root .modal.settings .small.aux + .small.aux{margin-top:-12px}
 /* iPhoneのSafariは、文字が16px未満の入力欄をタップすると画面を拡大し、そのまま戻らない。
    iPhone（指で操作し、画面の幅か高さが小さい端末）でだけ、入力欄の文字を16pxにする。iPadとMacは今のまま */
 @media (pointer:coarse) and (max-width:700px),(pointer:coarse) and (max-height:500px){
@@ -803,7 +819,8 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
   :root .ta.auto:not(.card *){padding-top:3px;padding-bottom:3px;height:calc(var(--rows,1) * 1.5em + 8px)}
   :root .ta.one:not(.card *){padding-top:3px;padding-bottom:3px}
 }
-.sync-form{display:flex;flex-wrap:wrap;align-items:center;gap:10px;flex-basis:100%}
+.sync-form{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.sf-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
 .sync-form .in{width:260px;max-width:100%}
 .sync-who{font-size:14px;color:var(--fg2);flex-basis:100%}
 .linkish{background:none;border:0;padding:0;color:var(--accent);font-size:13px;text-decoration:underline;min-height:0}
@@ -823,7 +840,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 'use strict';
 
 /* ---------- constants ---------- */
-var VERSION = '1.44';
+var VERSION = '1.45';
 var KINDS = {
   single:{label:'単発脚本', def:null, hint:'長さを入力'},
   serial:{label:'連続脚本', def:null, hint:'話数を設定'},
@@ -887,6 +904,7 @@ function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 function toInt(v, min, max){ var n = parseInt(String(v).replace(/[^\d]/g,''), 10); if(isNaN(n)) return null; return Math.min(max, Math.max(min, n)); }
 
 var ICON = {
+  gear:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
   trash:'<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h12M7 5V3h4v2M5 5l1 10h6l1-10"/></svg>',
   up:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l5-5 5 5"/></svg>',
   down:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l5 5 5-5"/></svg>',
@@ -1628,6 +1646,7 @@ function statusInfo(){
 function paintStatus(){
   var el = document.getElementById('status'); if(!el) return;
   var i = statusInfo(); el.textContent = i.text; el.classList.toggle('err', i.err);
+  var sn = document.getElementById('st-now'); if(sn){ sn.textContent = '今の状態：' + i.text; sn.classList.toggle('err-text', i.err); }
 }
 /* ---------- 以前の版（この端末の中だけに残す。脚本エディタと同じ仕組み） ----------
    作品を開いたとき・別の端末の変更を受け取る前・書いている途中（30分ごと）などに、作品の全体を自動で残す。
@@ -1940,54 +1959,88 @@ function renderList(){
           '<button type="button" class="icon-btn del-far" data-act="delete-work" data-id="' + w.id + '" aria-label="' + esc(w.title || '無題の作品') + 'を削除">' + ICON.trash + '</button></div>';
       }).join('') + '</div>';
   }
-  var backup = '<button type="button" class="btn" data-act="export">バックアップを保存</button>';
   var st = statusInfo();
   return '<header class="topbar"><div class="wrap list-w gut"><div class="topbar-in list-top">' +
     '<div class="brand">Kousei</div><span class="spacer"></span>' +
     '<span class="status' + (st.err ? ' err' : '') + '" id="status" role="status">' + esc(st.text) + '</span>' +
-    '<button type="button" class="btn" data-act="open-templates">ひな形を編集</button>' +
-    '<button type="button" class="btn primary" data-act="new-work">新規作成</button>' +
+    '<button type="button" class="icon-btn" data-act="open-settings" aria-label="設定" title="設定">' + ICON.gear + '</button>' +
     '</div></div></header>' +
     '<main class="page gut"><div class="wrap list-w">' +
     '<div class="list-head"><h1 class="sr">作品一覧</h1><div class="seg" role="group" aria-label="作品の種類で絞り込む">' +
     filters.map(function(f){ return '<button type="button" data-act="list-filter" data-v="' + f[0] + '" aria-pressed="' + (S.listFilter === f[0]) + '">' + f[1] + '</button>'; }).join('') +
-    '</div></div>' + rows +
-    '<div class="list-tools">' +
-    syncPanel() +
-    '<section class="backup panel" aria-labelledby="bk-h"><h2 id="bk-h">バックアップ</h2>' +
-    '<p>すべての作品とひな形を1つのファイルに保存します。</p>' +
-    backup +
-    '<label class="btn" for="import-file">バックアップを読み込む</label><input id="import-file" class="sr" type="file" accept=".json,application/json">' +
-    '<button type="button" class="btn" data-act="open-hist">削除した作品を戻す</button>' +
-    '</section>' +
-    '</div>' +
-    '<p class="foot">バージョン ' + VERSION + '　保存先：' + (Store.mode === 'db' ? 'この端末と、あなたのアカウント（MacとiPadで同期）' : 'この端末') + '<br>PDFの書体：Noto Sans JP（SIL Open Font License 1.1）</p>' +
+    '</div><button type="button" class="btn" data-act="new-work">新規</button></div>' + rows +
     '</div></main>';
+}
+/* ---------- 設定メニュー（1.45）：トップ画面のギヤのアイコンから開く。並びと書き方は Tebikae の設定メニューに合わせる ----------
+   ひな形 → 配色 → バックアップ → 同期 → 書体と Version（Hongaki と同じ2行）。配色と同期はウェブアプリ版だけ */
+function settingsHTML(){
+  var backup = '<button type="button" class="btn" data-act="export">バックアップを保存</button>';
+  return '<div class="phead"><h2 id="m-title">設定</h2><button type="button" class="btn" data-act="close-modal">閉じる</button></div>' +
+    '<div class="pgroup"><h3>ひな形</h3><div class="pbtns"><button type="button" class="btn" data-act="open-templates">ひな形を編集</button></div></div>' +
+    settingsTheme() +
+    '<div class="pgroup"><h3>バックアップ</h3><div class="pbtns">' + backup +
+    '<label class="btn" for="import-file">バックアップを読み込む</label><input id="import-file" class="sr" type="file" accept=".json,application/json">' +
+    '<button type="button" class="btn" data-act="open-hist">削除した作品を戻す</button></div>' +
+    '<p class="small">すべての作品とひな形を1つのファイルに保存します。</p></div>' +
+    settingsSync() +
+    '<p class="small aux">PDFの書体：Noto Sans JP（SIL Open Font License 1.1）</p>' +
+    '<p class="small aux">Version ' + VERSION + '</p>';
+}
+/* 配色（1.45）。選んだものはこの端末だけに記憶する（同期しない） */
+var THEME_KEY = 'kousei-theme';
+function getTheme(){ try{ var t = localStorage.getItem(THEME_KEY); return (t === 'light' || t === 'dark') ? t : 'auto'; }catch(e){ return 'auto'; } }
+var darkMQ = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+function applyTheme(){
+  var t = getTheme(), root = document.documentElement;
+  if(t === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', t);
+  var dark = t === 'dark' || (t === 'auto' && darkMQ && darkMQ.matches);
+  var meta = document.querySelector('meta[name="theme-color"]'); if(meta) meta.setAttribute('content', dark ? '#131718' : '#F5F6F6');
+}
+function setTheme(t){ try{ if(t === 'auto') localStorage.removeItem(THEME_KEY); else localStorage.setItem(THEME_KEY, t); }catch(e){} applyTheme(); }
+if(darkMQ){ if(darkMQ.addEventListener) darkMQ.addEventListener('change', applyTheme); else if(darkMQ.addListener) darkMQ.addListener(applyTheme); }
+applyTheme();
+function settingsTheme(){
+  var t = getTheme();
+  return '<div class="pgroup"><h3>配色</h3><div class="seg" role="group" aria-label="配色">' +
+    [['auto','端末の設定に合わせる'],['light','ライト'],['dark','ダーク']].map(function(o){ return '<button type="button" data-act="set-theme" data-v="' + o[0] + '" aria-pressed="' + (t === o[0]) + '">' + o[1] + '</button>'; }).join('') +
+    '</div><p class="small">配色は、この端末に記憶されます。</p></div>';
+}
+function settingsSync(){ return syncPanel(); }
+/* 設定メニューを開いている間に画面を描き直したとき（同期の状態が変わったときなど）は、メニューも描き直す。入力中の文字とスクロール位置は残す */
+function refreshSettings(){
+  var root = document.getElementById('modal-root'), keep = {}, ov = root.querySelector('.overlay'), sc = ov ? ov.scrollTop : 0;
+  var act = document.activeElement && root.contains(document.activeElement) ? document.activeElement.id : '';
+  ['si-mail','si-pass'].forEach(function(id){ var e = document.getElementById(id); if(e) keep[id] = e.value; });
+  renderModal(false);
+  Object.keys(keep).forEach(function(id){ var e = document.getElementById(id); if(e) e.value = keep[id]; });
+  if(act){ var a = document.getElementById(act); if(a) a.focus(); }
+  ov = root.querySelector('.overlay'); if(ov) ov.scrollTop = sc;
 }
 
 var syncBusy = false;
 function syncPanel(){
   var body;
   if(!Store.configured){
-    body = '<p>Firebaseの設定（firebase-config.js）が入っていないため、この端末だけに保存しています。</p>';
+    body = '<p class="small">Firebaseの設定（firebase-config.js）が入っていないため、この端末だけに保存しています。</p>';
   } else if(!Store.authKnown){
-    body = '<p>ログインの状態を確かめています…</p>';
+    body = '<p class="small">ログインの状態を確かめています…</p>';
   } else if(Store.user){
     var err = Store.ready && lastError && lastError.code === 'permission-denied'
       ? '<p class="err-text">このアカウントには同期の許可がありません。Firestoreのルールに書いたUIDと、ログインしたアカウントが同じか確かめてください。</p>' : '';
-    body = '<p class="sync-who">ログイン中：' + esc(Store.user.email || '') + '</p>' + err +
+    body = '<p class="sync-who">ログイン中：' + esc(Store.user.email || '') + '</p>' + stNow() + err +
       '<button type="button" class="btn" data-act="sign-out"' + (syncBusy ? ' disabled' : '') + '>ログアウト</button>';
   } else {
-    body = '<p>脚本エディタと同じメールアドレスとパスワードでログインすると、MacとiPadの間で作品を同期できます。</p>' +
+    body = '<p class="small">ログインすると、ほかの端末と同期します。</p>' + stNow() +
       '<div class="sync-form">' +
-      '<label class="sr" for="si-mail">メールアドレス</label><input id="si-mail" class="in" type="email" autocomplete="username" placeholder="メールアドレス" required>' +
-      '<label class="sr" for="si-pass">パスワード</label><input id="si-pass" class="in" type="password" autocomplete="current-password" placeholder="パスワード" required>' +
-      '<button type="button" class="btn primary" data-act="sign-in"' + (syncBusy ? ' disabled' : '') + '>ログイン</button>' +
+      '<div class="sf-row"><label class="sr" for="si-mail">メールアドレス</label><input id="si-mail" class="in" type="email" autocomplete="username" placeholder="メールアドレス" required></div>' +
+      '<div class="sf-row"><label class="sr" for="si-pass">パスワード</label><input id="si-pass" class="in" type="password" autocomplete="current-password" placeholder="パスワード" required>' +
+      '<button type="button" class="btn primary" data-act="sign-in"' + (syncBusy ? ' disabled' : '') + '>ログイン</button></div>' +
       '<button type="button" class="linkish" data-act="reset-pass">パスワードを忘れた場合</button>' +
       '</div>';
   }
-  return '<section class="backup panel" aria-labelledby="sy-h"><h2 id="sy-h">同期</h2>' + body + '</section>';
+  return '<div class="pgroup"><h3>同期</h3>' + body + '</div>';
 }
+function stNow(){ var i = statusInfo(); return '<p class="small' + (i.err ? ' err-text' : '') + '" id="st-now">今の状態：' + esc(i.text) + '</p>'; }
 function authError(e){
   var c = e && e.code || '';
   if(c === 'auth/invalid-credential' || c === 'auth/wrong-password' || c === 'auth/user-not-found' || c === 'auth/invalid-login-credentials') return 'メールアドレスかパスワードが違います';
@@ -2412,6 +2465,7 @@ function renderTemplates(){
 }
 /* ---------- modals ---------- */
 function modalHTML(m){
+  if(m.type === 'settings') return settingsHTML();
   if(m.type === 'new'){
     var kindBtns = KIND_ORDER.map(function(k){ return '<button type="button" data-act="nw-kind" data-v="' + k + '" aria-pressed="' + (m.kind === k) + '"><b>' + KINDS[k].label + '</b><small>' + KINDS[k].hint + '</small></button>'; }).join('');
     var len = m.kind === 'serial'
@@ -2477,7 +2531,7 @@ function modalHTML(m){
 function renderModal(focus){
   var root = document.getElementById('modal-root');
   if(!S.modal){ root.innerHTML = ''; return; }
-  root.innerHTML = '<div class="overlay" data-act="overlay"><div class="modal' + (S.modal.type === 'hist' ? ' hist-modal' : '') + '" role="dialog" aria-modal="true" aria-labelledby="m-title">' + (S.modal.type === 'hist' ? histModalHTML(S.modal) : modalHTML(S.modal)) + '</div></div>';
+  root.innerHTML = '<div class="overlay" data-act="overlay"><div class="modal' + (S.modal.type === 'hist' ? ' hist-modal' : '') + (S.modal.type === 'settings' ? ' settings" tabindex="-1' : '') + '" role="dialog" aria-modal="true" aria-labelledby="m-title">' + (S.modal.type === 'hist' ? histModalHTML(S.modal) : modalHTML(S.modal)) + '</div></div>';
   if(focus !== false){ var el = root.querySelector('input:not([type=checkbox]),textarea') || root.querySelector('button.primary,button'); if(el) el.focus(); }
 }
 function openModal(m){ S.modal = m; renderModal(); }
@@ -2515,6 +2569,7 @@ function render(){
   if(hm){ top.innerHTML = hm[1]; html = html.slice(hm[0].length); }
   app.innerHTML = html;
   fitAll(app);
+  if(S.modal && S.modal.type === 'settings') refreshSettings();
   if(syncWait) applyWaitRO();
   try{ localStorage.setItem(LOCAL_KEY + '-ui', JSON.stringify({tplKind:S.tplKind, listFilter:S.listFilter})); }catch(e){}
 }
@@ -2694,6 +2749,7 @@ document.addEventListener('click', function(e){
     case 'redo': redo(); break;
     case 'go-list': flushAll(); histReset(); S.view = 'list'; render(); window.scrollTo(0,0); break;
     case 'list-filter': S.listFilter = v; render(); break;
+    case 'set-theme': setTheme(v); refreshSettings(); break;
     case 'open-work':
       S.workId = id; S.view = 'work'; S.tab = 'basic'; S.personId = null; S.boxFilter = 'all'; S.epId = null; S.epSub = 'plot';
       histReset(); render(); window.scrollTo(0,0);
@@ -2738,7 +2794,8 @@ document.addEventListener('click', function(e){
     case 'nw-create': createWork(); break;
     case 'close-modal': closeModal(); break;
     case 'confirm-ok': var fn = S.modal.onOk; if(fn) fn(); break;
-    case 'open-templates': S.view = 'templates'; render(); window.scrollTo(0,0); break;
+    case 'open-templates': if(S.modal) closeModal(); S.view = 'templates'; render(); window.scrollTo(0,0); break;
+    case 'open-settings': S.modal = {type:'settings'}; renderModal(false); var sm = document.querySelector('#modal-root .modal'); if(sm) sm.focus({preventScroll:true}); break;
     case 'export': exportBackup(); break;
     case 'sign-out': signOutNow(); break;
     case 'reset-pass': resetPass(); break;
