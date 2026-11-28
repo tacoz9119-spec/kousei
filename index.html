@@ -231,12 +231,6 @@ button{cursor:pointer}
 .ep-head span{color:var(--fg2)}
 
 /* templates */
-.tpl-note{margin:10px 0 18px;font-size:14px;color:var(--fg2)}
-.tpl-cols,.tpl-row{display:grid;grid-template-columns:96px minmax(0,1fr) 150px 44px;gap:10px;align-items:center}
-.tpl-cols{padding:0 12px 4px;font-size:13px;color:var(--muted)}
-.tpl-row{min-height:62px;padding:0 12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:8px}
-.tpl-row.fixed{background:var(--surface2)}
-.tpl-row .mv{display:flex;gap:4px}
 .tag{font-size:13px;color:var(--muted)}
 
 /* modal & toast */
@@ -406,10 +400,6 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .chips{min-height:26px}
 .ep-head h2{font-size:18px}
 .ep-head span{font-size:13px}
-.tpl-note{font-size:13px}
-.tpl-cols,.tpl-row{grid-template-columns:76px minmax(0,1fr) 120px 34px}
-.tpl-cols{font-size:12px}
-.tpl-row{min-height:50px}
 .tag{font-size:12px}
 .modal{padding:22px 24px;gap:16px;border-radius:14px}
 .modal h2{font-size:18px}
@@ -448,9 +438,6 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
    ボタンの枠（30px）の中には絵のまわりの余白があるため、枠どうしの間隔ではなく、見えている絵どうしの間隔（両側とも約19.5px）でそろえる。日付と削除の位置は変えない */
 .dup-mid{margin-left:7.5px}
 .del-far{margin-left:-1.5px}
-.tpl-cols,.tpl-row{grid-template-columns:64px minmax(0,1fr) 128px 84px 96px 34px}
-.tpl-cols.tpl-p,.tpl-row.tpl-p{grid-template-columns:64px minmax(110px,1fr) 112px 70px 66px 104px 34px;gap:8px}
-.tpl-span{grid-column:3 / -1}
 .num-cell{display:flex;align-items:center;gap:6px;font-size:13px}
 .in.sm{width:52px;height:35px;text-align:right;font-variant-numeric:tabular-nums}
 .chk{display:flex;align-items:center;gap:6px;font-size:13px;min-height:34px}
@@ -480,12 +467,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .bcard .frow{gap:14px 20px;margin-bottom:14px}
 .bcard .frow:last-child{margin-bottom:0}
 .bcard .fw-half{flex-basis:calc(50% - 10px)}
-.tpl-row.is-h{background:var(--accent-weak)}
-.tpl-row.is-h .in{font-weight:700}
 .h-tag{font-weight:700;color:var(--mark)}
-.tpl-adds{display:flex;gap:12px;flex-wrap:wrap}
-.tpl-adds .add-dash{flex:1 1 200px}
-.tpl-reset{margin-top:20px;text-align:right}
 /* 人物：名前と役割を上に、プロフィールとアークをカードに */
 .people-a .split{gap:20px}
 .people-a .side{background:var(--surface);border-radius:14px;width:240px}
@@ -560,7 +542,7 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .people-a .f-role .seg button{min-height:32px}
 /* 狭い画面でタブの右の道具が次の行へ折り返したとき、タブの下線とのあいだに8pxあける（折り返さないときは変わらない） */
 .tabs-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding-bottom:4px}
-/* 1行だけの上部の帯（トップ画面・ひな形の編集）は Tebikae と同じ高さにする：区切りの線を含めて、マウス操作では55px、指で操作する端末（iPad など）では65px */
+/* 1行だけの上部の帯（トップ画面）は Tebikae と同じ高さにする：区切りの線を含めて、マウス操作では55px、指で操作する端末（iPad など）では65px */
 .topbar-in.list-top{min-height:54px;box-sizing:border-box}
 @media (pointer:coarse){.topbar-in.list-top{min-height:64px}}
 /* タブは高さ30px（文字と下線を近づける）にし、下線と区切りの線のあいだを4pxあける */
@@ -720,7 +702,6 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 @media (max-width: 640px){
   .act2-in,.form-grid{grid-template-columns:minmax(0,1fr)}
   .fw-half,.fw-S,.fw-M{flex:1 1 100%}
-  .tpl-span{grid-column:auto}
   .wl-cols{display:none}
   /* iPhone などの狭い幅：1段目に作品名（と掲載先）を横幅いっぱいに置き、2段目に「種類・長さ・最終更新」を1行の小さな文字でまとめる。アイコンは右 */
   .work-open{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 0;padding-left:16px}
@@ -728,9 +709,6 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
   .work-open .kd,.work-open .ln,.work-open .dt{font-size:13px;color:var(--muted);text-align:left}
   .work-open .ln::before,.work-open .dt::before{content:"・"}
   .kind-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .tpl-cols{display:none}
-  .tpl-row,.tpl-row.tpl-p{grid-template-columns:minmax(0,1fr) 44px;padding:10px 12px}
-  .tpl-row .mv{grid-column:1 / -1}
   .modal{padding:22px 18px}
 }
 /* ===== 大きさの統一（1.41。1.43で値を見直し） =====
@@ -778,7 +756,6 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 /* 文字：ふつうの文字（14px）。枠のない押すもの・入力欄・見出し */
 :root .back,:root .tab,:root .side-item,:root .card-menu button,:root .chk,:root .check span,:root .btn.side-copy,
 :root .bcard-h,:root .bcard-top .bcard-h,:root .grp-h h2,:root .pcol-hd b,:root .psub b,:root .side-h,:root .side-top b,:root .backup h2,:root .point label,:root .hook label,
-:root .tpl-row.fixed > div:not(.tag),
 :root .in:not(.card *),:root .ta:not(.card *),:root .sel:not(.card *),:root .readout,:root .ref-title,:root .chdiv .ch-title,:root .ch-no,
 :root .ep-len label,:root .ep-len span,:root .num span,:root .num-cell span{font-size:14px}
 :root .ref-title,:root .chdiv .ch-title{font-weight:700}
@@ -789,8 +766,8 @@ body.is-dragging{cursor:grabbing;-webkit-user-select:none;user-select:none}
 /* 文字：文字のリンク（12px。1.44） */
 :root .link-btn,:root .linkish{font-size:12px}
 /* 文字：項目名・補足・説明文（12px） */
-:root .sub-l,:root .tpl-note,:root .backup p,:root .modal p,:root .empty p,:root .toast,:root .chips .none,
-:root .fl,:root .meta,:root .status,:root .tab-info,:root .foot,:root .side-note,:root .cnt,:root .ch-sum,:root .tpl-cols,:root .tag,:root .wl-cols,
+:root .sub-l,:root .backup p,:root .modal p,:root .empty p,:root .toast,:root .chips .none,
+:root .fl,:root .meta,:root .status,:root .tab-info,:root .foot,:root .side-note,:root .cnt,:root .ch-sum,:root .tag,:root .wl-cols,
 :root .kind-grid small,:root .side-top span,:root .side .side-top span,:root .pcol-hd span,:root .psub span,:root .grp-h span,:root .grp-h h2 small,:root .check small,:root .ep-head span{font-size:12px}
 /* アイコン：文字のボタンのアイコンは文字と同じ14px。元に戻す・やり直すは見た目の大きさをほかのアイコンにそろえる。メニューの削除は16px */
 :root .btn svg,:root .bcard-top .btn svg,:root .tab-btn svg{width:14px;height:14px}
@@ -1521,7 +1498,6 @@ async function handleRemote(type, d){
     S.templates = clone(tv.data); M.tpl.base = trv; M.tpl.dirty = false; M.tpl.fresh = false;
     if(migrateTemplates()) saveTemplatesSoon(true);
     localSoon();
-    if(S.view === 'templates') renderKeep();
     return;
   }
   if(d.id.indexOf('w-') !== 0) return;
@@ -1844,7 +1820,6 @@ function resolve(bind){
   else if(head.indexOf('P:') === 0){ var pid = head.slice(2); root = w.people.find(function(p){ return p.id === pid; }); save = function(){ saveWorkSoon(w); }; }
   else if(head.indexOf('R:') === 0){ var rid = head.slice(2); root = (w.refs || []).find(function(x){ return x.id === rid; }); save = function(){ saveWorkSoon(w); }; }
   else if(head.indexOf('S:') === 0){ var c = sceneCtx(), sid = head.slice(2); root = c.list.find(function(s){ return s.id === sid; }); save = c.save; }
-  else if(head.indexOf('T:') === 0){ var t = head.split(':'); root = S.templates[t[1]][t[2]].find(function(x){ return x.id === t[3]; }); save = saveTemplatesSoon; }
   return {root:root, path:path, save:save};
 }
 function setPath(root, path, val){
@@ -1972,16 +1947,15 @@ function renderList(){
     '</div></main>';
 }
 /* ---------- 設定メニュー（1.45）：トップ画面のギヤのアイコンから開く。並びと書き方は Tebikae の設定メニューに合わせる ----------
-   ひな形 → 配色 → バックアップ → 同期 → 書体と Version（Hongaki と同じ2行）。配色と同期はウェブアプリ版だけ */
+   配色 → バックアップ → 同期 → 書体と Version（Hongaki と同じ2行）。配色と同期はウェブアプリ版だけ */
 function settingsHTML(){
   var backup = '<button type="button" class="btn" data-act="export">バックアップを保存</button>';
   return '<div class="phead"><h2 id="m-title">設定</h2><button type="button" class="btn" data-act="close-modal">閉じる</button></div>' +
-    '<div class="pgroup"><h3>ひな形</h3><div class="pbtns"><button type="button" class="btn" data-act="open-templates">ひな形を編集</button></div></div>' +
     settingsTheme() +
     '<div class="pgroup"><h3>バックアップ</h3><div class="pbtns">' + backup +
     '<label class="btn" for="import-file">バックアップを読み込む</label><input id="import-file" class="sr" type="file" accept=".json,application/json">' +
     '<button type="button" class="btn" data-act="open-hist">削除した作品を戻す</button></div>' +
-    '<p class="small">すべての作品とひな形を1つのファイルに保存します。</p></div>' +
+    '<p class="small">すべての作品を1つのファイルに保存します。</p></div>' +
     settingsSync() +
     '<p class="small aux">PDFの書体：Noto Sans JP（SIL Open Font License 1.1）</p>' +
     '<p class="small aux">Version ' + VERSION + '</p>';
@@ -2097,7 +2071,7 @@ function renderBasic(w){
     var fields = half ? g.fields.map(function(f){ return Object.assign({}, f, {w:'full', nl:true}); }) : g.fields;
     return '<section class="bcard' + (half ? '' : ' wide') + '"' + (g.h ? ' aria-labelledby="bh-' + g.h.id + '"' : '') + '>' +
       (g.h ? '<h2 class="bcard-h" id="bh-' + g.h.id + '">' + esc(g.h.label) + '</h2>' : '') +
-      (fields.length ? flowRows(fields, cell) : '<p class="sub-l">この見出しには項目がありません。「ひな形を編集」で項目を追加できます。</p>') + '</section>';
+      (fields.length ? flowRows(fields, cell) : '<p class="sub-l">この見出しには項目がありません。</p>') + '</section>';
   }).join('');
   return '<main class="page gut basic-b"><div class="wrap"><div class="bhead"><section class="bcard wide" aria-labelledby="bh-top"><h2 class="bcard-h" id="bh-top">概要</h2>' + flowRows(sch.slice(0, headEnd), cell, [title, venue], [len]) + '</section></div>' +
     (cards ? '<div class="bgrid">' + cards + '</div>' : '') + '</div></main>';
@@ -2144,7 +2118,7 @@ function renderPeople(w){
       }).join('<div class="arc-ar">' + ICON.arrow + '</div>');
       arc = '<section class="bcard" aria-labelledby="arc-h-' + p.id + '"><div class="bcard-top"><h2 class="bcard-h" id="arc-h-' + p.id + '">アーク</h2>' +
         '<button type="button" class="link-btn" data-act="remove-arc" data-id="' + p.id + '">アークを外す</button></div>' +
-        (arcF.length ? '<div class="arc-flow' + (arcF.length > 4 ? ' tall' : '') + '">' + arcCells + '</div>' : '<p class="sub-l">アークの項目がありません。「ひな形を編集」で追加できます。</p>') + '</section>';
+        (arcF.length ? '<div class="arc-flow' + (arcF.length > 4 ? ' tall' : '') + '">' + arcCells + '</div>' : '<p class="sub-l">アークの項目がありません。</p>') + '</section>';
     } else {
       arc = '<section class="bcard" aria-labelledby="arc-h-' + p.id + '"><div class="bcard-top"><h2 class="bcard-h" id="arc-h-' + p.id + '">アーク</h2>' +
         '<button type="button" class="btn" data-act="add-arc" data-id="' + p.id + '">' + ICON.plus + 'アークを追加</button></div></section>';
@@ -2404,65 +2378,6 @@ function renderEpisodes(w){
   return '<main class="page gut"><div class="wrap"><div class="split">' + side + '<div class="side-main">' + main + '</div></div></div></main>';
 }
 
-/* ---------- templates ---------- */
-var W_OPTS = [['S','小（160px）'],['M','中（260px）'],['half','半分'],['fill','残りの幅'],['full','全幅']];
-function renderTemplates(){
-  var k = S.tplKind, t = S.tplTab, list = S.templates[k][t], isCard = t === 'card';
-  var fixed = t === 'basic' ? [['タイトル','1行目の先頭。残りの幅に広がります'],['掲載先・応募先','1行目のタイトルの次に入ります'],['尺（小説では長さ）','1行目の最後。作品の長さ（脚本は分または枚、小説は字数または原稿用紙の枚数）を入力します。連続脚本では話数が自動で入ります']]
-    : t === 'person' ? [['名前','1行目の先頭（中の幅）'],['役割','最初に「改行」した行の先頭']] : [];
-  var notes = {
-    basic:'見出しから次の見出しまでの項目が、1枚のカードにまとまります。幅を「半分」にした見出しのカードが続くと、左右に並びます。最初の見出しより前の項目は、タイトル・尺と同じ行に並びます。幅が「半分」の見出しのカードの中では、項目は縦に1つずつ並びます。カードの中では、「改行」にチェックした項目から新しい行になります。PDFもこの順で出力します。',
-    person:'「改行」にチェックした項目から新しい行になります。1行目には、名前と、先頭から「改行」のない項目が並びます。プロフィールとアークは、役割が「主人公」か「主要人物」の人物にだけ表示されます。「表示する人物」で、項目ごとにどちらに出すかを選べます。',
-    arc:'人物ごとに「アークを追加」したときに表示される欄です。「改行」にチェックした項目から新しい行になります。',
-    card:'箱書きのシーンカードに並ぶ欄です。「人物候補」にチェックした欄では、入力中に人物の名前を候補として表示します。'
-  };
-  var rows = fixed.map(function(fx){
-    return '<div class="tpl-row fixed"><div class="tag">固定</div><div>' + fx[0] + '</div><div class="tag tpl-span">' + fx[1] + '</div></div>';
-  }).join('') + list.map(function(f, i){
-    var base = 'data-k="' + k + '" data-t="' + t + '" data-id="' + f.id + '"';
-    var mv = '<div class="mv">' +
-      '<button type="button" class="icon-btn" data-act="tpl-up" ' + base + ' aria-label="' + esc(f.label) + 'を上へ"' + (i === 0 ? ' disabled' : '') + '>' + ICON.up + '</button>' +
-      '<button type="button" class="icon-btn" data-act="tpl-down" ' + base + ' aria-label="' + esc(f.label) + 'を下へ"' + (i === list.length-1 ? ' disabled' : '') + '>' + ICON.down + '</button></div>';
-    if(isHead(f)) return '<div class="tpl-row is-h">' + mv +
-      '<div><label class="sr" for="tl-' + f.id + '">見出し</label><input id="tl-' + f.id + '" class="in" type="text" value="' + esc(f.label) + '" data-bind="T:' + k + ':' + t + ':' + f.id + '|label"></div>' +
-      '<div><label class="sr" for="tw-' + f.id + '">カードの幅</label><select id="tw-' + f.id + '" class="sel" data-change="tpl-w" ' + base + '>' +
-        [['full','全幅'],['half','半分']].map(function(o){ return '<option value="' + o[0] + '"' + ((f.w || 'full') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>' +
-      '<div class="tag">—</div><div class="tag h-tag">見出し</div>' +
-      '<button type="button" class="icon-btn" data-act="tpl-del" ' + base + ' aria-label="見出し「' + esc(f.label) + '」を削除">' + ICON.trash + '</button></div>';
-    var wSel = isCard ? '<div class="tag">—</div>'
-      : '<div><label class="sr" for="tw-' + f.id + '">幅</label><select id="tw-' + f.id + '" class="sel" data-change="tpl-w" ' + base + '>' +
-        W_OPTS.map(function(o){ return '<option value="' + o[0] + '"' + ((f.w || 'fill') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>';
-    var who = t !== 'person' ? '' : f.link ? '<div class="tag">主人公（基本と連動）</div>'
-      : '<div><label class="sr" for="to-' + f.id + '">表示する人物</label><select id="to-' + f.id + '" class="sel" data-change="tpl-who" ' + base + '>' +
-        [['','両方'],['main','主人公'],['major','主要人物']].map(function(o){ return '<option value="' + o[0] + '"' + ((f.who || '') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>';
-    var flag = isCard
-      ? '<label class="chk"><input type="checkbox" data-change="tpl-people" ' + base + (f.people ? ' checked' : '') + '>人物候補</label>'
-      : '<label class="chk"><input type="checkbox" data-change="tpl-nl" ' + base + (f.nl ? ' checked' : '') + '>改行</label>';
-    return '<div class="tpl-row' + (t === 'person' ? ' tpl-p' : '') + '"><div class="mv">' +
-      '<button type="button" class="icon-btn" data-act="tpl-up" ' + base + ' aria-label="' + esc(f.label) + 'を上へ"' + (i === 0 ? ' disabled' : '') + '>' + ICON.up + '</button>' +
-      '<button type="button" class="icon-btn" data-act="tpl-down" ' + base + ' aria-label="' + esc(f.label) + 'を下へ"' + (i === list.length-1 ? ' disabled' : '') + '>' + ICON.down + '</button></div>' +
-      '<div><label class="sr" for="tl-' + f.id + '">項目名</label><input id="tl-' + f.id + '" class="in" type="text" value="' + esc(f.label) + '" data-bind="T:' + k + ':' + t + ':' + f.id + '|label"></div>' +
-      wSel +
-      '<div class="num-cell"><label class="sr" for="tr-' + f.id + '">初期の行数</label><input id="tr-' + f.id + '" class="in sm" type="text" inputmode="numeric" value="' + (f.rows || 1) + '" data-change="tpl-rows" ' + base + '><span>行</span></div>' +
-      flag + who +
-      '<button type="button" class="icon-btn" data-act="tpl-del" ' + base + ' aria-label="' + esc(f.label) + 'を削除">' + ICON.trash + '</button></div>';
-  }).join('');
-  var st = statusInfo();
-  return '<header class="topbar"><div class="wrap gut"><div class="topbar-in list-top">' +
-    '<button type="button" class="back" data-act="go-list">' + ICON.back + '作品一覧</button><h1 class="wtitle" style="font-family:var(--f-body)">ひな形の編集</h1><span class="spacer"></span>' +
-    '<span class="status' + (st.err ? ' err' : '') + '" id="status" role="status">' + esc(st.text) + '</span></div></div></header>' +
-    '<main class="page gut"><div class="wrap">' +
-    '<div class="seg" role="group" aria-label="ひな形の種類">' + KIND_ORDER.map(function(x){ return '<button type="button" data-act="tpl-kind" data-v="' + x + '" aria-pressed="' + (x === k) + '">' + KINDS[x].label + '</button>'; }).join('') + '</div>' +
-    '<p class="tpl-note">変更は、これから作る「' + KINDS[k].label + '」の作品に反映されます。すでにある作品の記入欄は変わりません。</p>' +
-    '<div class="split"><nav class="side" aria-label="ひな形のタブ">' + TPL_TABS.map(function(x){ return '<button type="button" class="side-item" data-act="tpl-tab" data-v="' + x[0] + '"' + (x[0] === t ? ' aria-current="true"' : '') + '>' + x[1] + '</button>'; }).join('') + '</nav>' +
-    '<section class="side-main" aria-label="' + TPL_TABS.filter(function(x){ return x[0] === t; })[0][1] + 'の記入欄">' +
-    '<p class="sub-l" style="margin:0 0 12px">' + notes[t] + '</p>' +
-    '<div class="tpl-cols' + (t === 'person' ? ' tpl-p' : '') + '" aria-hidden="true"><div>並べ替え</div><div>項目名</div><div>' + (isCard ? '' : '幅') + '</div><div>初期の行数</div><div>' + (isCard ? '人物候補' : '改行') + '</div>' + (t === 'person' ? '<div>表示する人物</div>' : '') + '<div></div></div>' + rows +
-    '<div class="tpl-adds"><button type="button" class="add-dash" data-act="tpl-add" data-k="' + k + '" data-t="' + t + '">' + ICON.plus + '項目を追加</button>' +
-    (t === 'basic' ? '<button type="button" class="add-dash" data-act="tpl-add-h" data-k="' + k + '" data-t="' + t + '">' + ICON.plus + '見出しを追加</button>' : '') + '</div>' +
-    '<div class="tpl-reset"><button type="button" class="link-btn" data-act="tpl-reset" data-k="' + k + '" data-t="' + t + '">「' + TPL_TABS.filter(function(x){ return x[0] === t; })[0][1] + '」を初期設定に戻す</button></div>' +
-    '</section></div></div></main>';
-}
 /* ---------- modals ---------- */
 function modalHTML(m){
   if(m.type === 'settings') return settingsHTML();
@@ -2478,7 +2393,6 @@ function modalHTML(m){
       '<div class="field"><label class="fl" for="nw-title">作品名</label><input id="nw-title" class="in" type="text" placeholder="作品名を入力" value="' + esc(m.title) + '"></div>' +
       '<fieldset style="margin:0;padding:0;border:none" class="field"><legend class="fl" style="margin-bottom:8px">作品の種類</legend><div class="kind-grid">' + kindBtns + '</div></fieldset>' +
       len + venue + (m.err ? '<p class="err-text">' + esc(m.err) + '</p>' : '') +
-      '<p class="sub-l">記入欄は「' + KINDS[m.kind].label + '」のひな形から作られます。</p>' +
       '<div class="modal-actions"><button type="button" class="btn" data-act="close-modal">キャンセル</button><button type="button" class="btn primary" data-act="nw-create">作成</button></div>';
   }
   if(m.type === 'epcount'){
@@ -2550,7 +2464,6 @@ function toast(msg, ms){
 function render(){
   var app = document.getElementById('app'), html = '';
   if(S.view === 'list') html = renderList();
-  else if(S.view === 'templates') html = renderTemplates();
   else if(S.view === 'work'){
     var w = curWork();
     if(!w){ S.view = 'list'; return render(); }
@@ -2592,7 +2505,8 @@ function readModal(ids){ var o = {}; ids.forEach(function(id){ var el = document
 function createWork(){
   var m = S.modal, v = readModal(['nw-title','nw-len','nw-eps','nw-base','nw-unit','nw-venue']);
   m.title = v['nw-title'] || ''; if(v['nw-len'] != null) m.len = v['nw-len']; if(v['nw-eps'] != null) m.eps = v['nw-eps']; if(v['nw-base'] != null) m.base = v['nw-base']; if(v['nw-unit'] != null) m.unit = v['nw-unit']; if(v['nw-venue'] != null) m.venue = v['nw-venue'];
-  var tpl = clone(S.templates[m.kind]);
+  /* 記入欄は、アプリに組み込んだひな形から作る（ひな形の編集は1.45で外した） */
+  var tpl = defaultTemplate();
   var w = {v:1, id:'w-' + uid(), title:m.title.trim() || '無題の作品', kind:m.kind, createdAt:Date.now(), updatedAt:Date.now(),
     schema:tpl, basic:{}, people:[]};
   if(unitList(m.kind).indexOf(m.unit) > 0 || m.kind === 'novel') w.unit = unitList(m.kind).indexOf(m.unit) >= 0 ? m.unit : unitList(m.kind)[0];
@@ -2660,7 +2574,7 @@ function moveScene(id, dir){
 async function exportBackup(){
   if(!S.dl) return;
   flushAll();
-  var data = {app:'kyakuhon-kousou', version:VERSION, exportedAt:new Date().toISOString(), templates:S.templates,
+  var data = {app:'kyakuhon-kousou', version:VERSION, exportedAt:new Date().toISOString(),
     works:Object.keys(S.works).map(function(id){ var w = clone(S.works[id]); if(w.kind === 'serial') w.episodes = epsOf(S.works[id]).map(clone); return w; })};
   var d = new Date(), name = 'Kousei-backup-' + d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0') + '.json';
   try{ await S.dl.save({filename:name, data:JSON.stringify(data, null, 1)}); toast('バックアップを保存しました'); }
@@ -2672,8 +2586,7 @@ function importBackup(file){
     var data = null;
     try{ data = JSON.parse(reader.result); }catch(e){}
     if(!data || data.app !== 'kyakuhon-kousou' || !Array.isArray(data.works)){ toast('このファイルはKouseiのバックアップではありません'); return; }
-    askConfirm('バックアップを読み込む', '作品' + data.works.length + '件と、ひな形を読み込みます。同じ作品がある場合は、バックアップの内容で上書きします。', '読み込む', false, function(){
-      if(data.templates) { S.templates = data.templates; migrateTemplates(); saveTemplatesSoon(); }
+    askConfirm('バックアップを読み込む', '作品' + data.works.length + '件を読み込みます。同じ作品がある場合は、バックアップの内容で上書きします。', '読み込む', false, function(){
       data.works.forEach(function(w){
         var eps = w.episodes; delete w.episodes;
         S.works[w.id] = w;
@@ -2721,15 +2634,6 @@ document.addEventListener('change', function(e){
     if(n !== ep.length) checkpoint();
     ep.length = n; saveEpSoon(w, ep);
     el.value = n; el.closest('.ep-len').classList.toggle('changed', n !== w.baseLength);
-  } else if(a === 'tpl-w' || a === 'tpl-rows' || a === 'tpl-nl' || a === 'tpl-people' || a === 'tpl-who'){
-    var f = S.templates[el.dataset.k][el.dataset.t].find(function(x){ return x.id === el.dataset.id; });
-    if(!f) return;
-    if(a === 'tpl-w') f.w = el.value;
-    else if(a === 'tpl-rows'){ f.rows = toInt(el.value, 1, 30) || 1; el.value = f.rows; }
-    else if(a === 'tpl-nl') f.nl = el.checked;
-    else if(a === 'tpl-who'){ if(el.value) f.who = el.value; else delete f.who; }
-    else f.people = el.checked;
-    saveTemplatesSoon();
   } else if(a === 'scene-min'){
     var cm = sceneCtx(), scm = cm.list.find(function(x){ return x.id === el.dataset.id; }); if(!scm) return;
     var nm = toLen1(el.value, w); scm.min = nm == null ? '' : fmt1(nm); el.value = scm.min; cm.save(); renderKeep();
@@ -2794,7 +2698,6 @@ document.addEventListener('click', function(e){
     case 'nw-create': createWork(); break;
     case 'close-modal': closeModal(); break;
     case 'confirm-ok': var fn = S.modal.onOk; if(fn) fn(); break;
-    case 'open-templates': if(S.modal) closeModal(); S.view = 'templates'; render(); window.scrollTo(0,0); break;
     case 'open-settings': S.modal = {type:'settings'}; renderModal(false); var sm = document.querySelector('#modal-root .modal'); if(sm) sm.focus({preventScroll:true}); break;
     case 'export': exportBackup(); break;
     case 'sign-out': signOutNow(); break;
@@ -2863,34 +2766,6 @@ document.addEventListener('click', function(e){
       ACTS.forEach(function(x){ var k = x[0]; w.series[k] = w.series[k] || {text:'',eps:[]}; w.series[k].eps = (w.series[k].eps || []).filter(function(eid){ return k === act ? false : chosen.indexOf(eid) < 0; }); });
       w.series[act].eps = chosen.sort(function(x,y){ return epNo(w,x) - epNo(w,y); });
       saveWorkSoon(w); closeModal(); render(); break;
-
-    case 'tpl-kind': S.tplKind = v; render(); break;
-    case 'tpl-tab': S.tplTab = v; render(); break;
-    case 'tpl-add':
-      var tt = el.dataset.t, nf = {id:'f' + uid(), label:'新しい項目', rows:tt === 'arc' ? 2 : 1, w:tt === 'basic' ? 'half' : (tt === 'person' ? 'full' : 'fill'), nl:tt === 'basic' || tt === 'person'};
-      S.templates[el.dataset.k][el.dataset.t].push(nf); saveTemplatesSoon(); render(); focusSoon('#tl-' + nf.id);
-      setTimeout(function(){ var x = document.getElementById('tl-' + nf.id); if(x) x.select(); }, 60);
-      break;
-    case 'tpl-add-h':
-      var nh = {id:'h' + uid(), kind:'h', label:'新しい見出し', w:'full'};
-      S.templates[el.dataset.k][el.dataset.t].push(nh); saveTemplatesSoon(); render(); focusSoon('#tl-' + nh.id);
-      setTimeout(function(){ var x = document.getElementById('tl-' + nh.id); if(x) x.select(); }, 60);
-      break;
-    case 'tpl-reset':
-      /* 初期設定は、アプリに組み込んだ最新のひな形（defaultTemplate）。開いているタブだけを戻す */
-      var rk = el.dataset.k, rt = el.dataset.t, rname = TPL_TABS.filter(function(x){ return x[0] === rt; })[0][1];
-      askConfirm('「' + rname + '」を初期設定に戻す', '「' + KINDS[rk].label + '」のひな形の「' + rname + '」を、初期設定の項目と並びに戻します。このタブで追加・変更した項目は元に戻せません。すでにある作品の記入欄は変わりません。', '初期設定に戻す', true, function(){
-        S.templates[rk][rt] = defaultTemplate()[rt];
-        saveTemplatesSoon(); closeModal(); render(); toast('「' + rname + '」を初期設定に戻しました');
-      });
-      break;
-    case 'tpl-del':
-      S.templates[el.dataset.k][el.dataset.t] = S.templates[el.dataset.k][el.dataset.t].filter(function(x){ return x.id !== id; });
-      saveTemplatesSoon(); render(); break;
-    case 'tpl-up': case 'tpl-down':
-      var arr = S.templates[el.dataset.k][el.dataset.t], i = arr.findIndex(function(x){ return x.id === id; }), j = i + (a === 'tpl-up' ? -1 : 1);
-      if(i >= 0 && j >= 0 && j < arr.length){ var t = arr[i]; arr[i] = arr[j]; arr[j] = t; saveTemplatesSoon(); render(); focusSoon('[data-act="' + a + '"][data-id="' + id + '"]:not([disabled]), #tl-' + id); }
-      break;
 
     case 'copy-people': copyText('人物の一覧', peopleText(w)); break;
     case 'card-menu': case 'ref-menu':
